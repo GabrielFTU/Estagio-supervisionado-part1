@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36327.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Valisys_Production", "Valisys_Production\Valisys_Production.csproj", "{1CB9D11D-164B-46C4-8C98-681F677E5ABA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1CB9D11D-164B-46C4-8C98-681F677E5ABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CB9D11D-164B-46C4-8C98-681F677E5ABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CB9D11D-164B-46C4-8C98-681F677E5ABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CB9D11D-164B-46C4-8C98-681F677E5ABA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D215A44E-236E-4840-AD7F-3F301D6E59BB}
+	EndGlobalSection
+EndGlobal
