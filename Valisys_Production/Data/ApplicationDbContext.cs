@@ -7,6 +7,12 @@
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) {
-        } public DbSet<Fornecedor> Fornecedores { get; set; }
+        } 
+        public DbSet<Fornecedor> Fornecedores { get; set; }
+        public DbSet<Almoxarifado> Almoxarifados { get; set; }
+        public DbSet<Produto> Produtos { get; set; }
+
+
     }
+
 }
