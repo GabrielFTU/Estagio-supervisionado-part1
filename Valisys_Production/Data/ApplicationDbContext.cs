@@ -12,6 +12,8 @@
         public DbSet<Almoxarifado> Almoxarifados { get; set; }
         public DbSet<Produto> Produtos { get; set; }
 
+        public DbSet<Lote> Lotes { get; set; }
+
 
     }
 
