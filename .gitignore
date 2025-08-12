@@ -1,24 +1,17 @@
-# Binaries and temporary files
+
 [Dd]ebug/
 [Rr]elease/
 bin/
 obj/
-*.vs/  
+.vs/
 *.suo
 *.user
-
-# NuGet packages and artifacts
 .nuget/
-
-# Rider and Visual Studio
-*.sln.docstates
-.DS_Store
-
+node_modules/
+dist/
 appsettings.json
 appsettings.Development.json
-
 # Log files
 *.log
 
-# Generated content
 wwwroot/dist/

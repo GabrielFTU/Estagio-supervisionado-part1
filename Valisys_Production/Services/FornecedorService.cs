@@ -22,7 +22,7 @@ namespace Valisys_Production.Services
             {
                 throw new ArgumentException("Nome do fornecedor não pode estar vazio.");
             }
-            fornecedor.DataCadastro = DateTime.Now;
+            fornecedor.DataCadastro = DateTime.UtcNow;
             return await _repository.AddAsync(fornecedor);
         }
         public async Task<Fornecedor> GetByIdAsync(int id)
