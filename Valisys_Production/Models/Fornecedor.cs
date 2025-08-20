@@ -5,7 +5,8 @@ namespace Valisys_Production.Models
 {
     public enum TipoDocumento
     {
-        CPF, CNPJ
+        CPF = 1,
+        CNPJ = 2
     }
     public class Fornecedor
     {

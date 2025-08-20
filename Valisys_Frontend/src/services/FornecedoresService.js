@@ -19,6 +19,10 @@ const FornecedoresService = {
         const response = await axios.put(`${API_URL}/${id}`, fornecedor);
         return response.data;
     },
-
+    remove: async (id) => {
+        const response = await axios.delete(`${API_URL}/${id}`);
+        return response.data;
+    },  
 };
+
 export default FornecedoresService;

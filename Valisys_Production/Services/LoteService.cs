@@ -18,20 +18,14 @@ namespace Valisys_Production.Services
 
         public async Task<Lote> CreateAsync(Lote lote)
         {
-            if (lote.Quantidade <= 0)
-            {
-                throw new ArgumentException("A quantidade do lote deve ser maior que zero.");
-            }
-
-            // Define o status inicial e a data de início
-            lote.Status = StatusLote.EmProducao;
-            lote.DataInicio = DateTime.Now;
-            lote.DataCadastro = DateTime.Now;
+            lote.statusLote = StatusLote.Pendente;
+            lote.DataAbertura = DateTime.UtcNow;
+            lote.DataAbertura = DateTime.UtcNow;
 
             return await _repository.AddAsync(lote);
         }
 
-        public async Task<Lote> GetByIdAsync(int id)
+        public async Task<Lote?> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -43,10 +37,6 @@ namespace Valisys_Production.Services
 
         public async Task UpdateAsync(Lote lote)
         {
-            if (lote.Quantidade <= 0)
-            {
-                throw new ArgumentException("A quantidade do lote deve ser maior que zero.");
-            }
             await _repository.UpdateAsync(lote);
         }
 

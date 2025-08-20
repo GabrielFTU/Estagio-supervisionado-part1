@@ -6,6 +6,7 @@ namespace Valisys_Production.Models
     {
         [Key]
         public int Id { get; set; }
+
         [Required]
         [MaxLength(255)]
         public string Nome { get; set; }
@@ -21,10 +22,12 @@ namespace Valisys_Production.Models
         [MaxLength(15)]
         public string Responsavel { get; set; }
 
-        [MaxLength(15)]
+        [MaxLength(20)]
         public string Contato { get; set; }
+
         [MaxLength(100)]
-        public string email { get; set; }   
+        [EmailAddress]
+        public string Email { get; set; }   
 
         public bool Ativo { get; set; } = true;
         public DateTime DataCadastro { get; set; } = DateTime.Now;  

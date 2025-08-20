@@ -14,24 +14,21 @@ namespace Valisys_Production.Models
         [MaxLength(500)]
         public string Descricao { get; set; }
 
-        [MaxLength(50)]
-        public string Codigo_Barras { get; set; }
-
         [Required]
         [MaxLength(50)]
-        public int codigo_interno_Produto { get; set; }
+        public string CodigoInternoProduto { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string Unidade_Medida { get; set; }  
-
-        [Required]
-        public string Categoria { get; set; }
-
+        public bool ControlarPorLote { get; set; } = false;
         [MaxLength(500)]
         public string Observacoes { get; set; }
+
         public bool Ativo { get; set; } = true;
-        public DateTime DataCadastro { get; set; } = DateTime.Now;
-        
+        public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
+
+        public int UnidadeMedidaId { get; set; }
+        public int CategoriaProdutoId { get; set; }
+
+        public UnidadeMedida UnidadeMedida { get; set; }
+        public CategoriaProduto CategoriaProduto { get; set; }  
     }
 }

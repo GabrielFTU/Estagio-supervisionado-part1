@@ -1,32 +1,42 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
 
 namespace Valisys_Production.Models
 {
     public enum StatusLote
     {
-        Pendente,
-        EmProducao,
-        Concluido,
-        Cancelado
+           Pendente = 1,
+           Concluido = 2,
+           Cancelado = 3,
+           EmProducao = 4
     }
     public class Lote
     {
         [Key]
         public int Id { get; set; }
 
-        public bool Ativo { get; set; } = true;
-        public DateTime DataCadastro { get; set; } = DateTime.Now;
-        public DateTime DataInicio { get; set; }
-        public DateTime DataFim { get; set; }   
-        public StatusLote Status { get; set; } = StatusLote.Pendente;
-        public int Quantidade { get; set; }
-        public int ProdutoId { get; set; }
-        public int AlmoxarifadoId { get; set; }
-        public int FornecedorId { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public string CodigoLote { get; set; }
+
+        [MaxLength(500)]
+        public string Descricao { get; set; }   
+
+        public StatusLote statusLote { get; set; } = StatusLote.Pendente;
+        public DateTime DataAbertura { get; set; } = DateTime.UtcNow;  
+        public DateTime? DataConclusao { get; set; } = null;
+
         [MaxLength(500)]
         public string Observacoes { get; set; }
+        
+        public int ProdutoId { get; set; }  
+
         public Produto Produto { get; set; }
+        public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; } 
+        public int AlmoxarifadoId { get; set; }
         public Almoxarifado Almoxarifado { get; set; }
+
 
     }
 }
