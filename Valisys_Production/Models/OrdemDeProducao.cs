@@ -19,6 +19,7 @@ namespace Valisys_Production.Models
             [MaxLength(50)]
             public string CodigoOrdem { get; set; }
 
+            public int Quantidade { get; set; }
             public StatusOrdemDeProducao Status { get; set; } = StatusOrdemDeProducao.Ativa;
 
             public DateTime DataInicio { get; set; } = DateTime.UtcNow;
@@ -32,6 +33,7 @@ namespace Valisys_Production.Models
             public int AlmoxarifadoId { get; set; }
             public int FaseAtualId { get; set; }
             public int? LoteId { get; set; }
+            
 
             public Produto Produto { get; set; }
             public Almoxarifado Almoxarifado { get; set; }

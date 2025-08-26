@@ -24,15 +24,24 @@ namespace Valisys_Production.Repositories
         }
         public async Task<Perfil?> GetByIdAsync(int id)
         {
-            return await _context.Perfis.FindAsync(id);
+            return await _context.Perfis
+
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
+
         }
         public async Task<IEnumerable<Perfil>> GetAllAsync()
         {
-            return await _context.Perfis.ToListAsync();
+            return await _context.Perfis
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(Perfil perfil)
         {
+            var exists = await _context.Perfis.AnyAsync(p => p.Id == perfil.Id);
+            if (!exists)
+                throw new KeyNotFoundException("$Perfil {perfil.Id} não encontrado.");
             _context.Perfis.Update(perfil);
             await _context.SaveChangesAsync();
         }
