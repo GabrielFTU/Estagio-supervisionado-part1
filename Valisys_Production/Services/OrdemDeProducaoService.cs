@@ -11,33 +11,44 @@ namespace Valisys_Production.Services
     {
         private readonly IOrdemDeProducaoRepository _repository;
         private readonly IProdutoRepository _produtoRepository;
+        private readonly IMovimentacaoService _movimentacaoService;
 
-        public OrdemDeProducaoService(IOrdemDeProducaoRepository repository, IProdutoRepository produtoRepository)
+        public OrdemDeProducaoService(IOrdemDeProducaoRepository repository, IProdutoRepository produtoRepository, IMovimentacaoService movimentacaoService)
         {
             _repository = repository;
             _produtoRepository = produtoRepository;
+            _movimentacaoService = movimentacaoService;
         }
 
         public async Task<OrdemDeProducao> CreateAsync(OrdemDeProducao ordemDeProducao)
         {
-            // Validações básicas
             if (string.IsNullOrEmpty(ordemDeProducao.CodigoOrdem))
             {
                 throw new ArgumentException("O código da Ordem de Produção é obrigatório.");
             }
 
-            // Lógica de negócio: Verificar a regra de lote
             var produto = await _produtoRepository.GetByIdAsync(ordemDeProducao.ProdutoId);
             if (produto != null && produto.ControlarPorLote && ordemDeProducao.LoteId == null)
             {
                 throw new ArgumentException("Este produto deve ser controlado por lote. 'LoteId' é obrigatório.");
             }
-
-            // Define o status inicial e as datas
             ordemDeProducao.Status = StatusOrdemDeProducao.Ativa;
             ordemDeProducao.DataInicio = DateTime.UtcNow;
 
-            return await _repository.AddAsync(ordemDeProducao);
+            var novaOrdem = await _repository.AddAsync(ordemDeProducao);
+            var primeiraMovimentacao = new Movimentacao
+            {
+                OrdemDeProducaoId = novaOrdem.Id,
+                AlmoxarifadoOrigemId = 1,
+                AlmoxarifadoDestinoId = novaOrdem.AlmoxarifadoId,
+                UsuarioId = 1,
+                Observacoes = "Criação de O.P. e entrada inicial no rastreamento.",
+                DataMovimentacao = DateTime.UtcNow
+            };
+
+            await _movimentacaoService.CreateAsync(primeiraMovimentacao);
+
+            return novaOrdem;
         }
 
         public async Task<OrdemDeProducao?> GetByIdAsync(int id)

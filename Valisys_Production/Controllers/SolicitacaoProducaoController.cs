@@ -59,5 +59,24 @@ namespace Valisys_Production.Controllers
             await _service.DeleteAsync(id);
             return NoContent();
         }
+
+        [HttpPost("{solicitacaoId}/aprovar")]
+        public async Task<ActionResult<List<OrdemDeProducao>>> AprovarSolicitacao(int solicitacaoId, [FromQuery] int usuarioAprovadorId)
+
+        {
+            try
+            {
+                var ordensGeradas = await _service.AprovarSolicitacaoAsync(solicitacaoId, usuarioAprovadorId);
+                return Ok(ordensGeradas);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

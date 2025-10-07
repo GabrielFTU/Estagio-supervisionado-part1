@@ -3,6 +3,8 @@ using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;   
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
 {
@@ -11,10 +13,12 @@ namespace Valisys_Production.Controllers
     public class ProdutosController : ControllerBase
     {
         private readonly IProdutoService _service;
+        private readonly IMapper _mapper;   
 
-        public ProdutosController(IProdutoService service)
+        public ProdutosController(IProdutoService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -34,8 +38,9 @@ namespace Valisys_Production.Controllers
             }return Ok(produto);
         }
         [HttpPost]
-        public async Task<ActionResult<Produto>> PostProduto(Produto produto)
+        public async Task<ActionResult<Produto>> PostProduto([FromBody] ProdutoCreateDto produtoDto)
         {
+            var produto = _mapper.Map<Produto>(produtoDto);
             var newProduto = await _service.CreateAsync(produto);
             return CreatedAtAction(nameof(GetById), new { id = newProduto.Id }, newProduto);
         }

@@ -11,5 +11,6 @@ namespace Valisys_Production.Services.Interfaces
         Task<IEnumerable<SolicitacaoProducao>> GetAllAsync();
         Task UpdateAsync(SolicitacaoProducao solicitacaoProducao);
         Task DeleteAsync(int id);
+        Task<List<OrdemDeProducao>> AprovarSolicitacaoAsync(int solicitacaoId, int usuarioAprovadorId);
     }
 }

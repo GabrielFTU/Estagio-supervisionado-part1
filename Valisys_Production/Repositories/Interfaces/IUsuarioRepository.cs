@@ -11,5 +11,6 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<IEnumerable<Usuario>> GetAllAsync();
         Task UpdateAsync(Usuario usuario);
         Task DeleteAsync(int id);
+        Task<Usuario?> GetByEmailAsync(string email);
     }
 }

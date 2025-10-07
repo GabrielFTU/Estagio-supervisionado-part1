@@ -23,7 +23,7 @@ namespace Valisys_Production.Services
             {
                 throw new ArgumentException ("O nome do produto não pode ser vazio.");
             }
-            produto.DataCadastro = DateTime.Now;
+            produto.DataCadastro = DateTime.UtcNow;
             return await _repository.AddAsync(produto); 
         }
         public async Task<Produto> GetByIdAsync(int id)

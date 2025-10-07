@@ -12,8 +12,8 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250819190052_AdicionarNovasEntidades")]
-    partial class AdicionarNovasEntidades
+    [Migration("20251001171116_ConfiguracaoFinalCompleta3")]
+    partial class ConfiguracaoFinalCompleta3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,7 +93,7 @@ namespace Valisys_Production.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CategoriaProdutos");
+                    b.ToTable("CategoriasProduto");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.FaseProducao", b =>
@@ -119,7 +119,37 @@ namespace Valisys_Production.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FaseProducoes");
+                    b.ToTable("FasesProducao");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Descricao = "Início da montagem do chassi.",
+                            Nome = "MONTAGEM INICIAL",
+                            Ordem = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Descricao = "Área de preparação e pintura.",
+                            Nome = "PINTURA",
+                            Ordem = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Descricao = "Instalação de motor e acabamentos.",
+                            Nome = "MONTAGEM FINAL",
+                            Ordem = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Descricao = "Checagem final antes da expedição.",
+                            Nome = "TESTE DE QUALIDADE",
+                            Ordem = 4
+                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Fornecedor", b =>
@@ -298,10 +328,16 @@ namespace Valisys_Production.Migrations
                     b.Property<int>("ProdutoId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Quantidade")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SolicitacaoProducaoId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("TipoOrdemDeProducaoId")
+                    b.Property<int>("TipoOrdemDeProducaoId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -314,9 +350,12 @@ namespace Valisys_Production.Migrations
 
                     b.HasIndex("ProdutoId");
 
+                    b.HasIndex("SolicitacaoProducaoId")
+                        .IsUnique();
+
                     b.HasIndex("TipoOrdemDeProducaoId");
 
-                    b.ToTable("OrdemDeProducoes");
+                    b.ToTable("OrdensDeProducao");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Perfil", b =>
@@ -334,7 +373,24 @@ namespace Valisys_Production.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Perfils");
+                    b.ToTable("Perfis");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nome = "Administrador"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nome = "Gerente PCP"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nome = "Encarregado Producao"
+                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Produto", b =>
@@ -397,6 +453,13 @@ namespace Valisys_Production.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CodigoSolicitacao")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DataAprovacao")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("DataSolicitacao")
                         .HasColumnType("timestamp with time zone");
 
@@ -414,18 +477,55 @@ namespace Valisys_Production.Migrations
                     b.Property<int>("ProdutoId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Quantidade")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TipoOrdemDeProducaoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsuarioAprovacaoId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EncarregadoId");
 
-                    b.HasIndex("OrdemDeProducaoId");
+                    b.HasIndex("ProdutoId");
+
+                    b.HasIndex("TipoOrdemDeProducaoId");
+
+                    b.HasIndex("UsuarioAprovacaoId");
+
+                    b.ToTable("SolicitacoesProducao");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducaoItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProdutoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantidade")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SolicitacaoProducaoId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ProdutoId");
 
-                    b.ToTable("SolicitacaoProducaos");
+                    b.HasIndex("SolicitacaoProducaoId");
+
+                    b.ToTable("SolicitacaoProducaoItens");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.TipoOrdemDeProducao", b =>
@@ -448,7 +548,7 @@ namespace Valisys_Production.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("tipoOrdemDeProducaos");
+                    b.ToTable("TiposDeOrdemDeProducao");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.UnidadeMedida", b =>
@@ -464,9 +564,34 @@ namespace Valisys_Production.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("Sigla")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("UnidadeMedidas");
+                    b.ToTable("UnidadesMedida");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nome = "Unidade",
+                            Sigla = "UN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nome = "Kilograma",
+                            Sigla = "KG"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nome = "Metro",
+                            Sigla = "M"
+                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Usuario", b =>
@@ -582,9 +707,17 @@ namespace Valisys_Production.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Valisys_Production.Models.TipoOrdemDeProducao", null)
+                    b.HasOne("Valisys_Production.Models.SolicitacaoProducao", "SolicitacaoProducao")
+                        .WithOne("OrdemDeProducao")
+                        .HasForeignKey("Valisys_Production.Models.OrdemDeProducao", "SolicitacaoProducaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valisys_Production.Models.TipoOrdemDeProducao", "TipoOrdemDeProducao")
                         .WithMany("OrdensDeProducao")
-                        .HasForeignKey("TipoOrdemDeProducaoId");
+                        .HasForeignKey("TipoOrdemDeProducaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Almoxarifado");
 
@@ -593,6 +726,10 @@ namespace Valisys_Production.Migrations
                     b.Navigation("Lote");
 
                     b.Navigation("Produto");
+
+                    b.Navigation("SolicitacaoProducao");
+
+                    b.Navigation("TipoOrdemDeProducao");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Produto", b =>
@@ -622,21 +759,50 @@ namespace Valisys_Production.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Valisys_Production.Models.OrdemDeProducao", "OrdemDeProducao")
-                        .WithMany()
-                        .HasForeignKey("OrdemDeProducaoId");
-
                     b.HasOne("Valisys_Production.Models.Produto", "Produto")
                         .WithMany()
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Valisys_Production.Models.TipoOrdemDeProducao", "TipoOrdemDeProducao")
+                        .WithMany()
+                        .HasForeignKey("TipoOrdemDeProducaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valisys_Production.Models.Usuario", "UsuarioAprovacao")
+                        .WithMany()
+                        .HasForeignKey("UsuarioAprovacaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Encarregado");
 
-                    b.Navigation("OrdemDeProducao");
+                    b.Navigation("Produto");
+
+                    b.Navigation("TipoOrdemDeProducao");
+
+                    b.Navigation("UsuarioAprovacao");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducaoItem", b =>
+                {
+                    b.HasOne("Valisys_Production.Models.Produto", "Produto")
+                        .WithMany()
+                        .HasForeignKey("ProdutoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Valisys_Production.Models.SolicitacaoProducao", "SolicitacaoProducao")
+                        .WithMany("Itens")
+                        .HasForeignKey("SolicitacaoProducaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Produto");
+
+                    b.Navigation("SolicitacaoProducao");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Usuario", b =>
@@ -668,6 +834,14 @@ namespace Valisys_Production.Migrations
             modelBuilder.Entity("Valisys_Production.Models.Perfil", b =>
                 {
                     b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducao", b =>
+                {
+                    b.Navigation("Itens");
+
+                    b.Navigation("OrdemDeProducao")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.TipoOrdemDeProducao", b =>

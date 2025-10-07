@@ -5,7 +5,7 @@
 namespace Valisys_Production.Migrations
 {
     /// <inheritdoc />
-    public partial class AdicionarNovasEntidades : Migration
+    public partial class ConfiguracaoFinalCompleta3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

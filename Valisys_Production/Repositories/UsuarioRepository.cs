@@ -52,5 +52,11 @@ namespace Valisys_Production.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<Usuario?> GetByEmailAsync(string email)
+        {
+            return await _context.Usuarios
+             .Include(u => u.Perfil)
+             .FirstOrDefaultAsync(u => u.Email == email);
+        }
     }
 }
