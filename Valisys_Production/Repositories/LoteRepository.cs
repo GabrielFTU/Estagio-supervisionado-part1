@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Valisys_Production.Repositories
 {
-    public class LoteRepository : ILoteRepository
+    public class LoteRepository 
     {
         private readonly ApplicationDbContext _context;
 
@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return lote;
         }
 
-        public async Task<Lote?> GetByIdAsync(int id)
+        public async Task<Lote?> GetByIdAsync(Guid id)
         {
             return await _context.Lotes
                 .Include(l => l.Produto)
@@ -45,7 +45,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var lote = await _context.Lotes.FindAsync(id);
             if (lote != null)

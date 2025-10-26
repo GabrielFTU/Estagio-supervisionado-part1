@@ -25,7 +25,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UnidadeMedida>> GetById(int id)
+        public async Task<ActionResult<UnidadeMedida>> GetById(Guid id)
         {
             var unidadeMedida = await _service.GetByIdAsync(id);
             if (unidadeMedida == null)
@@ -43,7 +43,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUnidadeMedida(int id, UnidadeMedida unidadeMedida)
+        public async Task<IActionResult> PutUnidadeMedida(Guid id, UnidadeMedida unidadeMedida)
         {
             if (id != unidadeMedida.Id)
             {
@@ -54,7 +54,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUnidadeMedida(int id)
+        public async Task<IActionResult> DeleteUnidadeMedida(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

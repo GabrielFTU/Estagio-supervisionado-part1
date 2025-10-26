@@ -14,8 +14,8 @@ namespace Valisys_Production.Models
     public class SolicitacaoProducao
     {
         //Properties
-        [Key] 
-        public int Id { get; set; } 
+        [Key]
+        public Guid Id { get; set; } = Guid.Empty;
 
         public string CodigoSolicitacao { get; set; } = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 

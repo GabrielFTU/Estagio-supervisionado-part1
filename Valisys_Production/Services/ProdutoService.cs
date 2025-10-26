@@ -26,7 +26,7 @@ namespace Valisys_Production.Services
             produto.DataCadastro = DateTime.UtcNow;
             return await _repository.AddAsync(produto); 
         }
-        public async Task<Produto> GetByIdAsync(int id)
+        public async Task<Produto> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -42,7 +42,7 @@ namespace Valisys_Production.Services
             }
             await _repository.UpdateAsync(produto);
         }
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var produto = await _repository.GetByIdAsync(id);
             if (produto == null)

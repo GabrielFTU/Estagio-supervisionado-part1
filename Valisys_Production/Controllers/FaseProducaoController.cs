@@ -25,7 +25,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<FaseProducao>> GetById(int id)
+        public async Task<ActionResult<FaseProducao>> GetById(Guid id)
         {
             var faseProducao = await _service.GetByIdAsync(id);
             if (faseProducao == null)
@@ -43,18 +43,14 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFaseProducao(int id, FaseProducao faseProducao)
+        public async Task<IActionResult> PutFaseProducao(Guid id, FaseProducao faseProducao)
         {
-            if (id != faseProducao.Id)
-            {
-                return BadRequest();
-            }
             await _service.UpdateAsync(faseProducao);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFaseProducao(int id)
+        public async Task<IActionResult> DeleteFaseProducao(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

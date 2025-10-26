@@ -7,9 +7,9 @@ namespace Valisys_Production.Repositories.Interfaces
     public interface IPerfilRepository
     {
         Task<Perfil> AddAsync(Perfil perfil);
-        Task<Perfil?> GetByIdAsync(int id);
+        Task<Perfil?> GetByIdAsync(Guid id);
         Task<IEnumerable<Perfil>> GetAllAsync();
         Task UpdateAsync(Perfil perfil);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

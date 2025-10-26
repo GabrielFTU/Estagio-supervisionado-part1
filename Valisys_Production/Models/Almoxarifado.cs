@@ -5,7 +5,7 @@ namespace Valisys_Production.Models
     public class Almoxarifado
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(255)]

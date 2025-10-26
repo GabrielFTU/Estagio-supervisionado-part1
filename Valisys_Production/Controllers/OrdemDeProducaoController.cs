@@ -31,7 +31,7 @@ namespace Valisys_Production.Controllers
 
         //Busca O.P. Por ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrdemDeProducao>> GetById(int id)
+        public async Task<ActionResult<OrdemDeProducao>> GetById(Guid id)
         {
             var ordemDeProducao = await _service.GetByIdAsync(id);
             if (ordemDeProducao == null)
@@ -58,7 +58,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrdemDeProducao(int id, OrdemDeProducao ordemDeProducao)
+        public async Task<IActionResult> PutOrdemDeProducao(Guid id, OrdemDeProducao ordemDeProducao)
         {
             if (id != ordemDeProducao.Id)
             {
@@ -69,7 +69,7 @@ namespace Valisys_Production.Controllers
         }
         //Deleta a O.P. filtrando por ID
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrdemDeProducao(int id)
+        public async Task<IActionResult> DeleteOrdemDeProducao(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

@@ -51,7 +51,7 @@ namespace Valisys_Production.Services
             return novaOrdem;
         }
 
-        public async Task<OrdemDeProducao?> GetByIdAsync(int id)
+        public async Task<OrdemDeProducao?> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -70,7 +70,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(ordemDeProducao);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

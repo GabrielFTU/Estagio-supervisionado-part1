@@ -43,7 +43,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCategoriaProduto(int id, CategoriaProduto categoriaProduto)
+        public async Task<IActionResult> PutCategoriaProduto(Guid id, CategoriaProduto categoriaProduto)
         {
             if (id != categoriaProduto.Id)
             {

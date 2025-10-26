@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return usuario;
         }
 
-        public async Task<Usuario?> GetByIdAsync(int id)
+        public async Task<Usuario?> GetByIdAsync(Guid id)
         {
             return await _context.Usuarios
                 .Include(u => u.Perfil)
@@ -43,7 +43,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario != null)

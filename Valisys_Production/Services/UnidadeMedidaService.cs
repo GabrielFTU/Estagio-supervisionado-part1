@@ -27,7 +27,7 @@ namespace Valisys_Production.Services
             return await _repository.AddAsync(unidadeMedida);
         }
 
-        public async Task<UnidadeMedida?> GetByIdAsync(int id)
+        public async Task<UnidadeMedida?> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -46,7 +46,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(unidadeMedida);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

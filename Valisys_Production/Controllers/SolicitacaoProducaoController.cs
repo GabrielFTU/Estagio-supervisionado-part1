@@ -25,7 +25,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SolicitacaoProducao>> GetById(int id)
+        public async Task<ActionResult<SolicitacaoProducao>> GetById(Guid id)
         {
             var solicitacao = await _service.GetByIdAsync(id);
             if (solicitacao == null)
@@ -43,7 +43,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSolicitacaoProducao(int id, SolicitacaoProducao solicitacaoProducao)
+        public async Task<IActionResult> PutSolicitacaoProducao(Guid id, SolicitacaoProducao solicitacaoProducao)
         {
             if (id != solicitacaoProducao.Id)
             {
@@ -54,14 +54,14 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSolicitacaoProducao(int id)
+        public async Task<IActionResult> DeleteSolicitacaoProducao(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();
         }
 
         [HttpPost("{solicitacaoId}/aprovar")]
-        public async Task<ActionResult<List<OrdemDeProducao>>> AprovarSolicitacao(int solicitacaoId, [FromQuery] int usuarioAprovadorId)
+        public async Task<ActionResult<List<OrdemDeProducao>>> AprovarSolicitacao(Guid solicitacaoId, [FromQuery] Guid usuarioAprovadorId)
 
         {
             try

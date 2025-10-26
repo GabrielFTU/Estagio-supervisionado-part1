@@ -44,7 +44,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerfil(int id, Perfil perfil)
+        public async Task<IActionResult> PutPerfil(Guid id, Perfil perfil)
         {
             if (id != perfil.Id)
             {

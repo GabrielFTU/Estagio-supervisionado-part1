@@ -40,7 +40,7 @@ namespace Valisys_Production.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newMovimentacao.Id }, newMovimentacao);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMovimentacao(int id, Movimentacao movimentacao)
+        public async Task<IActionResult> PutMovimentacao(Guid id, Movimentacao movimentacao)
         {
             if (id != movimentacao.Id)
             {

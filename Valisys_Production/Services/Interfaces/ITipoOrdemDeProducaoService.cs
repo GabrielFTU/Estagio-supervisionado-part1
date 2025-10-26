@@ -7,9 +7,9 @@ namespace Valisys_Production.Services.Interfaces
     public interface ITipoOrdemDeProducaoService
     {
         Task<TipoOrdemDeProducao> CreateAsync(TipoOrdemDeProducao tipoOrdemDeProducao);
-        Task<TipoOrdemDeProducao?> GetByIdAsync(int id);
+        Task<TipoOrdemDeProducao?> GetByIdAsync(Guid id);
         Task<IEnumerable<TipoOrdemDeProducao>> GetAllAsync();
         Task UpdateAsync(TipoOrdemDeProducao tipoOrdemDeProducao);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

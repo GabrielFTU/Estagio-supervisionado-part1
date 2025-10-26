@@ -24,7 +24,7 @@ namespace Valisys_Production.Repositories
             return unidadeMedida;
         }
 
-        public async Task<UnidadeMedida?> GetByIdAsync(int id)
+        public async Task<UnidadeMedida?> GetByIdAsync(Guid id)
         {
             return await _context.UnidadesMedida
                 .AsNoTracking()
@@ -42,7 +42,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var unidadeMedida = await _context.UnidadesMedida.FindAsync(id);
             if (unidadeMedida != null)

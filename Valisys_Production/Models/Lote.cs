@@ -14,24 +14,21 @@ namespace Valisys_Production.Models
     public class Lote
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(50)]
         public string CodigoLote { get; set; }
-
         [MaxLength(500)]
         public string Descricao { get; set; }   
-
         public StatusLote statusLote { get; set; } = StatusLote.Pendente;
         public DateTime DataAbertura { get; set; } = DateTime.UtcNow;  
         public DateTime? DataConclusao { get; set; } = null;
-
         [MaxLength(500)]
         public string Observacoes { get; set; }
         
+        //FKs
         public int ProdutoId { get; set; }  
-
         public Produto Produto { get; set; }
         public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; } 
         public int AlmoxarifadoId { get; set; }

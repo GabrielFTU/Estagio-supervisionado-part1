@@ -7,7 +7,7 @@ namespace Valisys_Production.Models
     public class UnidadeMedida
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
 
         [Required]
         [MaxLength(50)]

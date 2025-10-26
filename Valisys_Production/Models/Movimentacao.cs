@@ -5,8 +5,8 @@ namespace Valisys_Production.Models
 {
     public class Movimentacao
     {
-        [Key] 
-        public int Id { get; set; } 
+        [Key]
+        public Guid Id { get; set; } = Guid.Empty;
 
         public DateTime DataMovimentacao { get; set; } = DateTime.UtcNow;
 

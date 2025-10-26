@@ -45,7 +45,7 @@ namespace Valisys_Production.Services
             return await _repository.AddAsync(solicitacaoProducao);
         }
 
-        public async Task<SolicitacaoProducao?> GetByIdAsync(int id) =>
+        public async Task<SolicitacaoProducao?> GetByIdAsync(Guid id) =>
             await _repository.GetByIdAsync(id);
 
         public async Task<IEnumerable<SolicitacaoProducao>> GetAllAsync() =>
@@ -54,10 +54,10 @@ namespace Valisys_Production.Services
         public async Task UpdateAsync(SolicitacaoProducao solicitacaoProducao) =>
             await _repository.UpdateAsync(solicitacaoProducao);
 
-        public async Task DeleteAsync(int id) =>
+        public async Task DeleteAsync(Guid id) =>
             await _repository.DeleteAsync(id);
 
-        public async Task<List<OrdemDeProducao>> AprovarSolicitacaoAsync(int solicitacaoId, int usuarioAprovadorId)
+        public async Task<List<OrdemDeProducao>> AprovarSolicitacaoAsync(Guid solicitacaoId, int usuarioAprovadorId)
         {
             var solicitacao = await _repository.GetByIdAsync(solicitacaoId);
             if (solicitacao == null)
@@ -77,7 +77,7 @@ namespace Valisys_Production.Services
                 var novaOrdem = new OrdemDeProducao
                 {
                     CodigoOrdem = $"OP-{solicitacao.Id}-{item.ProdutoId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
-                    SolicitacaoProducaoId = solicitacao.Id,
+                    SolicitacaoProducaoId = solicitacao.id,
                     ProdutoId = item.ProdutoId,
                     Quantidade = item.Quantidade,
                     TipoOrdemDeProducaoId = solicitacao.TipoOrdemDeProducaoId,

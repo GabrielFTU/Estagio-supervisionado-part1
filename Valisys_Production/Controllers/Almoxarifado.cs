@@ -43,7 +43,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAlmoxarifado(int id, Almoxarifado almoxarifado)
+        public async Task<IActionResult> PutAlmoxarifado(Guid id, Almoxarifado almoxarifado)
         {
             if (id != almoxarifado.Id)
             {

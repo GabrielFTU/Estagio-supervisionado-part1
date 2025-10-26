@@ -45,7 +45,7 @@ namespace Valisys_Production.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newProduto.Id }, newProduto);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduto (int id, Produto produto)
+        public async Task<IActionResult> PutProduto (Guid id, Produto produto)
         {
             if (id != produto.Id)
             {

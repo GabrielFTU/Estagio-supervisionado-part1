@@ -18,7 +18,7 @@ public class FornecedorRepository : IFornecedorRepository
         await _context.SaveChangesAsync();
         return fornecedor;
     }
-    public async Task<Fornecedor> GetByIdAsync(int id) => await _context.Fornecedores.FindAsync(id);
+    public async Task<Fornecedor> GetByIdAsync(Guid id) => await _context.Fornecedores.FindAsync(id);
     public async Task<IEnumerable<Fornecedor>> GetAllAsync()
     {
         return await _context.Fornecedores.ToListAsync();
@@ -28,7 +28,7 @@ public class FornecedorRepository : IFornecedorRepository
     _context.Fornecedores.Update(fornecedor);
     await _context.SaveChangesAsync();
 }
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(Guid id)
 {
     var fornecedor = await _context.Fornecedores.FindAsync(id);
     if (fornecedor != null)

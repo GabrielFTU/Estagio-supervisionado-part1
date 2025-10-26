@@ -24,7 +24,7 @@ namespace Valisys_Production.Services
             almoxarifado.DataCadastro = DateTime.Now;
             return await _repository.AddAsync(almoxarifado);
         }
-        public async Task<Almoxarifado> GetByIdAsync(int id)
+        public async Task<Almoxarifado> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -41,7 +41,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(almoxarifado);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

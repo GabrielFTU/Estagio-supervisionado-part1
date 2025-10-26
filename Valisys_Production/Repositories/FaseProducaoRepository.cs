@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return faseProducao;
         }
 
-        public async Task<FaseProducao?> GetByIdAsync(int id)
+        public async Task<FaseProducao?> GetByIdAsync(Guid id)
         {
             return await _context.FasesProducao
                 .AsNoTracking()
@@ -41,7 +41,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var faseProducao = await _context.FasesProducao.FindAsync(id);
             if (faseProducao != null)

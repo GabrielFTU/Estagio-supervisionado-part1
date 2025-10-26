@@ -3,6 +3,7 @@ using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
 {
@@ -25,7 +26,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Lote>> GetById(int id)
+        public async Task<ActionResult<Lote>> GetById(Guid id)
         {
             var lote = await _service.GetByIdAsync(id);
             if (lote == null)
@@ -36,14 +37,27 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Lote>> PostLote(Lote lote)
+        public async Task<ActionResult<Lote>> PostLote([FromBody] LoteCreateDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var lote = new Lote
+            {
+                CodigoLote = dto.CodigoLote,
+                Descricao = dto.Descricao,
+                Observacoes = dto.Observacoes,
+                ProdutoId = dto.ProdutoId,
+                AlmoxarifadoId = dto.AlmoxarifadoId
+            };
+
             var newLote = await _service.CreateAsync(lote);
             return CreatedAtAction(nameof(GetById), new { id = newLote.Id }, newLote);
         }
 
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLote(int id, Lote lote)
+        public async Task<IActionResult> PutLote(Guid id, Lote lote)
         {
             if (id != lote.Id)
             {
@@ -54,7 +68,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLote(int id)
+        public async Task<IActionResult> DeleteLote(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

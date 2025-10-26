@@ -21,7 +21,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
             return movimentacao;
         }
-        public async Task<Movimentacao?> GetByIdAsync(int id)
+        public async Task<Movimentacao?> GetByIdAsync(Guid id)
         {
             return await _context.Movimentacoes
                 .AsNoTracking()
@@ -47,7 +47,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var movimentacao = await _context.Movimentacoes.FindAsync(id);
             if (movimentacao != null)

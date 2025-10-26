@@ -1,32 +1,26 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Net.NetworkInformation;
 
-namespace Valisys_Production.Models   
+namespace Valisys_Production.DTOs
 {
-    public enum TipoDocumento
+    public class FornecedorCreateDto
     {
-        CPF = 1,
-        CNPJ = 2
-    }
-    public class Fornecedor
-    {
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
         [Required]
         [MaxLength(255)]
-        public string Nome { get; set; }    
+        public string Nome { get;  set; }
 
         [Required]
-        [MaxLength(20)] 
+        [MaxLength(20)]
         public string Documento { get; set; }
-        public TipoDocumento TipoDocumento { get; set; }
+
+        [Required]
+        public int TipoDocumento { get; set; }
 
         [MaxLength(255)]
         public string Endereco { get; set; }
 
         [Required]
         [MaxLength(100)]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
@@ -34,9 +28,10 @@ namespace Valisys_Production.Models
         public string Telefone { get; set; }
 
         public bool Ativo { get; set; } = true;
-        public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
 
         [MaxLength(500)]
-        public string Observacoes { get; set; } 
+        public string Observacoes { get; set; }
     }
 }
+
+

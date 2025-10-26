@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return tipoOrdemDeProducao;
         }
 
-        public async Task<TipoOrdemDeProducao?> GetByIdAsync(int id)
+        public async Task<TipoOrdemDeProducao?> GetByIdAsync(Guid id)
         {
             return await _context.TiposDeOrdemDeProducao
                 .AsNoTracking()
@@ -41,7 +41,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var tipoOrdemDeProducao = await _context.TiposDeOrdemDeProducao.FindAsync(id);
             if (tipoOrdemDeProducao != null)

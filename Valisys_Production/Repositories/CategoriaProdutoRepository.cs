@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return categoriaProduto;
         }
 
-        public async Task<CategoriaProduto?> GetByIdAsync(int id)
+        public async Task<CategoriaProduto?> GetByIdAsync(Guid id)
         {
             return await _context.CategoriasProduto
                 .AsNoTracking()
@@ -41,7 +41,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var categoriaProduto = await _context.CategoriasProduto.FindAsync(id);
             if (categoriaProduto != null)

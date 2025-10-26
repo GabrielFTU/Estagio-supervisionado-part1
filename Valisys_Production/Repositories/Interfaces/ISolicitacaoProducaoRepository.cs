@@ -5,9 +5,9 @@ namespace Valisys_Production.Repositories.Interfaces
     public interface ISolicitacaoProducaoRepository
     {
         Task <SolicitacaoProducao> AddAsync(SolicitacaoProducao solicitacaoProducao);
-        Task<SolicitacaoProducao> GetByIdAsync(int id);
+        Task<SolicitacaoProducao> GetByIdAsync(Guid id);
         Task<IEnumerable<SolicitacaoProducao>> GetAllAsync();
         Task UpdateAsync(SolicitacaoProducao solicitacaoProducao);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

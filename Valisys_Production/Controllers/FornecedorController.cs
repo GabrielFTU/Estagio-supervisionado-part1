@@ -26,7 +26,7 @@ namespace Valisys_Production.Controllers
             return Ok(fornecedores);
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var fornecedor = await _service.GetByIdAsync(id);
             if (fornecedor == null)
@@ -38,11 +38,15 @@ namespace Valisys_Production.Controllers
         [HttpPost]
         public async Task<ActionResult<Fornecedor>> PostFornecedor(Fornecedor fornecedor)
         {
-            var newFornecedor = await _service.CreateAsync(fornecedor);
-            return CreatedAtAction(nameof(GetById), new { id = newFornecedor.Id }, newFornecedor);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            {
+                var newFornecedor = await _service.CreateAsync(fornecedor);
+                return CreatedAtAction(nameof(GetById), new { id = newFornecedor.Id }, newFornecedor);
+            }
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFornecedor(int id, Fornecedor fornecedor)
+        public async Task<IActionResult> PutFornecedor(Guid id, Fornecedor fornecedor)
         {
             if (id != fornecedor.Id)
             {
@@ -52,7 +56,7 @@ namespace Valisys_Production.Controllers
             return NoContent();
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFornecedor(int id)
+        public async Task<IActionResult> DeleteFornecedor(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

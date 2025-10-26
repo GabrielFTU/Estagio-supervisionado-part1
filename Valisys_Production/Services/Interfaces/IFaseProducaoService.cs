@@ -7,9 +7,9 @@ namespace Valisys_Production.Services.Interfaces
     public interface IFaseProducaoService
     {
         Task<FaseProducao> CreateAsync(FaseProducao faseProducao);
-        Task<FaseProducao?> GetByIdAsync(int id);
+        Task<FaseProducao?> GetByIdAsync(Guid id);
         Task<IEnumerable<FaseProducao>> GetAllAsync();
         Task UpdateAsync(FaseProducao faseProducao);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

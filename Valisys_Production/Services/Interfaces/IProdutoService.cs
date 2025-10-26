@@ -7,9 +7,9 @@ namespace Valisys_Production.Services.Interfaces
     public interface IProdutoService
     {
         Task<Produto> CreateAsync(Produto produto);
-        Task<Produto> GetByIdAsync(int id);
+        Task<Produto> GetByIdAsync(Guid id);
         Task<IEnumerable<Produto>> GetAllAsync();
         Task UpdateAsync(Produto produto);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(Guid id);
     }
 }

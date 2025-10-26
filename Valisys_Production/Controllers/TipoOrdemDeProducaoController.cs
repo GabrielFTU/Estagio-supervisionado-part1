@@ -25,7 +25,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TipoOrdemDeProducao>> GetById(int id)
+        public async Task<ActionResult<TipoOrdemDeProducao>> GetById(Guid id)
         {
             var tipo = await _service.GetByIdAsync(id);
             if (tipo == null)
@@ -43,7 +43,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTipoOrdemDeProducao(int id, TipoOrdemDeProducao tipoOrdemDeProducao)
+        public async Task<IActionResult> PutTipoOrdemDeProducao(Guid id, TipoOrdemDeProducao tipoOrdemDeProducao)
         {
             if (id != tipoOrdemDeProducao.Id)
             {
@@ -54,7 +54,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTipoOrdemDeProducao(int id)
+        public async Task<IActionResult> DeleteTipoOrdemDeProducao(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

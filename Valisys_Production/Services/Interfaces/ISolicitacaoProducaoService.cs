@@ -7,10 +7,10 @@ namespace Valisys_Production.Services.Interfaces
     public interface ISolicitacaoProducaoService
     {
         Task<SolicitacaoProducao> CreateAsync(SolicitacaoProducao solicitacaoProducao);
-        Task<SolicitacaoProducao?> GetByIdAsync(int id);
+        Task<SolicitacaoProducao?> GetByIdAsync(Guid id);
         Task<IEnumerable<SolicitacaoProducao>> GetAllAsync();
         Task UpdateAsync(SolicitacaoProducao solicitacaoProducao);
-        Task DeleteAsync(int id);
-        Task<List<OrdemDeProducao>> AprovarSolicitacaoAsync(int solicitacaoId, int usuarioAprovadorId);
+        Task DeleteAsync(Guid id);
+        Task<List<OrdemDeProducao>> AprovarSolicitacaoAsync(Guid solicitacaoId, Guid usuarioAprovadorId);
     }
 }

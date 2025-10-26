@@ -72,7 +72,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
+        public async Task<IActionResult> PutUsuario(Guid id, Usuario usuario)
         {
             if (id != usuario.Id)
             {

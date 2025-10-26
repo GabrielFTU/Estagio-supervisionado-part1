@@ -20,7 +20,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
             return almoxarifado;
         }
-        public async Task<Almoxarifado> GetByIdAsync(int id)
+        public async Task<Almoxarifado> GetByIdAsync(Guid id)
         {
             return await _context.Almoxarifados.FindAsync(id);
         }
@@ -33,7 +33,7 @@ namespace Valisys_Production.Repositories
             _context.Almoxarifados.Update(almoxarifado);
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var almoxarifado = await _context.Almoxarifados.FindAsync(id);
             if(almoxarifado == null)

@@ -6,7 +6,7 @@ namespace Valisys_Production.Models
     public class Usuario
     {
         [Key] 
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
 
         [Required]
         [MaxLength(100)]

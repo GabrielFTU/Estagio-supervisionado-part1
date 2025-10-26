@@ -23,7 +23,7 @@ namespace Valisys_Production.Repositories
             return solicitacaoProducao;
         }
 
-        public async Task<SolicitacaoProducao?> GetByIdAsync(int id)
+        public async Task<SolicitacaoProducao?> GetByIdAsync(Guid id)
         {
             return await _context.SolicitacoesProducao
                 .AsNoTracking()
@@ -47,7 +47,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var solicitacaoProducao = await _context.SolicitacoesProducao.FindAsync(id);
             if (solicitacaoProducao != null)

@@ -18,6 +18,9 @@ namespace Valisys_Production.Services
 
         public async Task<Lote> CreateAsync(Lote lote)
         {
+            if (lote == null)
+                throw new ArgumentNullException(nameof(lote), "O lote não pode ser nulo");
+
             lote.statusLote = StatusLote.Pendente;
             lote.DataAbertura = DateTime.UtcNow;
             lote.DataAbertura = DateTime.UtcNow;
@@ -25,7 +28,7 @@ namespace Valisys_Production.Services
             return await _repository.AddAsync(lote);
         }
 
-        public async Task<Lote?> GetByIdAsync(int id)
+        public async Task<Lote?> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -40,7 +43,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(lote);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

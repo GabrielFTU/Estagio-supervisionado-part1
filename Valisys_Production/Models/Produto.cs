@@ -5,7 +5,7 @@ namespace Valisys_Production.Models
     public class Produto
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
 
         [Required]
         [MaxLength(255)]

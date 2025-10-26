@@ -22,7 +22,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
             return perfil;
         }
-        public async Task<Perfil?> GetByIdAsync(int id)
+        public async Task<Perfil?> GetByIdAsync(Guid id)
         {
             return await _context.Perfis
 
@@ -46,7 +46,7 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var perfil = await _context.Perfis.FindAsync(id);
             if (perfil != null)

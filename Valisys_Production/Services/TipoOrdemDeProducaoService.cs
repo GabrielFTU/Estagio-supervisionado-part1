@@ -25,7 +25,7 @@ namespace Valisys_Production.Services
             return await _repository.AddAsync(tipoOrdemDeProducao);
         }
 
-        public async Task<TipoOrdemDeProducao?> GetByIdAsync(int id)
+        public async Task<TipoOrdemDeProducao?> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -44,7 +44,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(tipoOrdemDeProducao);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

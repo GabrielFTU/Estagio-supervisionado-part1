@@ -5,8 +5,8 @@ namespace Valisys_Production.Models
 {
     public class FaseProducao
     {
-        [Key] 
-        public int Id { get; set; }
+        [Key]
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(100)]

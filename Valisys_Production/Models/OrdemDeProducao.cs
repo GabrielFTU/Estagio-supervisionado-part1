@@ -14,7 +14,7 @@ namespace Valisys_Production.Models
     {
         //Properties
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
         [Required]
         [MaxLength(50)]
         public string CodigoOrdem { get; set; }
