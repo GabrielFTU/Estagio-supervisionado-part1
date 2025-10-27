@@ -6,13 +6,11 @@ namespace Valisys_Production.Models
     public class SolicitacaoProducaoItem
     {
         [Key]
-        public Guid Id { get; set; } = Guid.Empty;
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-        [ForeignKey("SolicitacaoProducao")]
-        public int SolicitacaoProducaoId { get; set; }
+        public Guid SolicitacaoProducaoId { get; set; }
         public SolicitacaoProducao SolicitacaoProducao { get; set; }
 
-        [ForeignKey("Produto")]
         public Guid ProdutoId { get; set; }
         public Produto Produto { get; set; }
 

@@ -1,9 +1,7 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
+
 
 namespace Valisys_Production.Services
 {
@@ -21,8 +19,9 @@ namespace Valisys_Production.Services
             if (lote == null)
                 throw new ArgumentNullException(nameof(lote), "O lote não pode ser nulo");
 
+          
             lote.statusLote = StatusLote.Pendente;
-            lote.DataAbertura = DateTime.UtcNow;
+
             lote.DataAbertura = DateTime.UtcNow;
 
             return await _repository.AddAsync(lote);
@@ -43,7 +42,7 @@ namespace Valisys_Production.Services
             await _repository.UpdateAsync(lote);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id) 
         {
             await _repository.DeleteAsync(id);
         }

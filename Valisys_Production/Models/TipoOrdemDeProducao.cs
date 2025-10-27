@@ -6,7 +6,7 @@ namespace Valisys_Production.Models
     public class TipoOrdemDeProducao
     {
         [Key]
-        public Guid Id { get; set; } = Guid.Empty; 
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(100)]
@@ -15,6 +15,7 @@ namespace Valisys_Production.Models
         [MaxLength(500)]
         public string Descricao { get; set; }
 
-        public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; } 
+        public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; }
     }
+
 }

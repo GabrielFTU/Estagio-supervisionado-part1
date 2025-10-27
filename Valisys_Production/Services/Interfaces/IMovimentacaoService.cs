@@ -1,15 +1,14 @@
 ﻿using Valisys_Production.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Services.Interfaces
 {
     public interface IMovimentacaoService
     {
-        Task<Movimentacao> CreateAsync(Movimentacao movimentacao);
-        Task<Movimentacao?> GetByIdAsync(int id);
+        Task<Movimentacao> CreateAsync(MovimentacaoCreateDto movimentacaoDto, Guid usuarioId);
+        Task<Movimentacao?> GetByIdAsync(Guid id);
         Task<IEnumerable<Movimentacao>> GetAllAsync();
-        Task UpdateAsync(Movimentacao movimentacao);
-        Task DeleteAsync(int id);
+        Task<bool> UpdateAsync(Movimentacao movimentacao);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

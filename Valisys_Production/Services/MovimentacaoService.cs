@@ -1,56 +1,94 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
+using Valisys_Production.DTOs; 
 
 namespace Valisys_Production.Services
 {
     public class MovimentacaoService : IMovimentacaoService
     {
         private readonly IMovimentacaoRepository _repository;
+
         public MovimentacaoService(IMovimentacaoRepository repository)
         {
             _repository = repository;
         }
-        public async Task<Movimentacao> CreateAsync(Movimentacao movimentacao)
+
+        public async Task<Movimentacao> CreateAsync(MovimentacaoCreateDto movimentacaoDto, Guid usuarioId)
         {
-            movimentacao.DataMovimentacao = DateTime.UtcNow;
-            // Validação básica para garantir que a movimentação não seja nula
-            if (movimentacao == null)
+            if (movimentacaoDto == null)
             {
-                throw new ArgumentNullException(nameof(movimentacao), "Movimentação não pode ser nula.");
+                throw new ArgumentNullException(nameof(movimentacaoDto), "O objeto DTO não pode ser nulo.");
             }
+            if (usuarioId == Guid.Empty)
+            {
+                throw new ArgumentException("O ID do usuário é obrigatório para a criação da movimentação.", nameof(usuarioId));
+            }
+
+            var movimentacao = new Movimentacao
+            {
+                ProdutoId = movimentacaoDto.ProdutoId,
+                Quantidade = movimentacaoDto.Quantidade,
+                AlmoxarifadoOrigemId = movimentacaoDto.AlmoxarifadoOrigemId,
+                AlmoxarifadoDestinoId = movimentacaoDto.AlmoxarifadoDestinoId,
+                UsuarioId = usuarioId,
+                DataMovimentacao = DateTime.UtcNow 
+            };
+
             return await _repository.AddAsync(movimentacao);
         }
-        public async Task<Movimentacao?> GetByIdAsync(int id)
+
+        public async Task<Movimentacao?> GetByIdAsync(Guid id)
         {
-            // Validação básica para garantir que o ID seja positivo
-            if (id <= 0)
+            if (id == Guid.Empty)
             {
-                throw new ArgumentException("Id invalido.", nameof(id));
+                throw new ArgumentException("ID da movimentação inválido.", nameof(id));
             }
+
             return await _repository.GetByIdAsync(id);
         }
+
         public async Task<IEnumerable<Movimentacao>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
         }
 
-        public async Task UpdateAsync(Movimentacao movimentacao)
+        public async Task<bool> UpdateAsync(Movimentacao movimentacao)
         {
-            // Validação básica para garantir que a movimentação não seja nula
-            if (movimentacao.DataMovimentacao == default)
+            if (movimentacao == null)
             {
-                throw new ArgumentNullException(nameof(movimentacao), "A data da movimentação não pode ser nula.");
+                throw new ArgumentNullException(nameof(movimentacao), "O objeto Movimentação não pode ser nulo.");
             }
-            await _repository.UpdateAsync(movimentacao);
-        }
-        public async Task DeleteAsync(int id)
-        {
-           await _repository.DeleteAsync(id);
+            if (movimentacao.Id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da movimentação é obrigatório para atualização.", nameof(movimentacao.Id));
+            }
+            var exists = await _repository.GetByIdAsync(movimentacao.Id);
+            if (exists == null)
+            {
+                throw new KeyNotFoundException($"Movimentação com ID {movimentacao.Id} não encontrada para atualização.");
+            }
+            movimentacao.DataMovimentacao = exists.DataMovimentacao;
+            movimentacao.UsuarioId = exists.UsuarioId;
+
+            return await _repository.UpdateAsync(movimentacao);
         }
 
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da movimentação inválido.", nameof(id));
+            }
+
+            var success = await _repository.DeleteAsync(id);
+
+            if (!success)
+            {
+                throw new KeyNotFoundException($"Movimentação com ID {id} não encontrada para exclusão.");
+            }
+
+            return true;
+        }
     }
 }

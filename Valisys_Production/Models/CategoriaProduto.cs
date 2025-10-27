@@ -16,6 +16,5 @@ namespace Valisys_Production.Models
         public string Descricao { get; set; }
 
         public ICollection<Produto> Produtos { get; set; }
-
     }
 }

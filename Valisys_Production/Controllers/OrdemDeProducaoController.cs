@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
-using Valisys_Production.DTOs;
+using Valisys_Production.DTOs; 
 
 namespace Valisys_Production.Controllers
 {
@@ -21,58 +19,128 @@ namespace Valisys_Production.Controllers
             _mapper = mapper;
         }
 
-        //Busca todas as O.P.
+        private Guid GetAuthenticatedUserId()
+        { 
+            return Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF0011223344");
+        }
+
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<OrdemDeProducao>), 200)]
         public async Task<ActionResult<IEnumerable<OrdemDeProducao>>> GetAll()
         {
             var ordensDeProducao = await _service.GetAllAsync();
             return Ok(ordensDeProducao);
         }
 
-        //Busca O.P. Por ID
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(OrdemDeProducao), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult<OrdemDeProducao>> GetById(Guid id)
-        {
-            var ordemDeProducao = await _service.GetByIdAsync(id);
-            if (ordemDeProducao == null)
-            {
-                return NotFound();
-            }
-            return Ok(ordemDeProducao);
-        }
-        //Criação da O.P. e movimentação inicial
-        [HttpPost]
-        public async Task<ActionResult<OrdemDeProducao>> PostOrdemDeProducao([FromBody] OrdemDeProducaoCreateDto ordemDto)
         {
             try
             {
+                var ordemDeProducao = await _service.GetByIdAsync(id);
+                if (ordemDeProducao == null)
+                {
+                    return NotFound();
+                }
+                return Ok(ordemDeProducao);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(OrdemDeProducao), 201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<OrdemDeProducao>> PostOrdemDeProducao([FromBody] OrdemDeProducaoCreateDto ordemDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
                 var ordemDeProducao = _mapper.Map<OrdemDeProducao>(ordemDto);
-                var newOrdemDeProducao = await _service.CreateAsync(ordemDeProducao);
+                var usuarioId = GetAuthenticatedUserId();
+
+                var newOrdemDeProducao = await _service.CreateAsync(ordemDeProducao, usuarioId);
 
                 return CreatedAtAction(nameof(GetById), new { id = newOrdemDeProducao.Id }, newOrdemDeProducao);
             }
             catch (ArgumentException ex) 
             {
-                return BadRequest(new {message = ex.Message});
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException) 
+            {
+                return NotFound(new { message = "Produto referenciado não encontrado." });
+            }
+            catch (InvalidOperationException ex) 
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrdemDeProducao(Guid id, OrdemDeProducao ordemDeProducao)
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutOrdemDeProducao(Guid id, [FromBody] OrdemDeProducao ordemDeProducao)
         {
             if (id != ordemDeProducao.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "O ID da rota deve ser igual ao ID no corpo da requisição." });
             }
-            await _service.UpdateAsync(ordemDeProducao);
-            return NoContent();
+
+            try
+            {
+                var updated = await _service.UpdateAsync(ordemDeProducao);
+                if (!updated)
+                {
+                    return StatusCode(500, new { message = "Falha ao atualizar a Ordem de Produção." });
+                }
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
-        //Deleta a O.P. filtrando por ID
-        [HttpDelete("{id}")]
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> DeleteOrdemDeProducao(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _service.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex) 
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

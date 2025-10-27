@@ -15,11 +15,12 @@ namespace Valisys_Production.Models
 
         [Required]
         [MaxLength(255)]
-        public string Nome { get; set; }    
+        public string Nome { get; set; }
 
         [Required]
-        [MaxLength(20)] 
+        [MaxLength(20)]
         public string Documento { get; set; }
+
         public TipoDocumento TipoDocumento { get; set; }
 
         [MaxLength(255)]
@@ -27,6 +28,7 @@ namespace Valisys_Production.Models
 
         [Required]
         [MaxLength(100)]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
@@ -37,6 +39,6 @@ namespace Valisys_Production.Models
         public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
 
         [MaxLength(500)]
-        public string Observacoes { get; set; } 
+        public string Observacoes { get; set; }
     }
 }

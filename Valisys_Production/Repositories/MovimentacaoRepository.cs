@@ -2,8 +2,6 @@
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Valisys_Production.Repositories
 {
@@ -15,12 +13,14 @@ namespace Valisys_Production.Repositories
         {
             _context = context;
         }
+
         public async Task<Movimentacao> AddAsync(Movimentacao movimentacao)
         {
             _context.Movimentacoes.Add(movimentacao);
             await _context.SaveChangesAsync();
             return movimentacao;
         }
+
         public async Task<Movimentacao?> GetByIdAsync(Guid id)
         {
             return await _context.Movimentacoes
@@ -31,6 +31,7 @@ namespace Valisys_Production.Repositories
                 .Include(m => m.Usuario)
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
+
         public async Task<IEnumerable<Movimentacao>> GetAllAsync()
         {
             return await _context.Movimentacoes
@@ -41,20 +42,34 @@ namespace Valisys_Production.Repositories
                 .Include(m => m.Usuario)
                 .ToListAsync();
         }
-        public async Task UpdateAsync(Movimentacao movimentacao)
+
+        public async Task<bool> UpdateAsync(Movimentacao movimentacao)
         {
-            _context.Movimentacoes.Update(movimentacao);
-            await _context.SaveChangesAsync();
+            _context.Entry(movimentacao).State = EntityState.Modified;
+
+            try
+            {
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var movimentacao = await _context.Movimentacoes.FindAsync(id);
-            if (movimentacao != null)
+
+            if (movimentacao == null)
             {
-                _context.Movimentacoes.Remove(movimentacao);
-                await _context.SaveChangesAsync();
+                return false;
             }
+
+            _context.Movimentacoes.Remove(movimentacao);
+            var affectedRows = await _context.SaveChangesAsync();
+            return affectedRows > 0;
         }
     }
 }

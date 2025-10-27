@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Valisys_Production.Models;
+﻿using Valisys_Production.Models;
 
 namespace Valisys_Production.Repositories.Interfaces
 {
     public interface IMovimentacaoRepository
     {
         Task<Movimentacao> AddAsync(Movimentacao movimentacao);
-        Task<Movimentacao?> GetByIdAsync(Guid id);
+        Task<Movimentacao?> GetByIdAsync(Guid id); 
         Task<IEnumerable<Movimentacao>> GetAllAsync();
-        Task UpdateAsync(Movimentacao movimentacao);
-        Task DeleteAsync(Guid id);
-
+        Task<bool> UpdateAsync(Movimentacao movimentacao);
+        Task<bool> DeleteAsync(Guid id); 
     }
 }

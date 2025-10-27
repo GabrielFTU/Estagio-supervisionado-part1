@@ -3,6 +3,7 @@ using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System; 
 
 namespace Valisys_Production.Controllers
 {
@@ -24,8 +25,9 @@ namespace Valisys_Production.Controllers
             return Ok(categorias);
         }
 
+        
         [HttpGet("{id}")]
-        public async Task<ActionResult<CategoriaProduto>> GetById(int id)
+        public async Task<ActionResult<CategoriaProduto>> GetById(Guid id)
         {
             var categoria = await _service.GetByIdAsync(id);
             if (categoria == null)
@@ -39,13 +41,13 @@ namespace Valisys_Production.Controllers
         public async Task<ActionResult<CategoriaProduto>> PostCategoriaProduto(CategoriaProduto categoriaProduto)
         {
             var newCategoria = await _service.CreateAsync(categoriaProduto);
+           
             return CreatedAtAction(nameof(GetById), new { id = newCategoria.Id }, newCategoria);
         }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategoriaProduto(Guid id, CategoriaProduto categoriaProduto)
         {
-            if (id != categoriaProduto.Id)
+            if (!id.Equals(categoriaProduto.Id))
             {
                 return BadRequest();
             }
@@ -54,7 +56,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategoriaProduto(int id)
+        public async Task<IActionResult> DeleteCategoriaProduto(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

@@ -10,11 +10,11 @@ namespace Valisys_Production.Controllers
     [Route("api/[controller]")]
     public class AlmoxarifadoController : ControllerBase
     {
-        private readonly IAlmoxarifadoService _service; 
+        private readonly IAlmoxarifadoService _service;
 
         public AlmoxarifadoController(IAlmoxarifadoService service)
         {
-            _service = service; 
+            _service = service;
         }
 
         [HttpGet]
@@ -25,7 +25,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Almoxarifado>> GetById(int id)
+        public async Task<ActionResult<Almoxarifado>> GetById(Guid id)
         {
             var almoxarifado = await _service.GetByIdAsync(id);
             if (almoxarifado == null)
@@ -54,7 +54,7 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAlmoxarifado(int id)
+        public async Task<IActionResult> DeleteAlmoxarifado(Guid id)
         {
             await _service.DeleteAsync(id);
             return NoContent();

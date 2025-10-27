@@ -15,9 +15,9 @@ namespace Valisys_Production.DTOs
         public string Observacoes { get; set; }
 
         [Required]
-        public int ProdutoId { get; set; }
+        public Guid ProdutoId { get; set; }
 
         [Required]
-        public int AlmoxarifadoId { get; set; }
+        public Guid AlmoxarifadoId { get; set; }
     }
 }

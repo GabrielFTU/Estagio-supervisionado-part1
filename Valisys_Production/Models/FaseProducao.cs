@@ -14,8 +14,10 @@ namespace Valisys_Production.Models
 
         [MaxLength(500)]
         public string Descricao { get; set; }
-        public int Ordem { get; set; } 
-        public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; } 
-      
+
+        public int Ordem { get; set; }
+
+        public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; }
     }
+
 }

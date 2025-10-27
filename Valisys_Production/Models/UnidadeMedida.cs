@@ -16,6 +16,6 @@ namespace Valisys_Production.Models
         [Required]
         [MaxLength(10)]
         public string Sigla { get; set; }
-        public ICollection<Produto> Produtos { get; set; } 
+        public ICollection<Produto> Produtos { get; set; }
     }
 }

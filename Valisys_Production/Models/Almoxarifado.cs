@@ -12,14 +12,14 @@ namespace Valisys_Production.Models
         public string Nome { get; set; }
 
         [Required]
-        public string Descricao{ get; set; }
+        public string Descricao { get; set; }
 
         [Required]
         [MaxLength(100)]
         public string Localizacao { get; set; }
 
         [Required]
-        [MaxLength(15)]
+        [MaxLength(100)]
         public string Responsavel { get; set; }
 
         [MaxLength(20)]
@@ -27,10 +27,10 @@ namespace Valisys_Production.Models
 
         [MaxLength(100)]
         [EmailAddress]
-        public string Email { get; set; }   
-
+        public string Email { get; set; }
         public bool Ativo { get; set; } = true;
-        public DateTime DataCadastro { get; set; } = DateTime.Now;  
-
+        public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     }
+
 }
+

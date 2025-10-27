@@ -5,8 +5,8 @@ namespace Valisys_Production.Models
 {
     public class Usuario
     {
-        [Key] 
-        public Guid Id { get; set; } = Guid.Empty;
+        [Key]
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(100)]
@@ -14,14 +14,15 @@ namespace Valisys_Production.Models
 
         [Required]
         [MaxLength(100)]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
         public string SenhaHash { get; set; }
+
         public bool Ativo { get; set; } = true;
 
-        public int PerfilId { get; set; }
+        public Guid PerfilId { get; set; }
         public Perfil Perfil { get; set; }
-
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
@@ -42,24 +40,23 @@ namespace Valisys_Production.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var lote = new Lote
+            try
             {
-                CodigoLote = dto.CodigoLote,
-                Descricao = dto.Descricao,
-                Observacoes = dto.Observacoes,
-                ProdutoId = dto.ProdutoId,
-                AlmoxarifadoId = dto.AlmoxarifadoId
-            };
-
-            var newLote = await _service.CreateAsync(lote);
-            return CreatedAtAction(nameof(GetById), new { id = newLote.Id }, newLote);
+                
+                var newLote = await _service.CreateFromDtoAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = newLote.Id }, newLote);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLote(Guid id, Lote lote)
         {
-            if (id != lote.Id)
+            if (!id.Equals(lote.Id))
             {
                 return BadRequest();
             }

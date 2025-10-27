@@ -7,12 +7,12 @@ namespace Valisys_Production.Models
     public class Perfil
     {
         [Key]
-        public Guid Id { get; set; } = Guid.Empty;
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [MaxLength(50)]
         public string Nome { get; set; }
 
-        public ICollection<Usuario> Usuarios { get; set; } 
+        public ICollection<Usuario> Usuarios { get; set; }
     }
 }
