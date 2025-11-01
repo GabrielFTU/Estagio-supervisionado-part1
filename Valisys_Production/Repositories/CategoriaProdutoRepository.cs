@@ -27,7 +27,6 @@ namespace Valisys_Production.Repositories
         public async Task<CategoriaProduto?> GetByIdAsync(Guid id)
         {
             return await _context.CategoriasProduto
-                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

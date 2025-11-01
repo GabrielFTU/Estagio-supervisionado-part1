@@ -67,14 +67,19 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> PutCategoriaProduto(Guid id, CategoriaProdutoUpdateDto categoriaProdutoDto)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PutCategoriaProduto(Guid id, [FromBody] CategoriaProdutoUpdateDto categoriaProdutoDto)
         {
-            if (!id.Equals(categoriaProdutoDto.Id))
+            if (categoriaProdutoDto == null)
             {
-                return BadRequest(new { message = "O ID da rota não corresponde ao ID da categoria no corpo da requisição." });
+                return BadRequest(new { message = "Os dados da categoria são obrigatórios." });
+            }
+
+            if (id != categoriaProdutoDto.Id)
+            {
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID do corpo da requisição." });
             }
 
             if (!ModelState.IsValid)
@@ -85,11 +90,12 @@ namespace Valisys_Production.Controllers
             try
             {
                 var categoriaProduto = _mapper.Map<CategoriaProduto>(categoriaProdutoDto);
+
                 var updated = await _service.UpdateAsync(categoriaProduto);
 
                 if (!updated)
                 {
-                    return NotFound();
+                    return NotFound(new { message = "Categoria não encontrada." });
                 }
 
                 return NoContent();
@@ -98,7 +104,12 @@ namespace Valisys_Production.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Erro interno no servidor.", details = ex.Message });
+            }
         }
+
 
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]

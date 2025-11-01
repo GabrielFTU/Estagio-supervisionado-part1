@@ -13,7 +13,7 @@ namespace Valisys_Production.Models
         public string Nome { get; set; }
 
         [MaxLength(500)]
-        public string Descricao { get; set; }
+        public string? Descricao { get; set; }
 
         public ICollection<Produto> Produtos { get; set; }
     }

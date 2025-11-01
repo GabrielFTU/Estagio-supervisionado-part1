@@ -51,6 +51,8 @@ builder.Services.AddScoped<ITipoOrdemDeProducaoRepository, TipoOrdemDeProducaoRe
 builder.Services.AddScoped<ITipoOrdemDeProducaoService, TipoOrdemDeProducaoService>();
 builder.Services.AddScoped<IOrdemDeProducaoRepository, OrdemDeProducaoRepository>();
 builder.Services.AddScoped<IOrdemDeProducaoService, OrdemDeProducaoService>();
+builder.Services.AddScoped<IAuthService,AuthService>();
+
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 
