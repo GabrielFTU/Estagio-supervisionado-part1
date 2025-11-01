@@ -1,7 +1,7 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-using Valisys_Production.DTOs; 
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Services
 {
@@ -32,7 +32,7 @@ namespace Valisys_Production.Services
                 AlmoxarifadoOrigemId = movimentacaoDto.AlmoxarifadoOrigemId,
                 AlmoxarifadoDestinoId = movimentacaoDto.AlmoxarifadoDestinoId,
                 UsuarioId = usuarioId,
-                DataMovimentacao = DateTime.UtcNow 
+                DataMovimentacao = DateTime.UtcNow
             };
 
             return await _repository.AddAsync(movimentacao);
@@ -63,13 +63,13 @@ namespace Valisys_Production.Services
             {
                 throw new ArgumentException("ID da movimentação é obrigatório para atualização.", nameof(movimentacao.Id));
             }
-            var exists = await _repository.GetByIdAsync(movimentacao.Id);
-            if (exists == null)
+            var existingMovimentacao = await _repository.GetByIdAsync(movimentacao.Id);
+            if (existingMovimentacao == null)
             {
                 throw new KeyNotFoundException($"Movimentação com ID {movimentacao.Id} não encontrada para atualização.");
             }
-            movimentacao.DataMovimentacao = exists.DataMovimentacao;
-            movimentacao.UsuarioId = exists.UsuarioId;
+            movimentacao.DataMovimentacao = existingMovimentacao.DataMovimentacao;
+            movimentacao.UsuarioId = existingMovimentacao.UsuarioId;
 
             return await _repository.UpdateAsync(movimentacao);
         }

@@ -7,7 +7,7 @@ namespace Valisys_Production.Repositories.Interfaces
         Task <SolicitacaoProducao> AddAsync(SolicitacaoProducao solicitacaoProducao);
         Task<SolicitacaoProducao> GetByIdAsync(Guid id);
         Task<IEnumerable<SolicitacaoProducao>> GetAllAsync();
-        Task UpdateAsync(SolicitacaoProducao solicitacaoProducao);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(SolicitacaoProducao solicitacaoProducao);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

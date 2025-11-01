@@ -14,6 +14,8 @@ namespace Valisys_Production.Services
         private readonly IProdutoRepository _produtoRepository;
         private readonly IMovimentacaoService _movimentacaoService;
 
+        private readonly Guid AlmoxarifadoMateriaPrimaPadraoId = Guid.Parse("C0DE0000-0000-0000-0000-000000000001");
+
         public OrdemDeProducaoService(IOrdemDeProducaoRepository repository, IProdutoRepository produtoRepository, IMovimentacaoService movimentacaoService)
         {
             _repository = repository;
@@ -52,13 +54,13 @@ namespace Valisys_Production.Services
             var primeiraMovimentacaoDto = new MovimentacaoCreateDto
             {
                 ProdutoId = novaOrdem.ProdutoId,
-                Quantidade = novaOrdem.Quantidade, 
+                Quantidade = novaOrdem.Quantidade,
                 OrdemDeProducaoId = novaOrdem.Id,
-                AlmoxarifadoOrigemId = produto.AlmoxarifadoEstoqueId ?? throw new InvalidOperationException("Almoxarifado de estoque do produto não definido."),
+                AlmoxarifadoOrigemId = AlmoxarifadoMateriaPrimaPadraoId,
+
                 AlmoxarifadoDestinoId = novaOrdem.AlmoxarifadoId
             };
 
-            // Assumindo que o CreateAsync do MovimentacaoService foi atualizado para receber o DTO e o UsuarioId
             await _movimentacaoService.CreateAsync(primeiraMovimentacaoDto, usuarioId);
 
             return novaOrdem;
@@ -98,7 +100,7 @@ namespace Valisys_Production.Services
             return await _repository.UpdateAsync(ordemDeProducao);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -108,16 +110,15 @@ namespace Valisys_Production.Services
             var existingOrder = await _repository.GetByIdAsync(id);
             if (existingOrder == null)
             {
-                throw new KeyNotFoundException($"Ordem de Produção com ID {id} não encontrada para exclusão.");
+                return false;
             }
 
-         
             if (existingOrder.Status == StatusOrdemDeProducao.Finalizada)
             {
                 throw new InvalidOperationException($"Ordem de Produção {id} não pode ser excluída pois está finalizada.");
             }
 
-            await _repository.DeleteAsync(id);
+            return await _repository.DeleteAsync(id);
         }
     }
 }

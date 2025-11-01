@@ -4,6 +4,7 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -35,20 +36,33 @@ namespace Valisys_Production.Repositories
             return await _context.CategoriasProduto.AsNoTracking().ToListAsync();
         }
 
-        public async Task UpdateAsync(CategoriaProduto categoriaProduto)
+        public async Task<bool> UpdateAsync(CategoriaProduto categoriaProduto)
         {
-            _context.CategoriasProduto.Update(categoriaProduto);
-            await _context.SaveChangesAsync();
+            _context.Entry(categoriaProduto).State = EntityState.Modified;
+
+            try
+            {
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var categoriaProduto = await _context.CategoriasProduto.FindAsync(id);
+
             if (categoriaProduto != null)
             {
                 _context.CategoriasProduto.Remove(categoriaProduto);
-                await _context.SaveChangesAsync();
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
             }
+
+            return false;
         }
     }
 }

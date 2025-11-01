@@ -9,7 +9,7 @@ namespace Valisys_Production.Services.Interfaces
         Task<CategoriaProduto> CreateAsync(CategoriaProduto categoriaProduto);
         Task<CategoriaProduto?> GetByIdAsync(Guid id);
         Task<IEnumerable<CategoriaProduto>> GetAllAsync();
-        Task UpdateAsync(CategoriaProduto categoriaProduto);
-        Task DeleteAsync(Guid id);
+        Task <bool> UpdateAsync(CategoriaProduto categoriaProduto);
+        Task <bool> DeleteAsync(Guid id);
     }
 }

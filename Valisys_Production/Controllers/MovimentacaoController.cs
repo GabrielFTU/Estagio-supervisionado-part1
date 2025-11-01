@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Security.Claims;
+using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using Valisys_Production.DTOs;
@@ -14,30 +12,40 @@ namespace Valisys_Production.Controllers
     public class MovimentacoesController : ControllerBase
     {
         private readonly IMovimentacaoService _service;
+        private readonly IMapper _mapper;
 
-        public MovimentacoesController(IMovimentacaoService service)
+        public MovimentacoesController(IMovimentacaoService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         private Guid GetAuthenticatedUserId()
         {
-            return Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF0011223344");
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("Usuário não autenticado ou Claim ID ausente.");
+            }
+
+            return userId;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Movimentacao>), 200)]
-        public async Task<ActionResult<IEnumerable<Movimentacao>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<MovimentacaoReadDto>), 200)]
+        public async Task<ActionResult<IEnumerable<MovimentacaoReadDto>>> GetAll()
         {
             var movimentacoes = await _service.GetAllAsync();
-            return Ok(movimentacoes);
+            var movimentacaoDtos = _mapper.Map<IEnumerable<MovimentacaoReadDto>>(movimentacoes);
+            return Ok(movimentacaoDtos);
         }
 
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(Movimentacao), 200)]
+        [ProducesResponseType(typeof(MovimentacaoReadDto), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Movimentacao>> GetById(Guid id)
+        public async Task<ActionResult<MovimentacaoReadDto>> GetById(Guid id)
         {
             try
             {
@@ -46,7 +54,8 @@ namespace Valisys_Production.Controllers
                 {
                     return NotFound();
                 }
-                return Ok(movimentacao);
+                var movimentacaoDto = _mapper.Map<MovimentacaoReadDto>(movimentacao);
+                return Ok(movimentacaoDto);
             }
             catch (ArgumentException ex)
             {
@@ -55,9 +64,9 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Movimentacao), 201)]
+        [ProducesResponseType(typeof(MovimentacaoReadDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Movimentacao>> Post([FromBody] MovimentacaoCreateDto movimentacaoDto)
+        public async Task<ActionResult<MovimentacaoReadDto>> Post([FromBody] MovimentacaoCreateDto movimentacaoDto)
         {
             if (!ModelState.IsValid)
             {
@@ -67,14 +76,19 @@ namespace Valisys_Production.Controllers
             try
             {
                 var usuarioId = GetAuthenticatedUserId();
-
                 var newMovimentacao = await _service.CreateAsync(movimentacaoDto, usuarioId);
 
-                return CreatedAtAction(nameof(GetById), new { id = newMovimentacao.Id }, newMovimentacao);
+                var newMovimentacaoDto = _mapper.Map<MovimentacaoReadDto>(newMovimentacao);
+
+                return CreatedAtAction(nameof(GetById), new { id = newMovimentacaoDto.Id }, newMovimentacaoDto);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
         }
 
@@ -82,20 +96,21 @@ namespace Valisys_Production.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Movimentacao movimentacao)
+        public async Task<IActionResult> Put(Guid id, [FromBody] MovimentacaoUpdateDto movimentacaoDto)
         {
-            if (id != movimentacao.Id)
+            if (id != movimentacaoDto.Id)
             {
                 return BadRequest(new { message = "O ID da rota deve ser igual ao ID no corpo da requisição." });
             }
 
             try
             {
+                var movimentacao = _mapper.Map<Movimentacao>(movimentacaoDto);
                 var updated = await _service.UpdateAsync(movimentacao);
 
                 if (!updated)
                 {
-                    return StatusCode(500, new { message = "Falha ao atualizar a movimentação. Verifique a concorrência." });
+                    return NotFound();
                 }
 
                 return NoContent();
@@ -118,7 +133,12 @@ namespace Valisys_Production.Controllers
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var deleted = await _service.DeleteAsync(id);
+
+                if (!deleted)
+                {
+                    return NotFound();
+                }
 
                 return NoContent();
             }

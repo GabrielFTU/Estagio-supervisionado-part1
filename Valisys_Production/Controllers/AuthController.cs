@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Valisys_Production.DTOs;
 using Valisys_Production.Services.Interfaces;
-using System.Threading.Tasks;
+
 
 namespace Valisys_Production.Controllers
 {
@@ -11,22 +11,41 @@ namespace Valisys_Production.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(IAuthService authService) 
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
         [HttpPost("login")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.LoginAsync(loginDto);
-
-            if (string.IsNullOrEmpty(token))
+            if (!ModelState.IsValid)
             {
-                return Unauthorized("Credenciais inválidas.");
+                return BadRequest(ModelState);
             }
 
-            return Ok(new { token });
+            try
+            {
+                var token = await _authService.LoginAsync(loginDto);
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Credenciais inválidas." });
+                }
+
+                return Ok(new { token });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Credenciais inválidas." });
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Services
 {
@@ -14,14 +14,23 @@ namespace Valisys_Production.Services
             _repository = repository;
         }
 
-        public async Task<Lote> CreateAsync(Lote lote)
+        public async Task<Lote> CreateAsync(LoteCreateDto dto)
         {
-            if (lote == null)
-                throw new ArgumentNullException(nameof(lote), "O lote não pode ser nulo");
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "O DTO do lote não pode ser nulo.");
+            if (string.IsNullOrEmpty(dto.CodigoLote))
+                throw new ArgumentException("O número do lote é obrigatório.");
 
-          
+            var lote = new Lote
+            {
+                CodigoLote = dto.CodigoLote,
+                Descricao = dto.Descricao,
+                ProdutoId = dto.ProdutoId,
+                AlmoxarifadoId = dto.AlmoxarifadoId,
+                DataAbertura = DateTime.UtcNow
+            };
+
             lote.statusLote = StatusLote.Pendente;
-
             lote.DataAbertura = DateTime.UtcNow;
 
             return await _repository.AddAsync(lote);
@@ -29,6 +38,10 @@ namespace Valisys_Production.Services
 
         public async Task<Lote?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID do Lote inválido.");
+            }
             return await _repository.GetByIdAsync(id);
         }
 
@@ -37,14 +50,45 @@ namespace Valisys_Production.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task UpdateAsync(Lote lote)
+        public async Task<bool> UpdateAsync(Lote lote)
         {
-            await _repository.UpdateAsync(lote);
+            if (lote.Id == Guid.Empty)
+            {
+                throw new ArgumentException("ID do Lote ausente para atualização.");
+            }
+            if (string.IsNullOrEmpty(lote.CodigoLote))
+            {
+                throw new ArgumentException("O número do lote não pode ser vazio.");
+            }
+
+            var existingLote = await _repository.GetByIdAsync(lote.Id);
+            if (existingLote == null)
+            {
+                throw new KeyNotFoundException($"Lote com ID {lote.Id} não encontrado.");
+            }
+
+            return await _repository.UpdateAsync(lote);
         }
 
-        public async Task DeleteAsync(Guid id) 
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID do Lote inválido para exclusão.");
+            }
+
+            var existingLote = await _repository.GetByIdAsync(id);
+            if (existingLote == null)
+            {
+                return false;
+            }
+
+            if (existingLote.statusLote != StatusLote.Pendente && existingLote.statusLote != StatusLote.Cancelado)
+            {
+                throw new InvalidOperationException($"Lote com status '{existingLote.statusLote}' não pode ser excluído.");
+            }
+
+            return await _repository.DeleteAsync(id);
         }
     }
 }

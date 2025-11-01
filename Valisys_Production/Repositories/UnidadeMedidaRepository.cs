@@ -1,10 +1,10 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -19,8 +19,8 @@ namespace Valisys_Production.Repositories
 
         public async Task<UnidadeMedida> AddAsync(UnidadeMedida unidadeMedida)
         {
+
             _context.UnidadesMedida.Add(unidadeMedida);
-            await _context.SaveChangesAsync();
             return unidadeMedida;
         }
 
@@ -36,20 +36,34 @@ namespace Valisys_Production.Repositories
             return await _context.UnidadesMedida.AsNoTracking().ToListAsync();
         }
 
-        public async Task UpdateAsync(UnidadeMedida unidadeMedida)
+        public async Task<bool> UpdateAsync(UnidadeMedida unidadeMedida)
         {
-            _context.UnidadesMedida.Update(unidadeMedida);
-            await _context.SaveChangesAsync();
+  
+            _context.Entry(unidadeMedida).State = EntityState.Modified;
+
+            try
+            {
+         
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var unidadeMedida = await _context.UnidadesMedida.FindAsync(id);
+
             if (unidadeMedida != null)
             {
                 _context.UnidadesMedida.Remove(unidadeMedida);
-                await _context.SaveChangesAsync();
+          
+                return true;
             }
+
+            return false;
         }
     }
 }

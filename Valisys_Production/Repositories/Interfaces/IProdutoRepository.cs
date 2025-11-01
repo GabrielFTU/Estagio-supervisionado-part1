@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Valisys_Production.Models;
-using System.Collections.Generic;
+﻿using Valisys_Production.Models;
 
 namespace Valisys_Production.Repositories.Interfaces
 {
@@ -9,7 +7,7 @@ namespace Valisys_Production.Repositories.Interfaces
         Task <Produto> AddAsync(Produto produto);
         Task<Produto> GetByIdAsync(Guid id);
         Task<IEnumerable<Produto>> GetAllAsync();
-        Task UpdateAsync(Produto produto);
-        Task DeleteAsync (Guid id);
+        Task<bool> UpdateAsync(Produto produto);
+        Task<bool> DeleteAsync (Guid id);
     }
 }

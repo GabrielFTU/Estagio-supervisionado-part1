@@ -1,15 +1,15 @@
 ﻿using Valisys_Production.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Services.Interfaces
 {
     public interface IUsuarioService
     {
-        Task<Usuario> CreateAsync( Usuario usuario);
-        Task<Usuario?> GetByIdAsync(int id);
+        Task<Usuario> CreateAsync(UsuarioCreateDto usuarioDto);
+        Task<Usuario?> GetByIdAsync(Guid id);
+        Task<Usuario?> GetByEmailAsync(string email);
         Task<IEnumerable<Usuario>> GetAllAsync();
-        Task UpdateAsync(Usuario usuario);
-        Task DeleteAsync(int id);
+        Task<bool> UpdateAsync(Usuario usuario);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

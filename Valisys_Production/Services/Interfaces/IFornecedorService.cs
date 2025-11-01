@@ -9,8 +9,8 @@ namespace Valisys_Production.Services.Interfaces
         Task<Fornecedor> CreateAsync(Fornecedor fornecedor);
         Task<Fornecedor> GetByIdAsync(Guid id);
         Task<IEnumerable<Fornecedor>> GetAllAsync();
-        Task UpdateAsync(Fornecedor fornecedor);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(Fornecedor fornecedor);
+        Task<bool> DeleteAsync(Guid id);
 
     }
 }

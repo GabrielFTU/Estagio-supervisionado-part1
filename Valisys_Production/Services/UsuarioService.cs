@@ -1,55 +1,115 @@
 ﻿using Valisys_Production.Models;
-using Valisys_Production.Services.Interfaces;
 using Valisys_Production.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using BCrypt.Net;
+using Valisys_Production.Services.Interfaces;
+using Valisys_Production.DTOs;
+
 
 namespace Valisys_Production.Services
 {
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _repository;
-    
+
         public UsuarioService(IUsuarioRepository repository)
         {
             _repository = repository;
         }
-        public async Task<Usuario> CreateAsync(Usuario usuario)
+        public async Task<Usuario> CreateAsync(UsuarioCreateDto usuarioDto)
         {
-           if(string.IsNullOrEmpty(usuario.Nome)) 
-                          {
-               throw new ArgumentException("O Nome do usuario é obrigatório.");
+            if (string.IsNullOrEmpty(usuarioDto.Nome) || string.IsNullOrEmpty(usuarioDto.Email))
+            {
+                throw new ArgumentException("O nome e o e-mail do usuário são obrigatórios.");
+            }
+            if (string.IsNullOrEmpty(usuarioDto.Senha))
+            {
+                throw new ArgumentException("A senha é obrigatória para a criação do usuário.");
             }
 
-           usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(usuario.SenhaHash);
-           return await _repository.AddAsync(usuario);
+            var usuario = new Usuario
+            {
+                Nome = usuarioDto.Nome,
+                Email = usuarioDto.Email,
+                PerfilId = usuarioDto.PerfilId,
+                Ativo = usuarioDto.Ativo,
+                SenhaHash = usuarioDto.Senha
+            };
+
+            usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(usuario.SenhaHash);
+            usuario.DataCadastro = DateTime.UtcNow;
+
+            return await _repository.AddAsync(usuario);
         }
-        public async Task<Usuario?> GetByIdAsync(int id)
+
+        public async Task<Usuario?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID do Usuário inválido.");
+            }
+          
             return await _repository.GetByIdAsync(id);
         }
+
+        public async Task<Usuario?> GetByEmailAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException("O e-mail é obrigatório.");
+            }
+          
+            return await _repository.GetByEmailAsync(email);
+        }
+
         public async Task<IEnumerable<Usuario>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
         }
 
-        public async Task UpdateAsync(Usuario usuario)
+        public async Task<bool> UpdateAsync(Usuario usuario)
         {
-            if (string.IsNullOrEmpty(usuario.Nome))
+            if (usuario.Id == Guid.Empty)
             {
-                throw new ArgumentException("O Nome do usuario é obrigatório.");
+                throw new ArgumentException("ID do Usuário ausente para atualização.");
             }
-            if (!string.IsNullOrEmpty(usuario.SenhaHash))
+            if (string.IsNullOrEmpty(usuario.Nome) || string.IsNullOrEmpty(usuario.Email))
+            {
+                throw new ArgumentException("O nome e o e-mail do usuário são obrigatórios.");
+            }
+
+            var existingUsuario = await _repository.GetByIdAsync(usuario.Id);
+            if (existingUsuario == null)
+            {
+                throw new KeyNotFoundException($"Usuário com ID {usuario.Id} não encontrado.");
+            }
+
+            if (!string.IsNullOrEmpty(usuario.SenhaHash) && usuario.SenhaHash.Length > 10)
             {
                 usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(usuario.SenhaHash);
             }
-            await _repository.UpdateAsync(usuario);
+            else
+            {
+                usuario.SenhaHash = existingUsuario.SenhaHash;
+            }
+
+            usuario.DataCadastro = existingUsuario.DataCadastro;
+
+            return await _repository.UpdateAsync(usuario);
         }
-        public async Task DeleteAsync(int id)
+
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID do Usuário inválido para exclusão.");
+            }
+
+            var existingUsuario = await _repository.GetByIdAsync(id);
+            if (existingUsuario == null)
+            {
+                return false;
+            }
+
+            return await _repository.DeleteAsync(id);
         }
     }
 }

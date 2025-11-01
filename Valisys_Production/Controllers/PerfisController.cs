@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
 {
@@ -12,53 +11,116 @@ namespace Valisys_Production.Controllers
     public class PerfisController : ControllerBase
     {
         private readonly IPerfilService _service;
+        private readonly IMapper _mapper;
 
-        public PerfisController(IPerfilService service)
+        public PerfisController(IPerfilService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Perfil>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<PerfilReadDto>), 200)]
+        public async Task<ActionResult<IEnumerable<PerfilReadDto>>> GetAll()
         {
             var perfis = await _service.GetAllAsync();
-            return Ok(perfis);
+            var perfilDtos = _mapper.Map<IEnumerable<PerfilReadDto>>(perfis);
+            return Ok(perfilDtos);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Perfil>> GetById(int id)
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(PerfilReadDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<PerfilReadDto>> GetById(Guid id)
         {
             var perfil = await _service.GetByIdAsync(id);
             if (perfil == null)
             {
                 return NotFound();
             }
-            return Ok(perfil);
+            var perfilDto = _mapper.Map<PerfilReadDto>(perfil);
+            return Ok(perfilDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Perfil>> PostPerfil(Perfil perfil)
+        [ProducesResponseType(typeof(PerfilReadDto), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<PerfilReadDto>> PostPerfil(PerfilCreateDto perfilDto)
         {
-            var newPerfil = await _service.CreateAsync(perfil);
-            return CreatedAtAction(nameof(GetById), new { id = newPerfil.Id }, newPerfil);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerfil(Guid id, Perfil perfil)
-        {
-            if (id != perfil.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
-            await _service.UpdateAsync(perfil);
-            return NoContent();
+
+            try
+            {
+                var perfil = _mapper.Map<Perfil>(perfilDto);
+                var newPerfil = await _service.CreateAsync(perfil);
+                var newPerfilDto = _mapper.Map<PerfilReadDto>(newPerfil);
+
+                return CreatedAtAction(nameof(GetById), new { id = newPerfilDto.Id }, newPerfilDto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePerfil(int id)
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutPerfil(Guid id, PerfilUpdateDto perfilDto)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            if (id != perfilDto.Id)
+            {
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID do perfil no corpo da requisição." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var perfil = _mapper.Map<Perfil>(perfilDto);
+                var updated = await _service.UpdateAsync(perfil);
+
+                if (!updated)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
+        public async Task<IActionResult> DeletePerfil(Guid id)
+        {
+            try
+            {
+                var deleted = await _service.DeleteAsync(id);
+
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

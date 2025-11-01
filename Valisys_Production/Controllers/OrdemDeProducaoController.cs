@@ -2,7 +2,8 @@
 using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
-using Valisys_Production.DTOs; 
+using Valisys_Production.DTOs;
+using System.Security.Claims;
 
 namespace Valisys_Production.Controllers
 {
@@ -20,23 +21,31 @@ namespace Valisys_Production.Controllers
         }
 
         private Guid GetAuthenticatedUserId()
-        { 
-            return Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF0011223344");
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("Usuário não autenticado ou Claim ID ausente.");
+            }
+
+            return userId;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<OrdemDeProducao>), 200)]
-        public async Task<ActionResult<IEnumerable<OrdemDeProducao>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<OrdemDeProducaoReadDto>), 200)]
+        public async Task<ActionResult<IEnumerable<OrdemDeProducaoReadDto>>> GetAll()
         {
             var ordensDeProducao = await _service.GetAllAsync();
-            return Ok(ordensDeProducao);
+            var ordemDtos = _mapper.Map<IEnumerable<OrdemDeProducaoReadDto>>(ordensDeProducao);
+            return Ok(ordemDtos);
         }
 
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(OrdemDeProducao), 200)]
+        [ProducesResponseType(typeof(OrdemDeProducaoReadDto), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<OrdemDeProducao>> GetById(Guid id)
+        public async Task<ActionResult<OrdemDeProducaoReadDto>> GetById(Guid id)
         {
             try
             {
@@ -45,7 +54,8 @@ namespace Valisys_Production.Controllers
                 {
                     return NotFound();
                 }
-                return Ok(ordemDeProducao);
+                var ordemDto = _mapper.Map<OrdemDeProducaoReadDto>(ordemDeProducao);
+                return Ok(ordemDto);
             }
             catch (ArgumentException ex)
             {
@@ -54,10 +64,11 @@ namespace Valisys_Production.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(OrdemDeProducao), 201)]
+        [ProducesResponseType(typeof(OrdemDeProducaoReadDto), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<OrdemDeProducao>> PostOrdemDeProducao([FromBody] OrdemDeProducaoCreateDto ordemDto)
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<OrdemDeProducaoReadDto>> PostOrdemDeProducao([FromBody] OrdemDeProducaoCreateDto ordemDto)
         {
             if (!ModelState.IsValid)
             {
@@ -70,18 +81,23 @@ namespace Valisys_Production.Controllers
                 var usuarioId = GetAuthenticatedUserId();
 
                 var newOrdemDeProducao = await _service.CreateAsync(ordemDeProducao, usuarioId);
+                var newOrdemDto = _mapper.Map<OrdemDeProducaoReadDto>(newOrdemDeProducao);
 
-                return CreatedAtAction(nameof(GetById), new { id = newOrdemDeProducao.Id }, newOrdemDeProducao);
+                return CreatedAtAction(nameof(GetById), new { id = newOrdemDto.Id }, newOrdemDto);
             }
-            catch (ArgumentException ex) 
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (KeyNotFoundException) 
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = "Produto referenciado não encontrado." });
+                return NotFound(new { message = "Recurso dependente (Produto, Lote, etc.) não encontrado." });
             }
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -91,19 +107,26 @@ namespace Valisys_Production.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> PutOrdemDeProducao(Guid id, [FromBody] OrdemDeProducao ordemDeProducao)
+        public async Task<IActionResult> PutOrdemDeProducao(Guid id, [FromBody] OrdemDeProducaoUpdateDto ordemDto)
         {
-            if (id != ordemDeProducao.Id)
+            if (id != ordemDto.Id)
             {
-                return BadRequest(new { message = "O ID da rota deve ser igual ao ID no corpo da requisição." });
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID no corpo da requisição." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
             try
             {
+                var ordemDeProducao = _mapper.Map<OrdemDeProducao>(ordemDto);
                 var updated = await _service.UpdateAsync(ordemDeProducao);
+
                 if (!updated)
                 {
-                    return StatusCode(500, new { message = "Falha ao atualizar a Ordem de Produção." });
+                    return NotFound();
                 }
                 return NoContent();
             }
@@ -126,7 +149,11 @@ namespace Valisys_Production.Controllers
         {
             try
             {
-                await _service.DeleteAsync(id);
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                {
+                    return NotFound();
+                }
                 return NoContent();
             }
             catch (ArgumentException ex)
@@ -137,7 +164,7 @@ namespace Valisys_Production.Controllers
             {
                 return NotFound();
             }
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
             }

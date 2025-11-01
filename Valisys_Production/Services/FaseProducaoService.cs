@@ -1,9 +1,6 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
 
 namespace Valisys_Production.Services
 {
@@ -27,6 +24,10 @@ namespace Valisys_Production.Services
 
         public async Task<FaseProducao?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Fase de Produção inválido.");
+            }
             return await _repository.GetByIdAsync(id);
         }
 
@@ -35,18 +36,40 @@ namespace Valisys_Production.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task UpdateAsync(FaseProducao faseProducao)
+        public async Task<bool> UpdateAsync(FaseProducao faseProducao)
         {
+            if (faseProducao.Id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Fase de Produção ausente para atualização.");
+            }
             if (string.IsNullOrEmpty(faseProducao.Nome))
             {
                 throw new ArgumentException("O nome da fase de produção é obrigatório.");
             }
-            await _repository.UpdateAsync(faseProducao);
+
+            var existingFase = await _repository.GetByIdAsync(faseProducao.Id);
+            if (existingFase == null)
+            {
+                throw new KeyNotFoundException($"Fase de Produção com ID {faseProducao.Id} não encontrada.");
+            }
+
+            return await _repository.UpdateAsync(faseProducao);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Fase de Produção inválido para exclusão.");
+            }
+
+            var existingFase = await _repository.GetByIdAsync(id);
+            if (existingFase == null)
+            {
+                return false;
+            }
+
+            return await _repository.DeleteAsync(id);
         }
     }
 }

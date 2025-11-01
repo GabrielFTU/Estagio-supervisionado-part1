@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System; 
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
 {
@@ -12,54 +11,116 @@ namespace Valisys_Production.Controllers
     public class CategoriasProdutoController : ControllerBase
     {
         private readonly ICategoriaProdutoService _service;
+        private readonly IMapper _mapper;
 
-        public CategoriasProdutoController(ICategoriaProdutoService service)
+        public CategoriasProdutoController(ICategoriaProdutoService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoriaProduto>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<CategoriaProdutoReadDto>), 200)]
+        public async Task<ActionResult<IEnumerable<CategoriaProdutoReadDto>>> GetAll()
         {
             var categorias = await _service.GetAllAsync();
-            return Ok(categorias);
+            var categoriaDtos = _mapper.Map<IEnumerable<CategoriaProdutoReadDto>>(categorias);
+            return Ok(categoriaDtos);
         }
 
-        
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CategoriaProduto>> GetById(Guid id)
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(CategoriaProdutoReadDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<CategoriaProdutoReadDto>> GetById(Guid id)
         {
             var categoria = await _service.GetByIdAsync(id);
             if (categoria == null)
             {
                 return NotFound();
             }
-            return Ok(categoria);
+            var categoriaDto = _mapper.Map<CategoriaProdutoReadDto>(categoria);
+            return Ok(categoriaDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<CategoriaProduto>> PostCategoriaProduto(CategoriaProduto categoriaProduto)
+        [ProducesResponseType(typeof(CategoriaProdutoReadDto), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<CategoriaProdutoReadDto>> PostCategoriaProduto(CategoriaProdutoCreateDto categoriaProdutoDto)
         {
-            var newCategoria = await _service.CreateAsync(categoriaProduto);
-           
-            return CreatedAtAction(nameof(GetById), new { id = newCategoria.Id }, newCategoria);
-        }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCategoriaProduto(Guid id, CategoriaProduto categoriaProduto)
-        {
-            if (!id.Equals(categoriaProduto.Id))
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
-            await _service.UpdateAsync(categoriaProduto);
-            return NoContent();
+
+            try
+            {
+                var categoriaProduto = _mapper.Map<CategoriaProduto>(categoriaProdutoDto);
+                var newCategoria = await _service.CreateAsync(categoriaProduto);
+                var newCategoriaDto = _mapper.Map<CategoriaProdutoReadDto>(newCategoria);
+
+                return CreatedAtAction(nameof(GetById), new { id = newCategoriaDto.Id }, newCategoriaDto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutCategoriaProduto(Guid id, CategoriaProdutoUpdateDto categoriaProdutoDto)
+        {
+            if (!id.Equals(categoriaProdutoDto.Id))
+            {
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID da categoria no corpo da requisição." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var categoriaProduto = _mapper.Map<CategoriaProduto>(categoriaProdutoDto);
+                var updated = await _service.UpdateAsync(categoriaProduto);
+
+                if (!updated)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> DeleteCategoriaProduto(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                var deleted = await _service.DeleteAsync(id);
+
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
+using System.Linq;
 
 namespace Valisys_Production.Repositories
 {
@@ -18,45 +20,64 @@ namespace Valisys_Production.Repositories
 
         public async Task<Usuario> AddAsync(Usuario usuario)
         {
+        
             _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
             return usuario;
         }
 
         public async Task<Usuario?> GetByIdAsync(Guid id)
         {
+   
             return await _context.Usuarios
+                .AsNoTracking()
                 .Include(u => u.Perfil)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<IEnumerable<Usuario>> GetAllAsync()
         {
+           
             return await _context.Usuarios
+                .AsNoTracking()
                 .Include(u => u.Perfil)
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Usuario usuario)
+        public async Task<bool> UpdateAsync(Usuario usuario)
         {
-            _context.Usuarios.Update(usuario);
-            await _context.SaveChangesAsync();
+            _context.Entry(usuario).State = EntityState.Modified;
+
+            try
+            {
+               
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
+
             if (usuario != null)
             {
                 _context.Usuarios.Remove(usuario);
-                await _context.SaveChangesAsync();
+                
+                return true;
             }
+            return false;
         }
+
         public async Task<Usuario?> GetByEmailAsync(string email)
         {
+            
             return await _context.Usuarios
-             .Include(u => u.Perfil)
-             .FirstOrDefaultAsync(u => u.Email == email);
+               .AsNoTracking()
+               .Include(u => u.Perfil)
+               .FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }

@@ -4,6 +4,7 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -18,8 +19,8 @@ namespace Valisys_Production.Repositories
 
         public async Task<SolicitacaoProducao> AddAsync(SolicitacaoProducao solicitacaoProducao)
         {
+      
             _context.SolicitacoesProducao.Add(solicitacaoProducao);
-            await _context.SaveChangesAsync();
             return solicitacaoProducao;
         }
 
@@ -29,6 +30,7 @@ namespace Valisys_Production.Repositories
                 .AsNoTracking()
                 .Include(s => s.Produto)
                 .Include(s => s.Encarregado)
+                .Include(s => s.Itens) 
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -41,20 +43,25 @@ namespace Valisys_Production.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(SolicitacaoProducao solicitacaoProducao)
-        {
+        public async Task<bool> UpdateAsync(SolicitacaoProducao solicitacaoProducao)
+        { 
             _context.SolicitacoesProducao.Update(solicitacaoProducao);
-            await _context.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var solicitacaoProducao = await _context.SolicitacoesProducao.FindAsync(id);
+
             if (solicitacaoProducao != null)
             {
                 _context.SolicitacoesProducao.Remove(solicitacaoProducao);
-                await _context.SaveChangesAsync();
+                
+                return true;
             }
+
+            return false;
         }
     }
 }

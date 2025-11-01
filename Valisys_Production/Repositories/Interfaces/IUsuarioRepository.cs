@@ -9,8 +9,8 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<Usuario> AddAsync(Usuario usuario);
         Task<Usuario?> GetByIdAsync(Guid id);
         Task<IEnumerable<Usuario>> GetAllAsync();
-        Task UpdateAsync(Usuario usuario);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(Usuario usuario);
+        Task<bool> DeleteAsync(Guid id);
         Task<Usuario?> GetByEmailAsync(string email);
     }
 }

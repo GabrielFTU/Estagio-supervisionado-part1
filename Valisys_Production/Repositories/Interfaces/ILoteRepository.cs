@@ -9,7 +9,7 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<Lote> AddAsync(Lote lote);
         Task<Lote?> GetByIdAsync(Guid id);
         Task<IEnumerable<Lote>> GetAllAsync();
-        Task UpdateAsync(Lote lote);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(Lote lote);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -9,7 +9,7 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<Perfil> AddAsync(Perfil perfil);
         Task<Perfil?> GetByIdAsync(Guid id);
         Task<IEnumerable<Perfil>> GetAllAsync();
-        Task UpdateAsync(Perfil perfil);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(Perfil perfil);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

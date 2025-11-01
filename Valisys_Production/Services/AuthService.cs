@@ -23,7 +23,6 @@ namespace Valisys_Production.Services
 
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
-            //Encontrar o usuário pelo email
             var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
 
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash))
@@ -31,7 +30,6 @@ namespace Valisys_Production.Services
                 return "Credenciais inválidas.";
             }
 
-            //gerar o token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("sua_chave_secreta_aqui");
             var tokenDescriptor = new SecurityTokenDescriptor

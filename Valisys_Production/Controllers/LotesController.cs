@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using Valisys_Production.DTOs;
@@ -10,41 +11,52 @@ namespace Valisys_Production.Controllers
     public class LotesController : ControllerBase
     {
         private readonly ILoteService _service;
+        private readonly IMapper _mapper;
 
-        public LotesController(ILoteService service)
+        public LotesController(ILoteService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Lote>>> GetAll()
+        [ProducesResponseType(typeof(IEnumerable<LoteReadDto>), 200)]
+        public async Task<ActionResult<IEnumerable<LoteReadDto>>> GetAll()
         {
             var lotes = await _service.GetAllAsync();
-            return Ok(lotes);
+            var loteDtos = _mapper.Map<IEnumerable<LoteReadDto>>(lotes);
+            return Ok(loteDtos);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Lote>> GetById(Guid id)
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(LoteReadDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<LoteReadDto>> GetById(Guid id)
         {
             var lote = await _service.GetByIdAsync(id);
             if (lote == null)
             {
                 return NotFound();
             }
-            return Ok(lote);
+            var loteDto = _mapper.Map<LoteReadDto>(lote);
+            return Ok(loteDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Lote>> PostLote([FromBody] LoteCreateDto dto)
+        [ProducesResponseType(typeof(LoteReadDto), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<LoteReadDto>> PostLote([FromBody] LoteCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                
-                var newLote = await _service.CreateFromDtoAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = newLote.Id }, newLote);
+
+                var newLote = await _service.CreateAsync(dto);
+                var newLoteDto = _mapper.Map<LoteReadDto>(newLote);
+
+                return CreatedAtAction(nameof(GetById), new { id = newLoteDto.Id }, newLoteDto);
             }
             catch (ArgumentException ex)
             {
@@ -52,23 +64,59 @@ namespace Valisys_Production.Controllers
             }
         }
 
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutLote(Guid id, Lote lote)
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutLote(Guid id, LoteUpdateDto loteDto)
         {
-            if (!id.Equals(lote.Id))
+            if (!id.Equals(loteDto.Id))
             {
-                return BadRequest();
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID do lote no corpo da requisição." });
             }
-            await _service.UpdateAsync(lote);
-            return NoContent();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var lote = _mapper.Map<Lote>(loteDto);
+                var updated = await _service.UpdateAsync(lote);
+
+                if (!updated)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> DeleteLote(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                var deleted = await _service.DeleteAsync(id);
+
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

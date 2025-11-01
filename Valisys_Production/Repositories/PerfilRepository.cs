@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -22,14 +23,14 @@ namespace Valisys_Production.Repositories
             await _context.SaveChangesAsync();
             return perfil;
         }
+
         public async Task<Perfil?> GetByIdAsync(Guid id)
         {
             return await _context.Perfis
-
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id);
-
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
+
         public async Task<IEnumerable<Perfil>> GetAllAsync()
         {
             return await _context.Perfis
@@ -37,23 +38,33 @@ namespace Valisys_Production.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Perfil perfil)
+        public async Task<bool> UpdateAsync(Perfil perfil)
         {
-            var exists = await _context.Perfis.AnyAsync(p => p.Id == perfil.Id);
-            if (!exists)
-                throw new KeyNotFoundException("$Perfil {perfil.Id} não encontrado.");
-            _context.Perfis.Update(perfil);
-            await _context.SaveChangesAsync();
+            _context.Entry(perfil).State = EntityState.Modified;
+
+            try
+            {
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var perfil = await _context.Perfis.FindAsync(id);
+
             if (perfil != null)
             {
                 _context.Perfis.Remove(perfil);
-                await _context.SaveChangesAsync();
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
             }
+
+            return false;
         }
     }
 }

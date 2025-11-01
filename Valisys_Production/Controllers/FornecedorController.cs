@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using AutoMapper;
 using Valisys_Production.Models;
-using Valisys_Production.Services;
 using Valisys_Production.Services.Interfaces;
-using Valisys_Production.Repositories.Interfaces;
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Controllers
 {
@@ -13,53 +11,118 @@ namespace Valisys_Production.Controllers
     public class FornecedoresController : ControllerBase
     {
         private readonly IFornecedorService _service;
+        private readonly IMapper _mapper;
 
-        public FornecedoresController(IFornecedorService service)
+        public FornecedoresController(IFornecedorService service, IMapper mapper)
         {
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<FornecedorReadDto>), 200)]
         public async Task<IActionResult> GetAll()
         {
             var fornecedores = await _service.GetAllAsync();
-            return Ok(fornecedores);
+            var fornecedorDtos = _mapper.Map<IEnumerable<FornecedorReadDto>>(fornecedores);
+            return Ok(fornecedorDtos);
         }
-        [HttpGet("{id}")]
+
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(FornecedorReadDto), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var fornecedor = await _service.GetByIdAsync(id);
+
             if (fornecedor == null)
             {
                 return NotFound();
             }
-            return Ok(fornecedor);
+
+            var fornecedorDto = _mapper.Map<FornecedorReadDto>(fornecedor);
+            return Ok(fornecedorDto);
         }
+
         [HttpPost]
-        public async Task<ActionResult<Fornecedor>> PostFornecedor(Fornecedor fornecedor)
+        [ProducesResponseType(typeof(FornecedorReadDto), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<FornecedorReadDto>> PostFornecedor(FornecedorCreateDto fornecedorDto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
+
+            try
             {
+                var fornecedor = _mapper.Map<Fornecedor>(fornecedorDto);
                 var newFornecedor = await _service.CreateAsync(fornecedor);
-                return CreatedAtAction(nameof(GetById), new { id = newFornecedor.Id }, newFornecedor);
+                var newFornecedorDto = _mapper.Map<FornecedorReadDto>(newFornecedor);
+
+                return CreatedAtAction(nameof(GetById), new { id = newFornecedorDto.Id }, newFornecedorDto);
             }
-        }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFornecedor(Guid id, Fornecedor fornecedor)
-        {
-            if (id != fornecedor.Id)
+            catch (ArgumentException ex)
             {
-                return BadRequest();
+                return BadRequest(new { message = ex.Message });
             }
-            await _service.UpdateAsync(fornecedor);
-            return NoContent();
         }
-        [HttpDelete("{id}")]
+
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutFornecedor(Guid id, FornecedorUpdateDto fornecedorDto)
+        {
+            if (id != fornecedorDto.Id)
+            {
+                return BadRequest(new { message = "O ID da rota não corresponde ao ID do fornecedor no corpo da requisição." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var fornecedor = _mapper.Map<Fornecedor>(fornecedorDto);
+                var updated = await _service.UpdateAsync(fornecedor);
+
+                if (!updated)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> DeleteFornecedor(Guid id)
         {
-            await _service.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                var deleted = await _service.DeleteAsync(id);
+
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
     }
 }

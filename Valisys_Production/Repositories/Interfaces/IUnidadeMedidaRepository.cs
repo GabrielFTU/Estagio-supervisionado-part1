@@ -9,7 +9,7 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<UnidadeMedida> AddAsync(UnidadeMedida unidadeMedida);
         Task<UnidadeMedida?> GetByIdAsync(Guid id);
         Task<IEnumerable<UnidadeMedida>> GetAllAsync();
-        Task UpdateAsync(UnidadeMedida unidadeMedida);
-        Task DeleteAsync(Guid id);
+        Task<bool> UpdateAsync(UnidadeMedida unidadeMedida);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

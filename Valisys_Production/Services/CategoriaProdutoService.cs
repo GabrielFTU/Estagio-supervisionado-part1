@@ -1,6 +1,4 @@
-﻿// Services/CategoriaProdutoService.cs
-
-using Valisys_Production.Models;
+﻿using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
 using System.Collections.Generic;
@@ -27,8 +25,12 @@ namespace Valisys_Production.Services
             return await _repository.AddAsync(categoriaProduto);
         }
 
-        public async Task<CategoriaProduto?> GetByIdAsync(int id)
+        public async Task<CategoriaProduto?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Categoria de Produto inválido.");
+            }
             return await _repository.GetByIdAsync(id);
         }
 
@@ -37,18 +39,41 @@ namespace Valisys_Production.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task UpdateAsync(CategoriaProduto categoriaProduto)
+        public async Task<bool> UpdateAsync(CategoriaProduto categoriaProduto)
         {
+            if (categoriaProduto.Id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Categoria de Produto ausente para atualização.");
+            }
             if (string.IsNullOrEmpty(categoriaProduto.Nome))
             {
                 throw new ArgumentException("O nome da categoria é obrigatório.");
             }
-            await _repository.UpdateAsync(categoriaProduto);
+
+            var existingCategoria = await _repository.GetByIdAsync(categoriaProduto.Id);
+            if (existingCategoria == null)
+            {
+                throw new KeyNotFoundException($"Categoria de Produto com ID {categoriaProduto.Id} não encontrada.");
+            }
+
+      
+            return await _repository.UpdateAsync(categoriaProduto);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID da Categoria de Produto inválido para exclusão.");
+            }
+
+            var existingCategoria = await _repository.GetByIdAsync(id);
+            if (existingCategoria == null)
+            {
+                return false;
+            }
+    
+            return await _repository.DeleteAsync(id);
         }
     }
 }

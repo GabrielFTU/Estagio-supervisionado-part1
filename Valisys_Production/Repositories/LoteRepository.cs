@@ -4,10 +4,11 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
-    public class LoteRepository 
+    public class LoteRepository : ILoteRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -26,6 +27,7 @@ namespace Valisys_Production.Repositories
         public async Task<Lote?> GetByIdAsync(Guid id)
         {
             return await _context.Lotes
+                .AsNoTracking()
                 .Include(l => l.Produto)
                 .Include(l => l.Almoxarifado)
                 .FirstOrDefaultAsync(l => l.Id == id);
@@ -34,25 +36,39 @@ namespace Valisys_Production.Repositories
         public async Task<IEnumerable<Lote>> GetAllAsync()
         {
             return await _context.Lotes
+                .AsNoTracking()
                 .Include(l => l.Produto)
                 .Include(l => l.Almoxarifado)
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Lote lote)
+        public async Task<bool> UpdateAsync(Lote lote)
         {
-            _context.Lotes.Update(lote);
-            await _context.SaveChangesAsync();
+            _context.Entry(lote).State = EntityState.Modified;
+
+            try
+            {
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var lote = await _context.Lotes.FindAsync(id);
+
             if (lote != null)
             {
                 _context.Lotes.Remove(lote);
-                await _context.SaveChangesAsync();
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
             }
+
+            return false;
         }
     }
 }

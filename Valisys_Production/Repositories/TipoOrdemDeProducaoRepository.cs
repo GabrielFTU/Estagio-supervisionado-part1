@@ -4,6 +4,7 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -19,7 +20,6 @@ namespace Valisys_Production.Repositories
         public async Task<TipoOrdemDeProducao> AddAsync(TipoOrdemDeProducao tipoOrdemDeProducao)
         {
             _context.TiposDeOrdemDeProducao.Add(tipoOrdemDeProducao);
-            await _context.SaveChangesAsync();
             return tipoOrdemDeProducao;
         }
 
@@ -35,20 +35,32 @@ namespace Valisys_Production.Repositories
             return await _context.TiposDeOrdemDeProducao.AsNoTracking().ToListAsync();
         }
 
-        public async Task UpdateAsync(TipoOrdemDeProducao tipoOrdemDeProducao)
+        public async Task<bool> UpdateAsync(TipoOrdemDeProducao tipoOrdemDeProducao)
         {
-            _context.TiposDeOrdemDeProducao.Update(tipoOrdemDeProducao);
-            await _context.SaveChangesAsync();
+            _context.Entry(tipoOrdemDeProducao).State = EntityState.Modified;
+
+            try
+            {
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<bool> DeleteAsync(Guid id)
         {
             var tipoOrdemDeProducao = await _context.TiposDeOrdemDeProducao.FindAsync(id);
+
             if (tipoOrdemDeProducao != null)
             {
                 _context.TiposDeOrdemDeProducao.Remove(tipoOrdemDeProducao);
-                await _context.SaveChangesAsync();
+  
+                return true;
             }
+
+            return false;
         }
     }
 }

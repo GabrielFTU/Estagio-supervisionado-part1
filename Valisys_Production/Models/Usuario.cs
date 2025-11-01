@@ -24,5 +24,6 @@ namespace Valisys_Production.Models
 
         public Guid PerfilId { get; set; }
         public Perfil Perfil { get; set; }
+        public DateTime DataCadastro { get; set; }
     }
 }
