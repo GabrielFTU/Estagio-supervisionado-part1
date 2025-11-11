@@ -11,6 +11,6 @@ namespace Valisys_Production.DTOs
         [StringLength(50)]
         public string Nome { get; set; }
 
-        public bool Ativo { get; set; }
+        public bool Ativo { get; set; } = true;
     }
 }

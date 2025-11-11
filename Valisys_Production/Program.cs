@@ -53,6 +53,7 @@ builder.Services.AddScoped<IOrdemDeProducaoRepository, OrdemDeProducaoRepository
 builder.Services.AddScoped<IOrdemDeProducaoService, OrdemDeProducaoService>();
 builder.Services.AddScoped<IAuthService,AuthService>();
 
+builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 

@@ -22,9 +22,9 @@ namespace Valisys_Production.DTOs
         public string Observacoes { get; set; }
 
         [Required]
-        public int UnidadeMedidaId { get; set; }
+        public Guid UnidadeMedidaId { get; set; }
 
         [Required]
-        public int CategoriaProdutoId { get; set; }
+        public Guid CategoriaProdutoId { get; set; }
     }
 }

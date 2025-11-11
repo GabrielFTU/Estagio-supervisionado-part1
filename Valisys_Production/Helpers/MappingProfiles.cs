@@ -32,7 +32,8 @@ namespace Valisys_Production.Helpers
             CreateMap<Lote, LoteReadDto>()
                 .ForMember(dest => dest.NumeroLote, opt => opt.MapFrom(src => src.CodigoLote));
             CreateMap<LoteCreateDto, Lote>();
-            CreateMap<LoteUpdateDto, Lote>();
+            CreateMap<LoteUpdateDto, Lote>()
+                .ForMember(dest => dest.CodigoLote, opt => opt.MapFrom(src => src.NumeroLote));
 
             // Movimentação
             CreateMap<Movimentacao, MovimentacaoReadDto>()
@@ -49,8 +50,29 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.AlmoxarifadoNome, opt => opt.MapFrom(src => src.Almoxarifado.Nome))
                 .ForMember(dest => dest.FaseAtualNome, opt => opt.MapFrom(src => src.FaseAtual.Nome))
                 .ForMember(dest => dest.LoteNumero, opt => opt.MapFrom(src => src.Lote != null ? src.Lote.CodigoLote : null));
-            CreateMap<OrdemDeProducaoCreateDto, OrdemDeProducao>();
-            CreateMap<OrdemDeProducaoUpdateDto, OrdemDeProducao>();
+
+            CreateMap<OrdemDeProducaoCreateDto, OrdemDeProducao>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.DataInicio, opt => opt.Ignore())
+                .ForMember(dest => dest.DataFim, opt => opt.Ignore())
+                .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore())
+                .ForMember(dest => dest.Produto, opt => opt.Ignore())
+                .ForMember(dest => dest.Almoxarifado, opt => opt.Ignore())
+                .ForMember(dest => dest.FaseAtual, opt => opt.Ignore())
+                .ForMember(dest => dest.Lote, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.SolicitacaoProducao, opt => opt.Ignore());
+
+            CreateMap<OrdemDeProducaoUpdateDto, OrdemDeProducao>()
+                .ForMember(dest => dest.DataInicio, opt => opt.Ignore())
+                .ForMember(dest => dest.Produto, opt => opt.Ignore())
+                .ForMember(dest => dest.Almoxarifado, opt => opt.Ignore())
+                .ForMember(dest => dest.FaseAtual, opt => opt.Ignore())
+                .ForMember(dest => dest.Lote, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.SolicitacaoProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore());
 
             // Perfil
             CreateMap<Perfil, PerfilReadDto>();
@@ -66,9 +88,14 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.AlmoxarifadoEstoqueId, opt => opt.Ignore())
                 .ForMember(dest => dest.AlmoxarifadoEstoqueNome, opt => opt.Ignore());
             CreateMap<ProdutoCreateDto, Produto>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Ativo, opt => opt.Ignore())
+                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
                 .ForMember(dest => dest.UnidadeMedida, opt => opt.Ignore())
                 .ForMember(dest => dest.CategoriaProduto, opt => opt.Ignore());
             CreateMap<ProdutoUpdateDto, Produto>()
+                .ForMember(dest => dest.CodigoInternoProduto, opt => opt.MapFrom(src => src.Codigo))
+                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
                 .ForMember(dest => dest.UnidadeMedida, opt => opt.Ignore())
                 .ForMember(dest => dest.CategoriaProduto, opt => opt.Ignore());
 
@@ -83,22 +110,59 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.UsuarioAprovadorNome, opt => opt.MapFrom(src => src.UsuarioAprovacao != null ? src.UsuarioAprovacao.Nome : null));
             CreateMap<SolicitacaoProducaoCreateDto, SolicitacaoProducao>()
                 .ForMember(dest => dest.CodigoSolicitacao, opt => opt.MapFrom(src => src.Codigo))
-                .ForMember(dest => dest.Quantidade, opt => opt.MapFrom(src => src.QuantidadeSolicitada));
+                .ForMember(dest => dest.Quantidade, opt => opt.MapFrom(src => src.QuantidadeSolicitada))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.DataSolicitacao, opt => opt.Ignore())
+                .ForMember(dest => dest.DataAprovacao, opt => opt.Ignore())
+                .ForMember(dest => dest.EncarregadoId, opt => opt.Ignore())
+                .ForMember(dest => dest.Encarregado, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioAprovacaoId, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioAprovacao, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducaoId, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.Produto, opt => opt.Ignore())
+                .ForMember(dest => dest.OrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.Itens, opt => opt.Ignore())
+                .ForMember(dest => dest.Observacoes, opt => opt.Ignore());
             CreateMap<SolicitacaoProducaoUpdateDto, SolicitacaoProducao>()
                 .ForMember(dest => dest.CodigoSolicitacao, opt => opt.MapFrom(src => src.Codigo))
-                .ForMember(dest => dest.Quantidade, opt => opt.MapFrom(src => src.QuantidadeSolicitada));
+                .ForMember(dest => dest.Quantidade, opt => opt.MapFrom(src => src.QuantidadeSolicitada))
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.DataSolicitacao, opt => opt.Ignore())
+                .ForMember(dest => dest.DataAprovacao, opt => opt.Ignore())
+                .ForMember(dest => dest.EncarregadoId, opt => opt.Ignore())
+                .ForMember(dest => dest.Encarregado, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioAprovacaoId, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioAprovacao, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducaoId, opt => opt.Ignore())
+                .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.Produto, opt => opt.Ignore())
+                .ForMember(dest => dest.OrdemDeProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.Itens, opt => opt.Ignore())
+                .ForMember(dest => dest.Observacoes, opt => opt.Ignore());
 
             // Tipo Ordem de Produção
             CreateMap<TipoOrdemDeProducao, TipoOrdemDeProducaoReadDto>();
-            CreateMap<TipoOrdemDeProducaoCreateDto, TipoOrdemDeProducao>();
-            CreateMap<TipoOrdemDeProducaoUpdateDto, TipoOrdemDeProducao>();
+            CreateMap<TipoOrdemDeProducaoCreateDto, TipoOrdemDeProducao>()
+                .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
+            CreateMap<TipoOrdemDeProducaoUpdateDto, TipoOrdemDeProducao>()
+                .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
+                .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
 
             // Usuário
             CreateMap<Usuario, UsuarioReadDto>();
             CreateMap<UsuarioCreateDto, Usuario>()
-                .ForMember(dest => dest.SenhaHash, opt => opt.MapFrom(src => src.Senha));
+                .ForMember(dest => dest.SenhaHash, opt => opt.MapFrom(src => src.Senha))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
+                .ForMember(dest => dest.Perfil, opt => opt.Ignore());
             CreateMap<UsuarioUpdateDto, Usuario>()
-                .ForMember(dest => dest.SenhaHash, opt => opt.Ignore());
+                .ForMember(dest => dest.SenhaHash, opt => opt.Ignore())
+                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
+                .ForMember(dest => dest.Perfil, opt => opt.Ignore());
         }
     }
 }
