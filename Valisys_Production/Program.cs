@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens; 
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using System.Linq;
+using System.Text;
 using Valisys_Production.Data;
 using Valisys_Production.Helpers;
 using Valisys_Production.Models;
@@ -11,6 +14,27 @@ using Valisys_Production.Services;
 using Valisys_Production.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+var key = Encoding.ASCII.GetBytes("fALjfDmfKT6Z2wj426wnM43R3Sc8zL92");
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}) 
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
@@ -24,6 +48,7 @@ builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseNpgsql(connectionString));
+
 
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
@@ -51,14 +76,10 @@ builder.Services.AddScoped<ITipoOrdemDeProducaoRepository, TipoOrdemDeProducaoRe
 builder.Services.AddScoped<ITipoOrdemDeProducaoService, TipoOrdemDeProducaoService>();
 builder.Services.AddScoped<IOrdemDeProducaoRepository, OrdemDeProducaoRepository>();
 builder.Services.AddScoped<IOrdemDeProducaoService, OrdemDeProducaoService>();
-builder.Services.AddScoped<IAuthService,AuthService>();
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
-
-
-
 
 builder.Services.AddCors(options =>
 {
@@ -79,11 +100,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+
+// app.UseHttpsRedirection(); 
 
 app.UseCors("MyAllowSpecificOrigins");
 
+
+app.UseAuthentication(); 
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

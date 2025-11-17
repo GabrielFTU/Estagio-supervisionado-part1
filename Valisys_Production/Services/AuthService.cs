@@ -31,7 +31,7 @@ namespace Valisys_Production.Services
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("sua_chave_secreta_aqui");
+            var key = Encoding.ASCII.GetBytes("fALjfDmfKT6Z2wj426wnM43R3Sc8zL92");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

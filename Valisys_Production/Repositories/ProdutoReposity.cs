@@ -2,6 +2,9 @@
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -25,12 +28,19 @@ namespace Valisys_Production.Repositories
         {
             return await _context.Produtos
                 .AsNoTracking()
+                .Include(p => p.CategoriaProduto)
+                .Include(p => p.UnidadeMedida)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<Produto>> GetAllAsync()
         {
-            return await _context.Produtos.AsNoTracking().ToListAsync();
+            return await _context.Produtos
+                .AsNoTracking()
+                .AsNoTracking()
+                .Include(p => p.CategoriaProduto)
+                .Include(p => p.UnidadeMedida)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Produto produto)

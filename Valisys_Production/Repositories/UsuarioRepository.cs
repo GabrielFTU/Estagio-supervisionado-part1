@@ -20,14 +20,14 @@ namespace Valisys_Production.Repositories
 
         public async Task<Usuario> AddAsync(Usuario usuario)
         {
-        
             _context.Usuarios.Add(usuario);
+            // CORREÇÃO: Faltava salvar as mudanças no banco de dados
+            await _context.SaveChangesAsync();
             return usuario;
         }
 
         public async Task<Usuario?> GetByIdAsync(Guid id)
         {
-   
             return await _context.Usuarios
                 .AsNoTracking()
                 .Include(u => u.Perfil)
@@ -36,7 +36,6 @@ namespace Valisys_Production.Repositories
 
         public async Task<IEnumerable<Usuario>> GetAllAsync()
         {
-           
             return await _context.Usuarios
                 .AsNoTracking()
                 .Include(u => u.Perfil)
@@ -49,10 +48,11 @@ namespace Valisys_Production.Repositories
 
             try
             {
-               
-                return true;
+                // CORREÇÃO: Faltava salvar as mudanças no banco de dados
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
             }
-            catch 
+            catch
             {
                 return false;
             }
@@ -65,15 +65,15 @@ namespace Valisys_Production.Repositories
             if (usuario != null)
             {
                 _context.Usuarios.Remove(usuario);
-                
-                return true;
+                // CORREÇÃO: Faltava salvar as mudanças no banco de dados
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
             }
             return false;
         }
 
         public async Task<Usuario?> GetByEmailAsync(string email)
         {
-            
             return await _context.Usuarios
                .AsNoTracking()
                .Include(u => u.Perfil)

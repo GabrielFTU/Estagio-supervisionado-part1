@@ -1,41 +1,64 @@
-import { Routes, Route, Outlet, Link } from 'react-router-dom';
-// CORREÇÃO: Corrigido para bater com o seu nome de arquivo 'produto.jsx'
-import Produtos from './features/produtos/produto.jsx'; 
-import './App.css'; 
+import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
+import Login from './features/auth/Login.jsx'; // <--- Adicionada extensão .jsx
+import ProdutoList from './features/produto/ProdutoList.Jsx'; // <--- Adicionada extensão .jsx
+import useAuthStore from './stores/useAuthStore.js'; // <--- Adicionada extensão .js
+import './index.css'; // Importando o CSS global
 
-// Layout (sem alterações)
+// Componente para Proteger Rotas (sem alteração)
+function PrivateRoute() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+}
+
+// Layout Principal (com links atualizados)
 function Layout() {
+  const logout = useAuthStore((state) => state.logout);
+  
   return (
-    <div>
+    <div className="app-layout">
       <nav className="navbar">
-        <Link to="/" className="nav-logo">Valisys</Link>
+        <div className="nav-brand">Valisys Production</div>
         <div className="nav-links">
           <Link to="/">Dashboard</Link>
           <Link to="/produtos">Produtos</Link>
+          {/* Adicione outros links aqui */}
+        </div>
+        <div className="nav-user">
+          <button onClick={logout} className="btn-logout">
+            Sair
+          </button>
         </div>
       </nav>
       <main className="content">
-        <Outlet /> 
+        <Outlet />
       </main>
     </div>
   );
 }
 
-// Home (sem alterações)
-function Home() {
-  return <h1>Frontend Valisys - Dashboard</h1>;
-}
-
-// App (sem alterações)
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} /> 
-        <Route path="produtos" element={<Produtos />} />
+      <Route path="/login" element={<Login />} />
+
+      <Route element={<PrivateRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<h1>Bem-vindo ao Dashboard</h1>} />
+          <Route path="/produtos" element={<ProdutoList />} /> {/* <--- 2. ADICIONAR ROTA */}
+          {/* Rota para o formulário (vamos criar depois) */}
+          {/* <Route path="/produtos/novo" element={<h1>Form Novo Produto</h1>} /> */}
+          {/* <Route path="/produtos/editar/:id" element={<h1>Form Editar Produto</h1>} /> */}
+        </Route>
       </Route>
+      
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
 
 export default App;
+
+/* === Adicione este CSS no seu 'src/index.css' === */
+/*
+
+*/

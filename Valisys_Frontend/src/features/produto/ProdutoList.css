@@ -1,23 +1,44 @@
-.produtos-page {
+.page-container {
   width: 100%;
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  margin: 0 auto;
+  padding: 1rem;
   color: #ececec;
 }
 
-.produtos-page h1 {
-  text-align: left;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 2px solid #444;
-  padding-bottom: 10px;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.btn-new {
+  background-color: #646cff;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.btn-new:hover {
+  background-color: #535bf2;
 }
 
 .loading-message,
 .error-message {
   text-align: center;
-  padding: 50px;
-  font-size: 1.2rem;
+  padding: 40px;
+  font-size: 1.1rem;
   border-radius: 8px;
   margin-top: 20px;
 }
@@ -33,35 +54,35 @@
   border: 1px solid #ff6b6b;
 }
 
-.produtos-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 25px;
   background-color: #2a2a2a;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   border-radius: 8px;
-  overflow: hidden; /* Para o border-radius funcionar */
+  overflow: hidden;
 }
 
-.produtos-table th,
-.produtos-table td {
+.data-table th,
+.data-table td {
   border-bottom: 1px solid #444;
-  padding: 14px 18px;
+  padding: 12px 16px;
   text-align: left;
+  vertical-align: middle;
 }
 
-.produtos-table th {
+.data-table th {
   background-color: #333;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.produtos-table tr:last-of-type td {
+.data-table tr:last-of-type td {
   border-bottom: none;
 }
 
-.produtos-table tr:hover {
+.data-table tr:hover {
   background-color: #353535;
 }
 
@@ -76,29 +97,24 @@
 }
 
 .acoes-cell button {
-  padding: 6px 12px;
+  padding: 6px 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
   margin-right: 8px;
   transition: all 0.2s ease;
+  font-size: 0.85rem;
 }
 
 .btn-editar {
   background-color: #42a5f5; /* Azul */
   color: white;
 }
-
-.btn-editar:hover {
-  background-color: #1e88e5;
-}
+.btn-editar:hover { background-color: #1e88e5; }
 
 .btn-deletar {
   background-color: #ef5350; /* Vermelho */
   color: white;
 }
-
-.btn-deletar:hover {
-  background-color: #d32f2f;
-}
+.btn-deletar:hover { background-color: #d32f2f; }
