@@ -9,13 +9,11 @@ import produtoService from '../../services/produtoService.js';
 import categoriaProdutoService from '../../services/categoriaProdutoService.js';
 import unidadeMedidaService from '../../services/unidadeMedidaService.js';
 
-import './ProdutoForm.css'; // Reutilizando o CSS do form de criação
+import './ProdutoForm.css'; 
 
-// Esquema de validação (Idêntico ao Create, mas 'ativo' pode ser editado)
 const produtoSchema = z.object({
   nome: z.string().min(3, "Nome obrigatório (min 3 letras)."),
   descricao: z.string().min(1, "Descrição obrigatória."),
-  // Atenção: no DTO de Update é 'Codigo', não 'CodigoInternoProduto'
   codigo: z.string().min(1, "Código obrigatório."), 
   estoqueMinimo: z.coerce.number().min(0, "Estoque mínimo deve ser positivo."),
   controlarPorLote: z.boolean(),
@@ -23,12 +21,11 @@ const produtoSchema = z.object({
   
   unidadeMedidaId: z.string().min(1, "Selecione uma Unidade."),
   categoriaProdutoId: z.string().min(1, "Selecione uma Categoria."),
-  // Campo opcional, pode vir nulo
   almoxarifadoEstoqueId: z.string().optional().nullable()
 });
 
 function ProdutoEdit() {
-  const { id } = useParams(); // Pega o ID da URL
+  const { id } = useParams(); 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -41,13 +38,11 @@ function ProdutoEdit() {
     resolver: zodResolver(produtoSchema)
   });
 
-  // 1. Buscar dados do Produto
   const { data: produto, isLoading: isLoadingProduto } = useQuery({
     queryKey: ['produto', id],
     queryFn: () => produtoService.getById(id)
   });
 
-  // 2. Buscar Dropdowns
   const { data: categorias } = useQuery({
     queryKey: ['categoriasProduto'],
     queryFn: categoriaProdutoService.getAll
@@ -58,25 +53,23 @@ function ProdutoEdit() {
     queryFn: unidadeMedidaService.getAll
   });
 
-  // 3. Preencher o formulário quando os dados chegarem
   useEffect(() => {
     if (produto) {
-      // Mapeia os dados da API para os campos do formulário
       reset({
         nome: produto.nome,
-        // Se a API retornar nulo na descrição, usamos string vazia para não quebrar o input
         descricao: produto.descricao || "", 
         codigo: produto.codigo, 
         estoqueMinimo: produto.estoqueMinimo || 0,
         controlarPorLote: produto.controlarPorLote,
         ativo: produto.ativo,
         unidadeMedidaId: produto.unidadeMedidaId,
-        categoriaProdutoId: produto.categoriaProdutoId
+        categoriaProdutoId: produto.categoriaProdutoId,
+        observacoes: produto.observacoes || "", 
+        almoxarifadoEstoqueId: produto.almoxarifadoEstoqueId || null
       });
     }
   }, [produto, reset]);
 
-  // 4. Mutação de Update
   const updateMutation = useMutation({
     mutationFn: (data) => produtoService.update(id, data),
     onSuccess: () => {
@@ -85,12 +78,11 @@ function ProdutoEdit() {
     },
     onError: (err) => {
       console.error(err);
-      alert("Erro ao atualizar produto.");
+      alert(`Erro ao atualizar produto: ${err.response?.data?.message || err.message}`);
     }
   });
 
   const onSubmit = (data) => {
-    // O serviço espera o objeto com os dados + o ID
     updateMutation.mutate({ ...data, id });
   };
 
@@ -141,6 +133,11 @@ function ProdutoEdit() {
           <label>Estoque Mínimo</label>
           <input type="number" step="0.01" {...register('estoqueMinimo')} />
           {errors.estoqueMinimo && <span className="error">{errors.estoqueMinimo.message}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label>Observações</label>
+          <textarea {...register('observacoes')} rows="3" />
         </div>
 
         <div className="form-group-checkbox">

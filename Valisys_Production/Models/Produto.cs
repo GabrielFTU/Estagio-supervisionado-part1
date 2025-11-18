@@ -21,7 +21,7 @@ namespace Valisys_Production.Models
         public bool ControlarPorLote { get; set; } = false;
 
         [MaxLength(500)]
-        public string Observacoes { get; set; }
+        public string? Observacoes { get; set; }
 
         public bool Ativo { get; set; } = true;
         public DateTime DataCadastro { get; set; } = DateTime.UtcNow;

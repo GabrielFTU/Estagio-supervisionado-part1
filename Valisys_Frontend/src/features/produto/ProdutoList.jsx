@@ -16,17 +16,17 @@ function ProdutoList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Configuração da ação de deletar
   const deleteMutation = useMutation({
-    mutationFn: produtoService.remove,
+    mutationFn: produtoService.delete, 
     onSuccess: () => {
-      // Atualiza a lista automaticamente após excluir
+      
       queryClient.invalidateQueries({ queryKey: ['produtos'] });
       alert("Produto excluído com sucesso!");
     },
-    onError: (err) => {
+     onError: (err) => {
       console.error(err);
-      alert("Erro ao excluir. O produto pode estar em uso.");
+      const errorMessage = err.response?.data?.message || "Erro ao excluir. O produto pode estar em uso ou credenciais inválidas.";
+      alert(errorMessage);
     }
   });
 
@@ -71,15 +71,12 @@ function ProdutoList() {
                   </span>
                 </td>
                 <td className="acoes-cell">
-                  {/* Botão Editar */}
                   <button 
                     className="btn-editar" 
                     onClick={() => navigate(`/produtos/editar/${produto.id}`)}
                   >
                     Editar
                   </button>
-                  
-                  {/* Botão Excluir */}
                   <button 
                     className="btn-deletar" 
                     onClick={() => handleDelete(produto.id)}

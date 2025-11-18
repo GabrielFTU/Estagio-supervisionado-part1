@@ -21,7 +21,7 @@ namespace Valisys_Production.DTOs
         public string Descricao { get; set; }
 
         [StringLength(500)]
-        public string Observacoes { get; set; }
+        public string? Observacoes { get; set; }
 
         [Required(ErrorMessage = "O estoque mínimo é obrigatório.")]
         [Range(0, double.MaxValue)]
