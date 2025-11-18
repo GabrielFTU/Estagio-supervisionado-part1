@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using BCrypt.Net;
-
+using Valisys_Production.Models;
 
 namespace Valisys_Production.Services
 {
@@ -21,13 +21,13 @@ namespace Valisys_Production.Services
             _usuarioRepository = usuarioRepository;
         }
 
-        public async Task<string> LoginAsync(LoginDto loginDto)
+        public async Task<(string Token, Usuario User)> LoginAsync(LoginDto loginDto)
         {
             var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
 
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash))
             {
-                return "Credenciais inválidas.";
+                throw new UnauthorizedAccessException("Credenciais inválidas.");
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -36,6 +36,7 @@ namespace Valisys_Production.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
+                    new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()), 
                     new Claim(ClaimTypes.Name, usuario.Nome),
                     new Claim(ClaimTypes.Email, usuario.Email),
                 }),
@@ -44,7 +45,7 @@ namespace Valisys_Production.Services
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            return (tokenHandler.WriteToken(token), usuario);
         }
     }
 }

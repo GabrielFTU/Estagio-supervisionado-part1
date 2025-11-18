@@ -1,120 +1,121 @@
 .page-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  color: #ececec;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    color: var(--text-primary);
 }
 
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #444;
-  padding-bottom: 1rem;
-  margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
 }
 
 .page-header h1 {
-  margin: 0;
-  font-size: 1.8rem;
+    margin: 0;
+    font-size: 1.8rem;
 }
 
 .btn-new {
-  background-color: #646cff;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: background-color 0.2s;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
 }
 
 .btn-new:hover {
-  background-color: #535bf2;
+    background-color: #535bf2;
 }
 
 .loading-message,
 .error-message {
-  text-align: center;
-  padding: 40px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  margin-top: 20px;
+    text-align: center;
+    padding: 40px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin-top: 20px;
 }
 
 .loading-message {
-  background-color: #2a2a2a;
-  color: #9e9e9e;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
 }
 
 .error-message {
-  background-color: #4d2a2a;
-  color: #ffacac;
-  border: 1px solid #ff6b6b;
+    background-color: var(--bg-tertiary);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
 }
 
 .data-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #2a2a2a;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
-  overflow: hidden;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .data-table th,
 .data-table td {
-  border-bottom: 1px solid #444;
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: middle;
+    color: var(--text-primary);
 }
 
 .data-table th {
-  background-color: #333;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    background-color: var(--bg-tertiary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .data-table tr:last-of-type td {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .data-table tr:hover {
-  background-color: #353535;
+    background-color: var(--bg-tertiary);
 }
 
 .status-ativo {
-  color: #81c784;
-  font-weight: bold;
+    color: #81c784;
+    font-weight: bold;
 }
 
 .status-inativo {
-  color: #e57373; 
-  font-weight: bold;
+    color: var(--color-danger);
+    font-weight: bold;
 }
 
 .acoes-cell button {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-right: 8px;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
 }
 
 .btn-editar {
-  background-color: #42a5f5; 
-  color: white;
+    background-color: #42a5f5;
+    color: white;
 }
 .btn-editar:hover { background-color: #1e88e5; }
 
 .btn-deletar {
-  background-color: #ef5350; 
-  color: white;
+    background-color: var(--color-danger);
+    color: white;
 }
 .btn-deletar:hover { background-color: #d32f2f; }

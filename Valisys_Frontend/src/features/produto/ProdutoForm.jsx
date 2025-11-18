@@ -18,8 +18,8 @@ const produtoSchema = z.object({
   controlarPorLote: z.boolean().default(false),
   observacoes: z.string().optional(),
   
-  unidadeMedidaId: z.string().min(1, "Você deve selecionar uma Unidade de Medida."),
-  categoriaProdutoId: z.string().min(1, "Você deve selecionar uma Categoria."),
+  unidadeMedidaId: z.string().uuid("Você deve selecionar uma Unidade de Medida."),
+  categoriaProdutoId: z.string().uuid("Você deve selecionar uma Categoria."),
 });
 
 function ProdutoForm() {

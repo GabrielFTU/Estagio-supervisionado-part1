@@ -25,10 +25,10 @@ function Login() {
   });
 
   const onSubmit = async (data) => {
-    try {
+      try {
       const response = await authService.login(data.email, data.senha);
       
-      setLogin(response.token);
+      setLogin(response.token, response.user); 
       navigate('/');
     } catch (error) {
       console.error("Erro no login", error);

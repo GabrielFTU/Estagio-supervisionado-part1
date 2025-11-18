@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Valisys_Production.DTOs;
 using Valisys_Production.Services.Interfaces;
-
+using AutoMapper; 
+using Valisys_Production.Models;
 
 namespace Valisys_Production.Controllers
 {
@@ -10,10 +11,12 @@ namespace Valisys_Production.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IMapper _mapper;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IMapper mapper) 
         {
             _authService = authService;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
@@ -29,14 +32,16 @@ namespace Valisys_Production.Controllers
 
             try
             {
-                var token = await _authService.LoginAsync(loginDto);
+                var (token, usuario) = await _authService.LoginAsync(loginDto);
 
                 if (string.IsNullOrEmpty(token))
                 {
                     return Unauthorized(new { message = "Credenciais inválidas." });
                 }
 
-                return Ok(new { token });
+                var userDto = _mapper.Map<UsuarioReadDto>(usuario);
+
+                return Ok(new { token, user = userDto }); 
             }
             catch (ArgumentException ex)
             {
