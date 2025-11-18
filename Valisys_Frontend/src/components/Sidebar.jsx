@@ -4,10 +4,12 @@ import {
   Menu, Factory, Box, Settings, Users, Layers, Tag, Ruler, Key, ChevronDown, ChevronUp, LogOut, Home, ArrowLeft, ArrowRight
 } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore.js';
+import ValisysLogoV3 from '/Logo_V.png'; 
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
-  const [openMenu, setOpenMenu] = useState('estoque'); 
-  const { toggleTheme, theme } = useAuthStore((state) => ({ toggleTheme: state.toggleTheme, theme: state.theme }));
+  const [openMenu, setOpenMenu] = useState('null'); 
+  const theme = useAuthStore((state) => state.theme);
+  const toggleTheme = useAuthStore((state) => state.toggleTheme);
   const logout = useAuthStore((state) => state.logout);
 
   const toggleMenu = (menuName) => {
@@ -30,18 +32,22 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         { name: 'Movimentações', link: '/estoque/movimentacoes' },
       ]
     },
+    { 
+      name: 'Cadastros', icon: Layers, menuName: 'cadastros',
+      subMenu: [
+          { name: 'Fornecedores', link: '/settings/cadastros/fornecedores' },
+          { name: 'Almoxarifados', link: '/settings/cadastros/almoxarifados' },
+          { name: 'Categorias', link: '/settings/cadastros/categorias' },
+          { name: 'Unidades de Medida', link: '/settings/cadastros/unidades' },
+          { name: 'Fases de Produção', link: '/settings/cadastros/fases' },
+          { name: 'Tipos de OP', link: '/settings/cadastros/tiposop' },
+      ]
+    },
   ];
   
   const settingsMenu = { 
       name: 'Configurações', icon: Settings, menuName: 'settings',
       groups: [
-          {
-              name: 'Cadastros', icon: Tag, menuName: 'settings-cadastros',
-              subMenu: [
-                  { name: 'Categorias', link: '/settings/cadastros/categorias' },
-                  { name: 'Unidades de Medida', link: '/settings/cadastros/unidades' },
-              ]
-          },
           {
               name: 'Acesso', icon: Key, menuName: 'settings-acesso',
               subMenu: [
@@ -55,6 +61,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="sidebar-header">
+        <img src={ValisysLogoV3} alt="Valisys V3 Logo" className="valisys-logo" />
         <button onClick={toggleSidebar} className="toggle-btn-fixed">
           {isCollapsed ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
         </button>
@@ -62,8 +69,48 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
       <div className="sidebar-nav">
         {menus.map((menu) => (
-          <div key={menu.name}>
-          </div>
+            <div key={menu.name}>
+                {menu.subMenu ? (
+                    <>
+                        <div 
+                            className={`menu-item has-submenu ${openMenu === menu.menuName ? 'open' : ''}`}
+                            onClick={() => toggleMenu(menu.menuName)}
+                        >
+                            <menu.icon size={20} className="menu-icon" />
+                            {!isCollapsed && (
+                                <>
+                                    <span>{menu.name}</span>
+                                    {openMenu === menu.menuName ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                </>
+                            )}
+                            {isCollapsed && <span className="tooltip">{menu.name}</span>}
+                        </div>
+                        {openMenu === menu.menuName && !isCollapsed && (
+                            <div className="submenu">
+                                {menu.subMenu.map((item) => (
+                                    <NavLink
+                                        key={item.link}
+                                        to={item.link}
+                                        className={({ isActive }) => `submenu-item ${isActive ? 'active' : ''}`}
+                                    >
+                                        <span>{item.name}</span>
+                                    </NavLink>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <NavLink
+                        to={menu.link}
+                        className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}
+                        end={menu.exact}
+                    >
+                        <menu.icon size={20} className="menu-icon" />
+                        {!isCollapsed && <span>{menu.name}</span>}
+                        {isCollapsed && <span className="tooltip">{menu.name}</span>}
+                    </NavLink>
+                )}
+            </div>
         ))}
       </div>
       

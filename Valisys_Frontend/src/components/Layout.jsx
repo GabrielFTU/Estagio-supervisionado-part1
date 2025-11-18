@@ -19,6 +19,15 @@ const ROUTE_TITLES = {
     '/estoque/produtos/editar/:id': 'Editar Produto',
     '/settings/usuarios/editar/:id': 'Editar Usuário',
     '/settings/perfis/editar/:id': 'Editar Perfil',
+    
+    '/settings/cadastros/fornecedores': 'Gerenciamento de Fornecedores',
+    '/settings/cadastros/fornecedores/novo': 'Novo Fornecedor',
+    '/settings/cadastros/fornecedores/editar/:id': 'Editar Fornecedor',
+    '/settings/cadastros/almoxarifados': 'Gerenciamento de Almoxarifados',
+    '/settings/cadastros/fases': 'Gerenciamento de Fases de Produção',
+    '/settings/cadastros/tiposop': 'Gerenciamento de Tipos de OP',
+    '/settings/cadastros/categorias': 'Gerenciamento de Categorias',
+    '/settings/cadastros/unidades': 'Gerenciamento de Unidades de Medida',
 };
 
 const getPageTitle = (pathname) => {
