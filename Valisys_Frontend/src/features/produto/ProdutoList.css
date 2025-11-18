@@ -87,12 +87,12 @@
 }
 
 .status-ativo {
-  color: #81c784; /* Verde */
+  color: #81c784;
   font-weight: bold;
 }
 
 .status-inativo {
-  color: #e57373; /* Vermelho */
+  color: #e57373; 
   font-weight: bold;
 }
 
@@ -108,13 +108,13 @@
 }
 
 .btn-editar {
-  background-color: #42a5f5; /* Azul */
+  background-color: #42a5f5; 
   color: white;
 }
 .btn-editar:hover { background-color: #1e88e5; }
 
 .btn-deletar {
-  background-color: #ef5350; /* Vermelho */
+  background-color: #ef5350; 
   color: white;
 }
 .btn-deletar:hover { background-color: #d32f2f; }

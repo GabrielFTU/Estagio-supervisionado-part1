@@ -1,16 +1,17 @@
 import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
-import Login from './features/auth/Login.jsx'; // <--- Adicionada extensão .jsx
-import ProdutoList from './features/produto/ProdutoList.Jsx'; // <--- Adicionada extensão .jsx
-import useAuthStore from './stores/useAuthStore.js'; // <--- Adicionada extensão .js
-import './index.css'; // Importando o CSS global
+import Login from './features/auth/Login.jsx'; 
+import ProdutoList from './features/produto/ProdutoList.Jsx'; 
+import ProdutoForm from './features/produto/ProdutoForm.Jsx';
+import ProdutoEdit from './features/produto/ProdutoEdit.jsx';
+import useAuthStore from './stores/useAuthStore.js'; 
+import './index.css';
 
-// Componente para Proteger Rotas (sem alteração)
+
 function PrivateRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-// Layout Principal (com links atualizados)
 function Layout() {
   const logout = useAuthStore((state) => state.logout);
   
@@ -21,7 +22,6 @@ function Layout() {
         <div className="nav-links">
           <Link to="/">Dashboard</Link>
           <Link to="/produtos">Produtos</Link>
-          {/* Adicione outros links aqui */}
         </div>
         <div className="nav-user">
           <button onClick={logout} className="btn-logout">
@@ -44,10 +44,10 @@ function App() {
       <Route element={<PrivateRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<h1>Bem-vindo ao Dashboard</h1>} />
-          <Route path="/produtos" element={<ProdutoList />} /> {/* <--- 2. ADICIONAR ROTA */}
-          {/* Rota para o formulário (vamos criar depois) */}
-          {/* <Route path="/produtos/novo" element={<h1>Form Novo Produto</h1>} /> */}
-          {/* <Route path="/produtos/editar/:id" element={<h1>Form Editar Produto</h1>} /> */}
+          
+          <Route path="/produtos" element={<ProdutoList />} />
+          <Route path="/produtos/novo" element={<ProdutoForm />} /> 
+         <Route path="/produtos/editar/:id" element={<ProdutoEdit />} />
         </Route>
       </Route>
       
@@ -57,8 +57,3 @@ function App() {
 }
 
 export default App;
-
-/* === Adicione este CSS no seu 'src/index.css' === */
-/*
-
-*/

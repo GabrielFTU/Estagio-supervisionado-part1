@@ -97,7 +97,9 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.CodigoInternoProduto, opt => opt.MapFrom(src => src.Codigo))
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
                 .ForMember(dest => dest.UnidadeMedida, opt => opt.Ignore())
-                .ForMember(dest => dest.CategoriaProduto, opt => opt.Ignore());
+                .ForMember(dest => dest.CategoriaProduto, opt => opt.Ignore())
+                .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Descricao))
+                .ForMember(dest => dest.Observacoes, opt => opt.MapFrom(src => src.Observacoes));
 
             // Solicitação Produção
             CreateMap<SolicitacaoProducao, SolicitacaoProducaoReadDto>()

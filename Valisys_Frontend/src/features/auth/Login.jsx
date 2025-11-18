@@ -6,7 +6,6 @@ import authService from '../../services/authService';
 import useAuthStore from '../../stores/useAuthStore';
 import './Login.css';
 
-// Validação do formulário
 const loginSchema = z.object({
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
   senha: z.string().min(1, 'Senha é obrigatória'),
