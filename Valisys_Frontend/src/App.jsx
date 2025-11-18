@@ -4,7 +4,12 @@ import Layout from './components/Layout.jsx';
 import ProdutoList from './features/produto/ProdutoList.Jsx'; 
 import ProdutoForm from './features/produto/ProdutoForm.Jsx';
 import ProdutoEdit from './features/produto/ProdutoEdit.jsx';
-import useAuthStore from './stores/useAuthStore.js'; 
+import PerfilList from './features/perfil/PerfilList.jsx';
+import PerfilForm from './features/perfil/PerfilForm.jsx';
+import UsuarioList from './features/usuario/UsuarioList.jsx';
+import UsuarioForm from './features/usuario/UsuarioForm.jsx';
+
+import useAuthStore from './stores/useAuthStore.js';
 import './index.css';
 
 function PrivateRoute() {
@@ -27,10 +32,13 @@ function App() {
           <Route path="/produtos/novo" element={<ProdutoForm />} /> 
           <Route path="/produtos/editar/:id" element={<ProdutoEdit />} />
 
-          {/* Rotas de Usuários 
-          <Route path="/usuarios" element={<UsuarioList />} />
-          <Route path="/usuarios/novo" element={<UsuarioForm />} />
-          <Route path="/usuarios/editar/:id" element={<UsuarioForm />} />  */}
+          <Route path="/configuracoes/perfis" element={<PerfilList />} />
+          <Route path="/configuracoes/perfis/novo" element={<PerfilForm />} /> 
+          <Route path="/configuracoes/perfis/editar/:id" element={<PerfilForm />} />
+
+          <Route path="/configuracoes/usuarios" element={<UsuarioList />} />
+          <Route path="/configuracoes/usuarios/novo" element={<UsuarioForm />} />
+          <Route path="/configuracoes/usuarios/editar/:id" element={<UsuarioForm />} />
 
         </Route>
       </Route>

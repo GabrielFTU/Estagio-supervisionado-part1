@@ -13,6 +13,8 @@ function Layout() {
         <div className="nav-links">
           <Link to="/">Dashboard</Link>
           <Link to="/produtos">Produtos</Link>
+          <Link to="/configuracoes/usuarios">Usuários</Link> 
+          <Link to="/configuracoes/perfis">Perfis</Link>   
         </div>
         <div className="nav-user">
           <button onClick={logout} className="btn-logout">

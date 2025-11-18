@@ -155,7 +155,8 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
 
             // Usuário
-            CreateMap<Usuario, UsuarioReadDto>();
+            CreateMap<Usuario, UsuarioReadDto>()
+                .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil.Nome));
             CreateMap<UsuarioCreateDto, Usuario>()
                 .ForMember(dest => dest.SenhaHash, opt => opt.MapFrom(src => src.Senha))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

@@ -13,6 +13,8 @@ namespace Valisys_Production.Models
         [MaxLength(50)]
         public string Nome { get; set; }
 
+        public bool Ativo { get; set; } = true;
+
         public ICollection<Usuario> Usuarios { get; set; }
     }
 }

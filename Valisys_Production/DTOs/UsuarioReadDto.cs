@@ -9,6 +9,6 @@ namespace Valisys_Production.DTOs
         public string Email { get; set; }
         public bool Ativo { get; set; }
         public Guid PerfilId { get; set; }
-        public Perfil Perfil { get; set; }
+        public string PerfilNome { get; set; }
     }
 }
