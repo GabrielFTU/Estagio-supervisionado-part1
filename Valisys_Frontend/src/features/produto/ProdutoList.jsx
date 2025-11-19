@@ -23,7 +23,7 @@ function ProdutoList() {
       queryClient.invalidateQueries({ queryKey: ['produtos'] });
       alert("Produto excluído com sucesso!");
     },
-     onError: (err) => {
+    onError: (err) => {
       console.error(err);
       const errorMessage = err.response?.data?.message || "Erro ao excluir. O produto pode estar em uso ou credenciais inválidas.";
       alert(errorMessage);
@@ -43,7 +43,7 @@ function ProdutoList() {
     <div className="page-container">
       <div className="page-header">
         <h1>Gerenciamento de Produtos</h1>
-        <Link to="/produtos/novo" className="btn-new">+ Adicionar Produto</Link>
+        <Link to="/estoque/produtos/novo" className="btn-new">+ Adicionar Produto</Link>
       </div>
 
       <table className="data-table">
@@ -73,7 +73,7 @@ function ProdutoList() {
                 <td className="acoes-cell">
                   <button 
                     className="btn-editar" 
-                    onClick={() => navigate(`/produtos/editar/${produto.id}`)}
+                    onClick={() => navigate(`/estoque/produtos/editar/${produto.id}`)}
                   >
                     Editar
                   </button>

@@ -74,7 +74,7 @@ function ProdutoEdit() {
     mutationFn: (data) => produtoService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['produtos'] });
-      navigate('/produtos');
+      navigate('/estoque/produtos');
     },
     onError: (err) => {
       console.error(err);
@@ -83,7 +83,20 @@ function ProdutoEdit() {
   });
 
   const onSubmit = (data) => {
-    updateMutation.mutate({ ...data, id });
+    const mappedData = {
+      Id: id,
+      Nome: data.nome,
+      Descricao: data.descricao,
+      Codigo: data.codigo,
+      EstoqueMinimo: data.estoqueMinimo,
+      ControlarPorLote: data.controlarPorLote,
+      Ativo: data.ativo,
+      UnidadeMedidaId: data.unidadeMedidaId,
+      CategoriaProdutoId: data.categoriaProdutoId,
+      Observacoes: data.observacoes,
+      AlmoxarifadoEstoqueId: data.almoxarifadoEstoqueId || null,
+    };
+    updateMutation.mutate(mappedData);
   };
 
   if (isLoadingProduto) return <div className="loading-message">Carregando dados...</div>;
@@ -151,7 +164,7 @@ function ProdutoEdit() {
         </div>
 
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/produtos')} className="btn-cancelar">Cancelar</button>
+          <button type="button" onClick={() => navigate('/estoque/produtos')} className="btn-cancelar">Cancelar</button>
           <button type="submit" className="btn-salvar">Salvar Alterações</button>
         </div>
       </form>

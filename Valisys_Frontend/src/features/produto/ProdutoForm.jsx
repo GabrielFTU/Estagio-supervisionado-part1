@@ -48,7 +48,7 @@ function ProdutoForm() {
     mutationFn: produtoService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['produtos'] });
-      navigate('/produtos');
+      navigate('/estoque/produtos');
     },
     onError: (error) => {
       console.error("Erro ao criar produto:", error);
@@ -57,7 +57,16 @@ function ProdutoForm() {
   });
 
   const onSubmit = (data) => {
-    createProdutoMutation.mutate(data);
+    const mappedData = {
+      Nome: data.nome,
+      Descricao: data.descricao,
+      CodigoInternoProduto: data.codigoInternoProduto,
+      ControlarPorLote: data.controlarPorLote,
+      Observacoes: data.observacoes,
+      UnidadeMedidaId: data.unidadeMedidaId,
+      CategoriaProdutoId: data.categoriaProdutoId,
+    };
+    createProdutoMutation.mutate(mappedData);
   };
 
   return (
@@ -65,14 +74,12 @@ function ProdutoForm() {
       <h1>Adicionar Novo Produto</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
-
         <div className="form-group">
           <label htmlFor="nome">Nome do Produto</label>
           <input id="nome" {...register('nome')} />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
-   
         <div className="form-group">
           <label htmlFor="codigoInternoProduto">Código Interno</label>
           <input id="codigoInternoProduto" {...register('codigoInternoProduto')} />
@@ -92,7 +99,6 @@ function ProdutoForm() {
           {errors.categoriaProdutoId && <span className="error">{errors.categoriaProdutoId.message}</span>}
         </div>
 
-    
         <div className="form-group">
           <label htmlFor="unidadeMedidaId">Unidade de Medida</label>
           <select id="unidadeMedidaId" {...register('unidadeMedidaId')} defaultValue="">
@@ -106,28 +112,24 @@ function ProdutoForm() {
           {errors.unidadeMedidaId && <span className="error">{errors.unidadeMedidaId.message}</span>}
         </div>
 
-      
         <div className="form-group">
           <label htmlFor="descricao">Descrição</label>
           <textarea id="descricao" {...register('descricao')} rows={3}></textarea>
           {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
         
-      
         <div className="form-group">
           <label htmlFor="observacoes">Observações</label>
           <textarea id="observacoes" {...register('observacoes')} rows={3}></textarea>
         </div>
 
-        
         <div className="form-group-checkbox">
           <input type="checkbox" id="controlarPorLote" {...register('controlarPorLote')} />
           <label htmlFor="controlarPorLote">Controlar por Lote?</label>
         </div>
         
-       
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/produtos')} className="btn-cancelar">
+          <button type="button" onClick={() => navigate('/estoque/produtos')} className="btn-cancelar">
             Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={createProdutoMutation.isPending}>

@@ -10,6 +10,12 @@ import UsuarioList from './features/usuario/UsuarioList.jsx';
 import UsuarioForm from './features/usuario/UsuarioForm.jsx';
 import FornecedorList from './features/fornecedor/FornecedorList.jsx';
 import FornecedorForm from './features/fornecedor/FornecedorForm.jsx';
+import AlmoxarifadoList from './features/almoxarifado/AlmoxarifadoList.jsx';
+import AlmoxarifadoForm from './features/almoxarifado/AlmoxarifadoForm.jsx';
+import CategoriaProdutoList from './features/categoria/CategoriaProdutoList.jsx';
+import CategoriaProdutoForm from './features/categoria/CategoriaProdutoForm.jsx';
+import TipoOrdemDeProducaoList from './features/tiposop/TipoOrdemDeProducaoList.jsx';
+import TipoOrdemDeProducaoForm from './features/tiposop/TipoOrdemDeProducaoForm.jsx';
 import useAuthStore from './stores/useAuthStore.js'; 
 
 import './index.css';
@@ -41,10 +47,21 @@ function App() {
           <Route path="/settings/cadastros/fornecedores/novo" element={<FornecedorForm />} />
           <Route path="/settings/cadastros/fornecedores/editar/:id" element={<FornecedorForm />} />
 
-          <Route path="/settings/cadastros/categorias" element={<h1>Categorias de Produto (WIP)</h1>} />
+          <Route path="/settings/cadastros/categorias" element={<CategoriaProdutoList />} />
+          <Route path="/settings/cadastros/categorias/novo" element={<CategoriaProdutoForm />} />
+          <Route path="/settings/cadastros/categorias/editar/:id" element={<CategoriaProdutoForm />} />
+
           <Route path="/settings/cadastros/unidades" element={<h1>Unidades de Medida (WIP)</h1>} />
           <Route path="/settings/cadastros/fornecedores" element={<h1>Fornecedores (WIP)</h1>} />
-          <Route path="/settings/cadastros/almoxarifados" element={<h1>Almoxarifados (WIP)</h1>} />
+
+          <Route path="/settings/cadastros/almoxarifados" element={<AlmoxarifadoList />} />
+          <Route path="/settings/cadastros/almoxarifados/novo" element={<AlmoxarifadoForm />} />
+          <Route path="/settings/cadastros/almoxarifados/editar/:id" element={<AlmoxarifadoForm />} />
+
+          <Route path="/settings/cadastros/tiposop" element={<TipoOrdemDeProducaoList />} />
+          <Route path="/settings/cadastros/tiposop/novo" element={<TipoOrdemDeProducaoForm />} />
+          <Route path="/settings/cadastros/tiposop/editar/:id" element={<TipoOrdemDeProducaoForm />} />
+
           <Route path="/settings/cadastros/fases" element={<h1>Fases de Produção (WIP)</h1>} />
           <Route path="/settings/cadastros/tiposop" element={<h1>Tipos de Ordem de Produção (WIP)</h1>} />
 

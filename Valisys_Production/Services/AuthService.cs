@@ -1,4 +1,6 @@
-﻿using Valisys_Production.DTOs;
+﻿// Valisys_Production/Services/AuthService.cs
+
+using Valisys_Production.DTOs;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
 using System.Threading.Tasks;
@@ -36,11 +38,11 @@ namespace Valisys_Production.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()), 
+                    new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                     new Claim(ClaimTypes.Name, usuario.Nome),
                     new Claim(ClaimTypes.Email, usuario.Email),
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(24), 
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

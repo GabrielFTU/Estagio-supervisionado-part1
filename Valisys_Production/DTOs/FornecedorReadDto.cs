@@ -9,9 +9,7 @@ namespace Valisys_Production.DTOs
         
         public string NomeFantasia { get; set; }
         public string RazaoSocial { get; set; } 
-        public string Cnpj { get; set; } 
-
-       
+        public string Cnpj { get; set; } = string.Empty;
         public string Nome { get; set; }
         public string Documento { get; set; } 
         public int TipoDocumento { get; set; }

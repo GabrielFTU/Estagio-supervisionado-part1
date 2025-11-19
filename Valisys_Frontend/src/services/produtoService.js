@@ -1,3 +1,4 @@
+
 import api from "./api";
 
 const produtoService = {
@@ -14,8 +15,8 @@ const produtoService = {
     return response.data;
   },
   update: async (id, produtoData) => {
-    const data = { ...produtoData, id };
-    const response = await api.put(`/Produtos/${id}`, data);
+    const dataToSend = { ...produtoData, Id: id };
+    const response = await api.put(`/Produtos/${id}`, dataToSend);
     return response.data;
   },
   delete: async (id) => {
@@ -23,7 +24,5 @@ const produtoService = {
     return response.data;
   }
 };
-
-
 
 export default produtoService;
