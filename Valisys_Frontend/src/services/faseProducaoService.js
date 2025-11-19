@@ -1,8 +1,8 @@
-import api from './api.js';
+import api from './api';
 
-const endpoint = '/UnidadesMedida';
+const endpoint = '/FasesProducao';
 
-const unidadeMedidaService = {
+const faseProducaoService = {
   getAll: async () => {
     const response = await api.get(endpoint);
     return response.data;
@@ -30,4 +30,4 @@ const unidadeMedidaService = {
   }
 };
 
-export default unidadeMedidaService;
+export default faseProducaoService;

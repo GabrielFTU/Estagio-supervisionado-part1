@@ -16,6 +16,12 @@ import CategoriaProdutoList from './features/categoria/CategoriaProdutoList.jsx'
 import CategoriaProdutoForm from './features/categoria/CategoriaProdutoForm.jsx';
 import TipoOrdemDeProducaoList from './features/tiposop/TipoOrdemDeProducaoList.jsx';
 import TipoOrdemDeProducaoForm from './features/tiposop/TipoOrdemDeProducaoForm.jsx';
+import FaseProducaoList from './features/fasesproducao/FaseProducaoList.jsx';
+import FaseProducaoForm from './features/fasesproducao/FaseProducaoForm.jsx';
+import UnidadeMedidaList from './features/unidade/UnidadeMedidaList.jsx';
+import UnidadeMedidaForm from './features/unidade/UnidadeMedidaForm.jsx';
+import OrdemDeProducaoList from './features/producao/OrdemDeProducaoList.jsx';
+import OrdemDeProducaoForm from './features/producao/OrdemDeProducaoForm.jsx';
 import useAuthStore from './stores/useAuthStore.js'; 
 
 import './index.css';
@@ -51,8 +57,9 @@ function App() {
           <Route path="/settings/cadastros/categorias/novo" element={<CategoriaProdutoForm />} />
           <Route path="/settings/cadastros/categorias/editar/:id" element={<CategoriaProdutoForm />} />
 
-          <Route path="/settings/cadastros/unidades" element={<h1>Unidades de Medida (WIP)</h1>} />
-          <Route path="/settings/cadastros/fornecedores" element={<h1>Fornecedores (WIP)</h1>} />
+          <Route path="/settings/cadastros/unidades" element={<UnidadeMedidaList />} />
+          <Route path="/settings/cadastros/unidades/novo" element={<UnidadeMedidaForm />} />
+          <Route path="/settings/cadastros/unidades/editar/:id" element={<UnidadeMedidaForm />} />
 
           <Route path="/settings/cadastros/almoxarifados" element={<AlmoxarifadoList />} />
           <Route path="/settings/cadastros/almoxarifados/novo" element={<AlmoxarifadoForm />} />
@@ -62,15 +69,23 @@ function App() {
           <Route path="/settings/cadastros/tiposop/novo" element={<TipoOrdemDeProducaoForm />} />
           <Route path="/settings/cadastros/tiposop/editar/:id" element={<TipoOrdemDeProducaoForm />} />
 
-          <Route path="/settings/cadastros/fases" element={<h1>Fases de Produção (WIP)</h1>} />
-          <Route path="/settings/cadastros/tiposop" element={<h1>Tipos de Ordem de Produção (WIP)</h1>} />
+          <Route path="/settings/cadastros/fases" element={<FaseProducaoList />} />
+          <Route path="/settings/cadastros/fases/novo" element={<FaseProducaoForm />} />
+          <Route path="/settings/cadastros/fases/editar/:id" element={<FaseProducaoForm />} />
+
+          <Route path="/producao/op" element={<OrdemDeProducaoList />} />
+          <Route path="/producao/op/novo" element={<OrdemDeProducaoForm />} />
+          <Route path="/producao/op/editar/:id" element={<OrdemDeProducaoForm />} />
 
           <Route path="/settings/usuarios" element={<UsuarioList />} />
           <Route path="/settings/usuarios/novo" element={<UsuarioForm />} />
           <Route path="/settings/usuarios/editar/:id" element={<UsuarioForm />} /> 
+
           <Route path="/settings/perfis" element={<PerfilList />} />
           <Route path="/settings/perfis/novo" element={<PerfilForm />} /> 
           <Route path="/settings/perfis/editar/:id" element={<PerfilForm />} /> 
+
+          
 
         </Route>
       </Route>
