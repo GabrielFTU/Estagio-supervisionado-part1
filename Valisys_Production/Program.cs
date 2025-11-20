@@ -15,8 +15,13 @@ using Valisys_Production.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var key = Encoding.ASCII.GetBytes("fALjfDmfKT6Z2wj426wnM43R3Sc8zL92");
+var secretKey = builder.Configuration["JwtSettings:SecretKey"];
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) não está configurada no appsettings.json.");
+}
 
+var key = Encoding.ASCII.GetBytes(secretKey);
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
