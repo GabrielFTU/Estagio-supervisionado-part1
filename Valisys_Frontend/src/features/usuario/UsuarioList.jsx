@@ -1,13 +1,15 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Edit, Trash2, UserPlus } from 'lucide-react';
 import usuarioService from '../../services/usuarioService.js';
-import '../../features/produto/ProdutoList.css'; // Reutilizando estilos
+import '../../features/produto/ProdutoList.css';
 
 function useUsuarios() {
   return useQuery({
     queryKey: ['usuarios'],
-    queryFn: usuarioService.getAll
+    queryFn: usuarioService.getAll,
+    retry: 1
   });
 }
 
@@ -17,14 +19,13 @@ function UsuarioList() {
   const navigate = useNavigate();
 
   const deleteMutation = useMutation({
-    mutationFn: usuarioService.delete, 
+    mutationFn: usuarioService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       alert("Usuário excluído com sucesso!");
     },
     onError: (err) => {
-      console.error(err);
-      const errorMessage = err.response?.data?.message || "Erro ao excluir. O usuário pode estar em uso ou credenciais inválidas.";
+      const errorMessage = err.response?.data?.message || "Erro ao excluir o usuário.";
       alert(errorMessage);
     }
   });
@@ -35,14 +36,25 @@ function UsuarioList() {
     }
   };
 
-  if (isLoading) return <div className="loading-message">Carregando...</div>;
-  if (isError) return <div className="error-message">Erro ao carregar usuários: {error.message}</div>;
+  if (isLoading) return <div className="loading-message">Carregando usuários...</div>;
+  
+  if (isError) {
+    return (
+        <div className="error-message">
+            <h3>Erro ao carregar usuários</h3>
+            <p>{error?.message || "Não foi possível conectar ao servidor."}</p>
+        </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Gerenciamento de Usuários</h1>
-        <Link to="/configuracoes/usuarios/novo" className="btn-new">+ Novo Usuário</Link>
+        <Link to="/settings/usuarios/novo" className="btn-new">
+            <UserPlus size={18} style={{marginRight: '8px'}} />
+            Novo Usuário
+        </Link>
       </div>
 
       <table className="data-table">
@@ -61,7 +73,7 @@ function UsuarioList() {
               <tr key={usuario.id}>
                 <td>{usuario.nome}</td>
                 <td>{usuario.email}</td>
-                <td>{usuario.perfilNome || 'N/A'}</td>
+                <td>{usuario.perfilNome || 'Sem Perfil'}</td>
                 <td>
                   <span className={usuario.ativo ? 'status-ativo' : 'status-inativo'}>
                     {usuario.ativo ? 'Ativo' : 'Inativo'}
@@ -70,16 +82,18 @@ function UsuarioList() {
                 <td className="acoes-cell">
                   <button 
                     className="btn-editar" 
-                    onClick={() => navigate(`/configuracoes/usuarios/editar/${usuario.id}`)}
+                    onClick={() => navigate(`/settings/usuarios/editar/${usuario.id}`)}
+                    title="Editar"
                   >
-                    Editar
+                    <Edit size={16} />
                   </button>
                   <button 
                     className="btn-deletar" 
                     onClick={() => handleDelete(usuario.id)}
                     disabled={deleteMutation.isPending}
+                    title="Excluir"
                   >
-                    Excluir
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>

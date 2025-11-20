@@ -159,7 +159,7 @@ namespace Valisys_Production.Helpers
 
             // Usuário
             CreateMap<Usuario, UsuarioReadDto>()
-                .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil.Nome));
+                 .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil != null ? src.Perfil.Nome : "Sem Perfil"));
             CreateMap<UsuarioCreateDto, Usuario>()
                 .ForMember(dest => dest.SenhaHash, opt => opt.MapFrom(src => src.Senha))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

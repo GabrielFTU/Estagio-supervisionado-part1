@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import usuarioService from '../../services/usuarioService.js';
 import perfilService from '../../services/perfilService.js';
-import '../../features/produto/ProdutoForm.css'; // Reutilizando estilos
+import '../../features/produto/ProdutoForm.css';
 
 const baseSchema = z.object({
   id: z.string().optional(),
@@ -22,7 +22,6 @@ const createSchema = baseSchema.extend({
 });
 
 const updateSchema = baseSchema.extend({
-  // Senha não é obrigatória na atualização (se vazia, o backend deve manter a hash existente)
   senha: z.string().optional(), 
 });
 
@@ -43,7 +42,6 @@ function UsuarioForm() {
     resolver: zodResolver(schema)
   });
 
-  // Consultas de dados
   const { data: usuario, isLoading: isLoadingUsuario } = useQuery({
     queryKey: ['usuario', id],
     queryFn: () => usuarioService.getById(id),
@@ -55,28 +53,26 @@ function UsuarioForm() {
     queryFn: perfilService.getAll
   });
 
-  // Efeito para preencher o formulário em modo de edição
   useEffect(() => {
     if (isEditing && usuario) {
       reset({
         id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        perfilId: usuario.perfilId,
-        ativo: usuario.ativo,
-        senha: "" // Nunca preencher a senha existente
+        nome: usuario.nome || '',
+        email: usuario.email || '',
+        perfilId: usuario.perfilId ? String(usuario.perfilId) : '',
+        ativo: usuario.ativo ?? true,
+        senha: "" 
       });
     } else if (!isEditing) {
       reset({ nome: '', email: '', perfilId: '', ativo: true, senha: '' });
     }
   }, [usuario, isEditing, reset]);
 
-  // Mutations para criação e atualização
   const createMutation = useMutation({
     mutationFn: usuarioService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
-      navigate('/configuracoes/usuarios');
+      navigate('/settings/usuarios');
     },
     onError: (error) => {
       console.error("Erro ao criar usuário:", error);
@@ -89,7 +85,7 @@ function UsuarioForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       queryClient.invalidateQueries({ queryKey: ['usuario', id] });
-      navigate('/configuracoes/usuarios');
+      navigate('/settings/usuarios');
     },
     onError: (err) => {
       console.error(err);
@@ -98,11 +94,9 @@ function UsuarioForm() {
   });
 
   const onSubmit = (data) => {
-    // Garante que o perfilId seja uma string (GUID)
     const dataToSend = { ...data, perfilId: String(data.perfilId) };
     
     if (isEditing) {
-      // Remover a senha se estiver vazia para não sobrescrever a hash com string vazia
       if (!dataToSend.senha) {
           delete dataToSend.senha;
       }
@@ -160,7 +154,7 @@ function UsuarioForm() {
         </div>
         
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/configuracoes/usuarios')} className="btn-cancelar">
+          <button type="button" onClick={() => navigate('/settings/usuarios')} className="btn-cancelar">
             Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={isPending}>

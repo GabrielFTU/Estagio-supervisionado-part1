@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens; 
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
-using System.Linq;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using Valisys_Production.Data;
 using Valisys_Production.Helpers;
-using Valisys_Production.Models;
 using Valisys_Production.Repositories;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services;
@@ -16,17 +13,19 @@ using Valisys_Production.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 var secretKey = builder.Configuration["JwtSettings:SecretKey"];
-if (string.IsNullOrEmpty(secretKey))
+
+if (string.IsNullOrEmpty(secretKey) || secretKey.Length < 32)
 {
-    throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) não está configurada no appsettings.json.");
+    throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) deve ter no mínimo 32 caracteres.");
 }
 
 var key = Encoding.ASCII.GetBytes(secretKey);
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}) 
+})
 .AddJwtBearer(x =>
 {
     x.RequireHttpsMetadata = false;
@@ -36,7 +35,8 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -47,11 +47,36 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Valisys API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insira o token JWT desta maneira: Bearer {seu token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-  options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
 
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
@@ -60,8 +85,8 @@ builder.Services.AddScoped<IAlmoxarifadoRepository, AlmoxarifadoRepository>();
 builder.Services.AddScoped<IAlmoxarifadoService, AlmoxarifadoService>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
-builder.Services.AddScoped<ILoteService, LoteService>();
 builder.Services.AddScoped<ILoteRepository, LoteRepository>();
+builder.Services.AddScoped<ILoteService, LoteService>();
 builder.Services.AddScoped<IPerfilRepository, PerfilRepository>();
 builder.Services.AddScoped<IPerfilService, PerfilService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -82,20 +107,18 @@ builder.Services.AddScoped<IOrdemDeProducaoRepository, OrdemDeProducaoRepository
 builder.Services.AddScoped<IOrdemDeProducaoService, OrdemDeProducaoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPdfReportService, PdfReportService>();
-
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
+
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyAllowSpecificOrigins",
-             builder =>
-             {
-                
-                 builder.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-             });
+    options.AddPolicy("MyAllowSpecificOrigins", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 var app = builder.Build();
@@ -106,13 +129,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-// app.UseHttpsRedirection(); 
-
 app.UseCors("MyAllowSpecificOrigins");
 
-
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

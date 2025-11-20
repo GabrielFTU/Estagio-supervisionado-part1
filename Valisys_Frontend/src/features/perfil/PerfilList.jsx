@@ -1,13 +1,16 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Edit, Trash2, UserPlus, AlertCircle } from 'lucide-react';
 import perfilService from '../../services/perfilService.js';
 import '../../features/produto/ProdutoList.css';
 
 function usePerfis() {
   return useQuery({
     queryKey: ['perfis'],
-    queryFn: perfilService.getAll
+    queryFn: perfilService.getAll,
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 }
 
@@ -35,14 +38,31 @@ function PerfilList() {
     }
   };
 
-  if (isLoading) return <div className="loading-message">Carregando...</div>;
-  if (isError) return <div className="error-message">Erro ao carregar perfis: {error.message}</div>;
+  if (isLoading) return <div className="loading-message">Carregando perfis...</div>;
+  
+  if (isError) {
+      return (
+          <div className="error-message" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              <AlertCircle size={24} />
+              <span>
+                  Erro ao carregar perfis: {error.message || "Erro desconhecido."}
+                  <br />
+                  {error.response?.status === 401 ? "Sessão expirada ou sem permissão." : "Verifique se o servidor está rodando."}
+              </span>
+          </div>
+      );
+  }
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Gerenciamento de Perfis</h1>
-        <Link to="/configuracoes/perfis/novo" className="btn-new">+ Novo Perfil</Link>
+        <Link to="/settings/perfis/novo" className="btn-new">
+            <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                <UserPlus size={18} />
+                <span>Novo Perfil</span>
+            </div>
+        </Link>
       </div>
 
       <table className="data-table">
@@ -57,7 +77,7 @@ function PerfilList() {
           {perfis && perfis.length > 0 ? (
             perfis.map((perfil) => (
               <tr key={perfil.id}>
-                <td>{perfil.nome}</td>
+                <td>{perfil.nome || 'Sem Nome'}</td>
                 <td>
                   <span className={perfil.ativo ? 'status-ativo' : 'status-inativo'}>
                     {perfil.ativo ? 'Ativo' : 'Inativo'}
@@ -66,16 +86,18 @@ function PerfilList() {
                 <td className="acoes-cell">
                   <button 
                     className="btn-editar" 
-                    onClick={() => navigate(`/configuracoes/perfis/editar/${perfil.id}`)}
+                    onClick={() => navigate(`/settings/perfis/editar/${perfil.id}`)}
+                    title="Editar Perfil"
                   >
-                    Editar
+                    <Edit size={16} />
                   </button>
                   <button 
                     className="btn-deletar" 
                     onClick={() => handleDelete(perfil.id)}
                     disabled={deleteMutation.isPending}
+                    title="Excluir Perfil"
                   >
-                    Excluir
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
