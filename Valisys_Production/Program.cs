@@ -15,7 +15,6 @@ using Valisys_Production.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 var key = Encoding.ASCII.GetBytes("fALjfDmfKT6Z2wj426wnM43R3Sc8zL92");
 
 builder.Services.AddAuthentication(x =>
