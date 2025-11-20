@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AlertCircle, CheckCircle, X } from 'lucide-react';
 
 import perfilService from '../../services/perfilService.js';
 import '../../features/produto/ProdutoForm.css'; 
@@ -19,6 +20,8 @@ function PerfilForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const { 
     register, 
@@ -26,10 +29,10 @@ function PerfilForm() {
     reset,
     formState: { errors } 
   } = useForm({
-    resolver: zodResolver(perfilSchema)
+    resolver: zodResolver(perfilSchema),
+    defaultValues: { ativo: true, nome: '' }
   });
 
-  
   const { data: perfil, isLoading: isLoadingPerfil } = useQuery({
     queryKey: ['perfil', id],
     queryFn: () => perfilService.getById(id),
@@ -43,23 +46,25 @@ function PerfilForm() {
         nome: perfil.nome,
         ativo: perfil.ativo
       });
-    } else if (!isEditing) {
-      
-      reset({ nome: '', ativo: true });
     }
   }, [perfil, isEditing, reset]);
 
- 
+  const handleMutationError = (error) => {
+      console.error("Erro na operação:", error);
+      const serverMessage = error.response?.data?.message || error.response?.data?.title || error.message;
+      setFeedbackMessage({ 
+          type: 'error', 
+          text: `Falha ao salvar: ${serverMessage}` 
+      });
+  };
+
   const createMutation = useMutation({
     mutationFn: perfilService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perfis'] });
-      navigate('/configuracoes/perfis');
+      navigate('/settings/perfis');
     },
-    onError: (error) => {
-      console.error("Erro ao criar perfil:", error);
-      alert(`Falha ao criar o perfil: ${error.response?.data?.message || error.message}`);
-    }
+    onError: handleMutationError
   });
 
   const updateMutation = useMutation({
@@ -67,19 +72,24 @@ function PerfilForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perfis'] });
       queryClient.invalidateQueries({ queryKey: ['perfil', id] });
-      navigate('/configuracoes/perfis');
+      navigate('/settings/perfis');
     },
-    onError: (err) => {
-      console.error(err);
-      alert(`Erro ao atualizar perfil: ${err.response?.data?.message || err.message}`);
-    }
+    onError: handleMutationError
   });
 
   const onSubmit = (data) => {
+    setFeedbackMessage(null);
+
+    const dataToSend = {
+        Id: isEditing ? id : undefined,
+        Nome: data.nome,
+        Ativo: data.ativo
+    };
+
     if (isEditing) {
-      updateMutation.mutate(data);
+      updateMutation.mutate(dataToSend);
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(dataToSend);
     }
   };
 
@@ -90,11 +100,35 @@ function PerfilForm() {
   return (
     <div className="form-container">
       <h1>{isEditing ? 'Editar Perfil' : 'Adicionar Novo Perfil'}</h1>
+      
+      {feedbackMessage && (
+        <div 
+            className={`feedback-box ${feedbackMessage.type}`}
+            style={{
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                backgroundColor: feedbackMessage.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
+                color: feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444',
+            }}
+        >
+            {feedbackMessage.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+            <span style={{ flexGrow: 1, fontSize: '0.9rem' }}>{feedbackMessage.text}</span>
+            <button onClick={() => setFeedbackMessage(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <X size={18} />
+            </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
           <label htmlFor="nome">Nome do Perfil</label>
-          <input id="nome" {...register('nome')} />
+          <input id="nome" {...register('nome')} placeholder="Ex: Gerente de Produção" />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
@@ -104,11 +138,11 @@ function PerfilForm() {
         </div>
         
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/configuracoes/perfis')} className="btn-cancelar">
+          <button type="button" onClick={() => navigate('/settings/perfis')} className="btn-cancelar">
             Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? (isEditing ? 'Salvando...' : 'Criando...') : 'Salvar'}
+            {isPending ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
 

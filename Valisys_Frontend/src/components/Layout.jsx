@@ -28,6 +28,22 @@ const ROUTE_TITLES = {
     '/settings/cadastros/tiposop': 'Gerenciamento de Tipos de OP',
     '/settings/cadastros/categorias': 'Gerenciamento de Categorias',
     '/settings/cadastros/unidades': 'Gerenciamento de Unidades de Medida',
+    
+    '/engenharia/fichas-tecnicas': 'Engenharia - Fichas Técnicas',
+    '/engenharia/fichas-tecnicas/novo': 'Nova Ficha Técnica',
+    '/engenharia/fichas-tecnicas/editar/:id': 'Editar Ficha Técnica',
+    '/engenharia/roteiros': 'Engenharia - Roteiros de Produção',
+    
+    '/fabrica/consultar-op': 'Chão de Fábrica - Consultar O.P.',
+    '/fabrica/movimentacoes': 'Chão de Fábrica - Apontamentos',
+    
+    '/relatorios/movimentacoes': 'Relatório de Movimentações',
+    '/relatorios/estoque': 'Relatório de Posição de Estoque',
+    '/relatorios/producao': 'Relatório de Produção',
+    '/relatorios/clientes': 'Relatório de Clientes',
+    
+    '/settings/sistema/logs': 'Logs do Sistema',
+    '/settings/sistema/auditoria': 'Auditoria'
 };
 
 const getPageTitle = (pathname) => {
@@ -52,9 +68,9 @@ function Layout() {
   
   const theme = useAuthStore((state) => state.theme);
   const toggleTheme = useAuthStore((state) => state.toggleTheme);
+  const user = useAuthStore((state) => state.user);
   
-  const userName = "Gerente PCP"; 
-  const displayUserName = userName; 
+  const displayUserName = user?.nome || "Usuário";
 
   useEffect(() => {
     document.body.className = `theme-${theme}`; 
@@ -66,7 +82,9 @@ function Layout() {
   };
   
   const handleProfileClick = () => {
-      console.log("Navegação de Perfil desativada. ID de usuário não está sendo lido do store.");
+      if (user && user.id) {
+         navigate(`/settings/usuarios/editar/${user.id}`);
+      }
   };
 
   return (

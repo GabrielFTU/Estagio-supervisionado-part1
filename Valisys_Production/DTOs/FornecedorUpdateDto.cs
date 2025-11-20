@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Valisys_Production.Models;
 
 namespace Valisys_Production.DTOs
 {
@@ -8,22 +9,32 @@ namespace Valisys_Production.DTOs
         [Required]
         public Guid Id { get; set; }
 
-        [Required(ErrorMessage = "O nome fantasia é obrigatório.")]
-        [StringLength(100)]
-        public string NomeFantasia { get; set; }
+        [Required(ErrorMessage = "O nome é obrigatório.")]
+        [MaxLength(255)]
+        public string Nome { get; set; }
 
-        [Required(ErrorMessage = "A razão social é obrigatória.")]
-        [StringLength(150)]
-        public string RazaoSocial { get; set; }
+        [Required(ErrorMessage = "O documento é obrigatório.")]
+        [MaxLength(20)]
+        public string Documento { get; set; }
 
-        [Required(ErrorMessage = "O CNPJ é obrigatório.")]
-        [StringLength(18)]
-        // Nota: Idealmente, validação de CNPJ seria implementada, mas mantemos o básico por agora.
-        public string Cnpj { get; set; }
+        [Required]
+        public TipoDocumento TipoDocumento { get; set; }
 
-        [EmailAddress(ErrorMessage = "O e-mail não é válido.")]
+        [MaxLength(255)]
+        public string Endereco { get; set; }
+
+        [Required(ErrorMessage = "O e-mail é obrigatório.")]
+        [EmailAddress(ErrorMessage = "E-mail inválido.")]
+        [MaxLength(100)]
         public string Email { get; set; }
 
+        [Required(ErrorMessage = "O telefone é obrigatório.")]
+        [MaxLength(20)]
+        public string Telefone { get; set; }
+
         public bool Ativo { get; set; }
+
+        [MaxLength(500)]
+        public string? Observacoes { get; set; }
     }
 }

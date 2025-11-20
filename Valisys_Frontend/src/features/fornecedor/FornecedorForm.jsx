@@ -4,71 +4,102 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search } from 'lucide-react'; 
+import { Search, AlertCircle, CheckCircle, X } from 'lucide-react'; 
 import axios from 'axios'; 
 
 import fornecedorService from '../../services/fornecedorService.js';
 import '../../features/produto/ProdutoForm.css';
 
 const cleanAndValidate = (doc) => (doc || '').replace(/[^\d]/g, '');
-const validateCPF = (cpf) => cleanAndValidate(cpf).length === 11;
-const validateCNPJ = (cnpj) => cleanAndValidate(cnpj).length === 14;
+
+const isValidCPF = (cpf) => {
+    cpf = cleanAndValidate(cpf);
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    let soma = 0, resto;
+    for (let i = 1; i <= 9; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+    soma = 0;
+    for (let i = 1; i <= 10; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+    return true;
+};
+
+const isValidCNPJ = (cnpj) => {
+    cnpj = cleanAndValidate(cnpj);
+    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+    let tamanho = cnpj.length - 2;
+    let numeros = cnpj.substring(0, tamanho);
+    let digitos = cnpj.substring(tamanho);
+    let soma = 0, pos = tamanho - 7;
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+    let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(0)) return false;
+    tamanho = tamanho + 1;
+    numeros = cnpj.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+    resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(1)) return false;
+    return true;
+};
 
 const formatDocument = (doc, type) => {
     let cleaned = cleanAndValidate(doc);
-
-    if (type === 1) { 
-        cleaned = cleaned.substring(0, 11);
-        if (cleaned.length > 9) {
-            cleaned = cleaned.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-        } else if (cleaned.length > 6) {
-            cleaned = cleaned.replace(/^(\d{3})(\d{3})(\d{3})$/, '$1.$2.$3');
-        } else if (cleaned.length > 3) {
-            cleaned = cleaned.replace(/^(\d{3})(\d{3})$/, '$1.$2');
-        }
-    } else if (type === 2) { 
-        cleaned = cleaned.substring(0, 14);
-        if (cleaned.length > 12) {
-            cleaned = cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-        } else if (cleaned.length > 8) {
-            cleaned = cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})$/, '$1.$2.$3/$4');
-        } else if (cleaned.length > 5) {
-            cleaned = cleaned.replace(/^(\d{2})(\d{3})(\d{3})$/, '$1.$2.$3');
-        } else if (cleaned.length > 2) {
-            cleaned = cleaned.replace(/^(\d{2})(\d{3})$/, '$1.$2');
-        }
+    // Garante que type seja tratado como número
+    if (Number(type) === 1) { 
+        return cleaned
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    } else { 
+        return cleaned
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1/$2')
+            .replace(/(\d{4})(\d)/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
     }
-
-    return cleaned;
 };
 
 const fornecedorSchema = z.object({
   id: z.string().optional(),
-  nome: z.string().min(1, "O nome/razao social é obrigatório."), 
+  nome: z.string().min(3, "A Razão Social é obrigatória (min 3 letras)."), 
   documento: z.string().min(1, "O documento é obrigatório."), 
   tipoDocumento: z.coerce.number().min(1).max(2).default(2),
-  endereco: z.string().min(1, "O endereço é obrigatório."),
+  endereco: z.string().optional(),
   email: z.string().min(1, 'O e-mail é obrigatório').email('E-mail inválido.'),
-  telefone: z.string().min(8, "Telefone inválido."),
+  telefone: z.string().min(10, "Telefone inválido (mínimo 10 dígitos)."),
   observacoes: z.string().optional(),
   ativo: z.boolean().default(true),
 }).superRefine((data, ctx) => {
   const cleanedDoc = cleanAndValidate(data.documento);
 
   if (data.tipoDocumento === 1) { 
-    if (!validateCPF(cleanedDoc)) {
+    if (!isValidCPF(cleanedDoc)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['documento'],
-        message: 'CPF inválido. Deve conter 11 dígitos.',
+        message: 'CPF inválido (dígito verificador incorreto).',
       });
     }
   } else if (data.tipoDocumento === 2) { 
-    if (!validateCNPJ(cleanedDoc)) {
+    if (!isValidCNPJ(cleanedDoc)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['documento'],
-        message: 'CNPJ inválido. Deve conter 14 dígitos.',
+        message: 'CNPJ inválido (dígito verificador incorreto).',
       });
     }
   }
@@ -79,7 +110,9 @@ function FornecedorForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
   const [isFetchingCnpj, setIsFetchingCnpj] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState(null); 
 
   const { 
     register, 
@@ -89,11 +122,15 @@ function FornecedorForm() {
     watch,
     formState: { errors } 
   } = useForm({
-    resolver: zodResolver(fornecedorSchema)
+    resolver: zodResolver(fornecedorSchema),
+    defaultValues: { tipoDocumento: 2 } // Garante valor inicial
   });
   
   const watchedTipoDocumento = watch('tipoDocumento', 2); 
   const watchedDocumento = watch('documento', ''); 
+  
+  // Correção do BUG: Força a conversão para número para garantir a comparação correta
+  const isPessoaJuridica = Number(watchedTipoDocumento) === 2;
 
   const { data: fornecedor, isLoading: isLoadingFornecedor } = useQuery({
     queryKey: ['fornecedor', id],
@@ -103,20 +140,17 @@ function FornecedorForm() {
 
   useEffect(() => {
     if (isEditing && fornecedor) {
-        const tipoDocumentoValue = fornecedor.tipoDocumento || 2; 
-        
+        const tipoDocumentoValue = fornecedor.tipoDocumento || 2;
         const documentoValue = fornecedor.cnpj || fornecedor.documento || '';
-        const initialDoc = formatDocument(documentoValue, tipoDocumentoValue);
-        const initialTel = cleanAndValidate(fornecedor.telefone || '');
-
+        
         reset({
             id: fornecedor.id,
             nome: fornecedor.razaoSocial || fornecedor.nome || '',
-            documento: initialDoc,
+            documento: formatDocument(documentoValue, tipoDocumentoValue),
             tipoDocumento: tipoDocumentoValue,
             endereco: fornecedor.endereco || '',
             email: fornecedor.email || '',
-            telefone: initialTel,
+            telefone: cleanAndValidate(fornecedor.telefone || ''),
             observacoes: fornecedor.observacoes || "",
             ativo: fornecedor.ativo ?? true,
         });
@@ -126,56 +160,50 @@ function FornecedorForm() {
   }, [fornecedor, isEditing, reset]);
 
   const fetchCNPJData = async () => {
+    setFeedbackMessage(null);
     const cleanedDoc = cleanAndValidate(watchedDocumento);
-    if (!validateCNPJ(cleanedDoc)) {
-      alert("CNPJ inválido para consulta. Verifique o formato (14 dígitos).");
+    
+    if (!isValidCNPJ(cleanedDoc)) {
+      setFeedbackMessage({ type: 'error', text: "CNPJ inválido. Verifique os dígitos antes de buscar." });
       return;
     }
 
     setIsFetchingCnpj(true);
     try {
-        const response = await axios.get(`http://brasilapi.com.br/api/cnpj/v1/${cleanedDoc}`);
+        const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cleanedDoc}`);
         const data = response.data; 
 
         if (data && data.razao_social) {
+            const enderecoCompleto = `${data.logradouro}, ${data.numero}${data.complemento ? ` (${data.complemento})` : ''} - ${data.bairro}, ${data.municipio}/${data.uf}`;
             
-            const logradouro = data.logradouro || '';
-            const numero = data.numero || '';
-            const complemento = data.complemento ? ` (${data.complemento})` : '';
-            const bairro = data.bairro || '';
-            const municipio = data.municipio || '';
-            const uf = data.uf || '';
-            
-            const enderecoCompleto = `${logradouro}, ${numero}${complemento} - ${bairro}, ${municipio}/${uf}`;
-            
-            const telefoneLimpo = cleanAndValidate(data.telefone || '');
-
             setValue('nome', data.razao_social, { shouldValidate: true });
             setValue('endereco', enderecoCompleto, { shouldValidate: true });
-            setValue('email', data.email || '', { shouldValidate: true });
-            setValue('telefone', telefoneLimpo, { shouldValidate: true });
+            
+            if (data.email) setValue('email', data.email, { shouldValidate: true });
+            if (data.ddd_telefone_1) setValue('telefone', cleanAndValidate(data.ddd_telefone_1), { shouldValidate: true });
 
-            alert(`Dados da empresa "${data.razao_social}" carregados com sucesso.`);
-        } else {
-            alert(`CNPJ ${cleanedDoc} não encontrado na base de dados BrasilAPI.`);
+            setFeedbackMessage({ type: 'success', text: `Dados de "${data.nome_fantasia || data.razao_social}" carregados com sucesso!` });
         }
-
     } catch (error) {
-        let errorMessage = "Erro ao consultar a API BrasilAPI. (Verifique o console para detalhes).";
-        if (error.response) {
-            if (error.response.status === 404) {
-                errorMessage = "CNPJ não encontrado na base de dados (404).";
-            } else if (error.response.status === 400) {
-                errorMessage = "CNPJ inválido ou fora do formato esperado (400 Bad Request).";
-            }
-        }
         console.error("Erro na consulta CNPJ:", error);
-        alert(errorMessage);
+        let msg = "Erro ao consultar a Receita Federal.";
+        if (error.response?.status === 404) msg = "CNPJ não encontrado na base de dados.";
+        else if (error.response?.status === 429) msg = "Muitas requisições. Tente novamente em instantes.";
+        
+        setFeedbackMessage({ type: 'error', text: msg });
     } finally {
         setIsFetchingCnpj(false);
     }
   };
 
+  const handleMutationError = (error) => {
+      console.error(error);
+      const serverMessage = error.response?.data?.message || error.response?.data?.title || error.message;
+      setFeedbackMessage({ 
+          type: 'error', 
+          text: `Erro ao salvar: ${serverMessage}. Verifique os campos.` 
+      });
+  };
 
   const createMutation = useMutation({
     mutationFn: fornecedorService.create,
@@ -183,10 +211,7 @@ function FornecedorForm() {
       queryClient.invalidateQueries({ queryKey: ['fornecedores'] });
       navigate('/settings/cadastros/fornecedores');
     },
-    onError: (error) => {
-      console.error("Erro ao criar fornecedor:", error);
-      alert(`Falha ao criar o fornecedor: ${error.response?.data?.message || error.message}`);
-    }
+    onError: handleMutationError
   });
 
   const updateMutation = useMutation({
@@ -196,17 +221,16 @@ function FornecedorForm() {
       queryClient.invalidateQueries({ queryKey: ['fornecedor', id] });
       navigate('/settings/cadastros/fornecedores');
     },
-    onError: (err) => {
-      console.error(err);
-      alert(`Erro ao atualizar fornecedor: ${err.response?.data?.message || err.message}`);
-    }
+    onError: handleMutationError
   });
 
   const onSubmit = (data) => {
+    setFeedbackMessage(null);
     const dataToSend = { 
         ...data, 
         documento: cleanAndValidate(data.documento),
         telefone: cleanAndValidate(data.telefone),
+        Nome: data.nome 
     };
     
     if (isEditing) {
@@ -224,30 +248,60 @@ function FornecedorForm() {
   return (
     <div className="form-container">
       <h1>{isEditing ? 'Editar Fornecedor' : 'Adicionar Novo Fornecedor'}</h1>
+
+      {feedbackMessage && (
+        <div 
+            className={`feedback-box ${feedbackMessage.type}`}
+            style={{
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                backgroundColor: feedbackMessage.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
+                color: feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444',
+            }}
+        >
+            {feedbackMessage.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+            <span style={{ flexGrow: 1, fontSize: '0.9rem' }}>{feedbackMessage.text}</span>
+            <button onClick={() => setFeedbackMessage(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                <X size={18} />
+            </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
           <label>Tipo de Cadastro</label>
           <div style={{ display: 'flex', gap: '30px', marginTop: '5px' }}>
-
-            <label style={{ display: 'flex', alignItems: 'center', fontWeight: 'normal', fontSize: '0.9375rem', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
               <input 
                 type="radio" 
-                value={1} 
-                {...register('tipoDocumento', { valueAsNumber: true })}
-                onClick={() => setValue('documento', '', { shouldValidate: true })}
-                style={{ width: '1rem', height: '1rem', marginRight: '8px' }}
+                value="1" 
+                {...register('tipoDocumento')} 
+                // Importante: Tratamento manual do onChange para garantir atualização e reset
+                onChange={(e) => {
+                   register('tipoDocumento').onChange(e);
+                   setValue('documento', '');
+                   setFeedbackMessage(null);
+                }}
               />
               Pessoa Física (CPF)
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', fontWeight: 'normal', fontSize: '0.9375rem', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
               <input 
                 type="radio" 
-                value={2} 
-                {...register('tipoDocumento', { valueAsNumber: true })}
-                onClick={() => setValue('documento', '', { shouldValidate: true })}
-                style={{ width: '1rem', height: '1rem', marginRight: '8px' }}
+                value="2"
+                {...register('tipoDocumento')} 
+                onChange={(e) => {
+                   register('tipoDocumento').onChange(e);
+                   setValue('documento', '');
+                   setFeedbackMessage(null);
+                }}
               />
               Pessoa Jurídica (CNPJ)
             </label>
@@ -256,39 +310,38 @@ function FornecedorForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="documento">{watchedTipoDocumento == 1 ? 'CPF' : 'CNPJ'}</label>
+          <label htmlFor="documento">{isPessoaJuridica ? 'CNPJ' : 'CPF'}</label>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input 
                 id="documento" 
                 {...register('documento', { 
                     onChange: (e) => {
-                        const cleanValue = cleanAndValidate(e.target.value);
-                        const formattedValue = formatDocument(cleanValue, watchedTipoDocumento);
-                        
-                        e.target.value = formattedValue;
-                        setValue('documento', formattedValue, { shouldValidate: true });
+                        const formattedValue = formatDocument(e.target.value, watchedTipoDocumento);
+                        setValue('documento', formattedValue); 
                     } 
                 })}
-                placeholder={watchedTipoDocumento == 1 ? 'Ex: 123.456.789-00' : 'Ex: 12.345.678/0001-00'}
+                placeholder={isPessoaJuridica ? '00.000.000/0000-00' : '000.000.000-00'}
+                maxLength={isPessoaJuridica ? 18 : 14}
             />
-            {watchedTipoDocumento == 2 && (
+            {isPessoaJuridica && (
               <button 
                 type="button" 
                 onClick={fetchCNPJData} 
-                className="btn-cnpj-search" 
-                disabled={isFetchingCnpj || !validateCNPJ(watchedDocumento) || isEditing}
+                disabled={isFetchingCnpj || isEditing}
                 style={{
                   padding: '0 15px', 
-                  backgroundColor: '#42a5f5', 
+                  backgroundColor: 'var(--color-primary)', 
                   color: 'white', 
                   border: 'none', 
                   borderRadius: '8px',
-                  cursor: 'pointer',
+                  cursor: isFetchingCnpj || isEditing ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
+                  opacity: isEditing ? 0.6 : 1
                 }}
+                title="Consultar dados na Receita"
               >
-                {isFetchingCnpj ? 'Buscando...' : <Search size={20} />}
+                {isFetchingCnpj ? '...' : <Search size={20} />}
               </button>
             )}
           </div>
@@ -296,7 +349,7 @@ function FornecedorForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="nome">{watchedTipoDocumento == 1 ? 'Nome Completo' : 'Razão Social'}</label>
+          <label htmlFor="nome">{isPessoaJuridica ? 'Razão Social' : 'Nome Completo'}</label>
           <input id="nome" {...register('nome')} />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
@@ -314,9 +367,19 @@ function FornecedorForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="telefone">Telefone (apenas números)</label>
-          <input id="telefone" {...register('telefone')} 
-            onInput={(e) => { e.target.value = cleanAndValidate(e.target.value); }} 
+          <label htmlFor="telefone">Telefone</label>
+          <input 
+            id="telefone" 
+            {...register('telefone', {
+                onChange: (e) => {
+                   let v = cleanAndValidate(e.target.value).substring(0, 11);
+                   if (v.length > 10) v = v.replace(/^(\d\d)(\d{5})(\d{4}).*/, "($1) $2-$3");
+                   else if (v.length > 5) v = v.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+                   else if (v.length > 2) v = v.replace(/^(\d\d)(\d{0,5}).*/, "($1) $2");
+                   e.target.value = v;
+                }
+            })}
+            placeholder="(99) 99999-9999"
           />
           {errors.telefone && <span className="error">{errors.telefone.message}</span>}
         </div>
@@ -336,7 +399,7 @@ function FornecedorForm() {
             Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? (isEditing ? 'Salvando...' : 'Criando...') : 'Salvar'}
+            {isPending ? (isEditing ? 'Salvando...' : 'Cadastrando...') : 'Salvar'}
           </button>
         </div>
 

@@ -1,23 +1,37 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Menu, Factory, Box, Settings, Users, Layers, Tag, Ruler, Key, ChevronDown, ChevronUp, LogOut, Home, ArrowLeft, ArrowRight
+  Home, Settings, LogOut, ChevronDown, ChevronUp, ArrowLeft, ArrowRight,
+  Factory, Box, Layers, Key, ClipboardList, DraftingCompass, ChartBar, ShieldAlert
 } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore.js';
-import ValisysLogoV3 from '/Logo_V.png'; 
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
-  const [openMenu, setOpenMenu] = useState('null'); 
-  const theme = useAuthStore((state) => state.theme);
-  const toggleTheme = useAuthStore((state) => state.toggleTheme);
+  const [openMenu, setOpenMenu] = useState(null); 
+  const [openSettingsGroup, setOpenSettingsGroup] = useState(null);
   const logout = useAuthStore((state) => state.logout);
 
   const toggleMenu = (menuName) => {
+    if (openMenu === 'settings' && menuName === 'settings') {
+        setOpenSettingsGroup(null);
+    }
     setOpenMenu(openMenu === menuName ? null : menuName);
+  };
+
+  const toggleSettingsGroup = (groupName) => {
+    setOpenSettingsGroup(openSettingsGroup === groupName ? null : groupName);
   };
 
   const menus = [
     { name: 'Dashboard', icon: Home, link: '/', exact: true },
+    
+    { 
+      name: 'Engenharia', icon: DraftingCompass, menuName: 'engenharia',
+      subMenu: [
+        { name: 'Fichas Técnicas', link: '/engenharia/fichas-tecnicas' },
+        { name: 'Roteiros de Produção', link: '/engenharia/roteiros' },
+      ]
+    },
     { 
       name: 'Produção', icon: Factory, menuName: 'producao',
       subMenu: [
@@ -25,11 +39,27 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         { name: 'Lotes', link: '/producao/lotes' },
       ]
     },
+    {
+      name: 'Fábrica', icon: ClipboardList, menuName: 'fabrica',
+      subMenu: [
+        { name: 'Consultar O.P.', link: '/fabrica/consultar-op' },
+        { name: 'Apontamentos', link: '/fabrica/movimentacoes' },
+      ]
+    },
     { 
       name: 'Estoque', icon: Box, menuName: 'estoque',
       subMenu: [
         { name: 'Produtos', link: '/estoque/produtos' },
         { name: 'Movimentações', link: '/estoque/movimentacoes' },
+      ]
+    },
+    {
+      name: 'Relatórios', icon: ChartBar, menuName: 'relatorios',
+      subMenu: [
+        { name: 'Movimentações', link: '/relatorios/movimentacoes' },
+        { name: 'Posição de Estoque', link: '/relatorios/estoque' },
+        { name: 'Produção por Período', link: '/relatorios/producao' },
+        { name: 'Clientes/Parceiros', link: '/relatorios/clientes' },
       ]
     },
     { 
@@ -55,13 +85,20 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                   { name: 'Perfis', link: '/settings/perfis' },
               ]
           },
+          {
+              name: 'Sistema', icon: ShieldAlert, menuName: 'settings-sistema',
+              subMenu: [
+                  { name: 'Logs de Atividades', link: '/settings/sistema/logs' },
+                  { name: 'Auditoria', link: '/settings/sistema/auditoria' },
+              ]
+          },
       ]
     };
 
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="sidebar-header">
-        <img src={ValisysLogoV3} alt="Valisys V3 Logo" className="valisys-logo" />
+        <img src="/Logo_V.png" alt="Valisys V3 Logo" className="valisys-logo" />
         <button onClick={toggleSidebar} className="toggle-btn-fixed">
           {isCollapsed ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
         </button>
@@ -85,6 +122,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                             )}
                             {isCollapsed && <span className="tooltip">{menu.name}</span>}
                         </div>
+                        
                         {openMenu === menu.menuName && !isCollapsed && (
                             <div className="submenu">
                                 {menu.subMenu.map((item) => (
@@ -135,15 +173,15 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                       <div key={group.name} className="group-item">
                           
                           <div 
-                            className={`group-header ${openMenu === group.menuName ? 'open' : ''}`}
-                            onClick={() => toggleMenu(group.menuName)}
+                            className={`group-header ${openSettingsGroup === group.menuName ? 'open' : ''}`}
+                            onClick={() => toggleSettingsGroup(group.menuName)}
                           >
                             <group.icon size={16} className="group-icon" />
                             <span className="group-name">{group.name}</span>
-                            {openMenu === group.menuName ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            {openSettingsGroup === group.menuName ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </div>
 
-                          {openMenu === group.menuName && (
+                          {openSettingsGroup === group.menuName && (
                             <div className="submenu-group">
                                 {group.subMenu.map((item) => (
                                     <NavLink
