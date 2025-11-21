@@ -12,10 +12,11 @@ const MAX_STRING_LENGTH = 100;
 const faseProducaoSchema = z.object({
   id: z.string().optional(),
   nome: z.string().min(1, "O nome da fase é obrigatório.").max(MAX_STRING_LENGTH),
-  ordem: z.coerce.number().min(1, "A ordem deve ser um número positivo (mínimo 1).").max(100, "A ordem máxima é 100."),
+  descricao: z.string().optional(),
+  ordem: z.coerce.number().min(1, "A ordem deve ser um número positivo (mínimo 1).").max(100),
+  tempoPadraoDias: z.coerce.number().min(0, "O tempo não pode ser negativo."), 
   ativo: z.boolean().default(true),
 });
-
 
 function FaseProducaoForm() {
   const { id } = useParams();
@@ -31,29 +32,28 @@ function FaseProducaoForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(faseProducaoSchema),
-    defaultValues: { ativo: true, nome: '', ordem: 1 }
+    defaultValues: { ativo: true, nome: '', ordem: 1, tempoPadraoDias: 0 }
   });
 
-  // Fetch data in edit mode
   const { data: fase, isLoading: isLoadingFase } = useQuery({
     queryKey: ['faseProducao', id],
     queryFn: () => faseProducaoService.getById(id),
     enabled: isEditing,
   });
 
-  // Populate form fields on data load (Edit mode)
   useEffect(() => {
     if (isEditing && fase) {
       reset({
         id: fase.id,
         nome: fase.nome,
+        descricao: fase.descricao || '',
         ordem: fase.ordem,
+        tempoPadraoDias: Number(fase.tempoPadraoDias ?? 0), 
         ativo: fase.ativo ?? true,
       });
     }
   }, [fase, isEditing, reset]);
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: faseProducaoService.create,
     onSuccess: () => {
@@ -62,7 +62,8 @@ function FaseProducaoForm() {
     },
     onError: (error) => {
       console.error("Erro ao criar Fase de Produção:", error);
-      alert(`Falha ao criar a Fase de Produção: ${error.response?.data?.message || error.message}`);
+      const msg = error.response?.data?.message || error.message;
+      alert(`Falha ao criar a Fase de Produção: ${msg}`);
     }
   });
 
@@ -75,18 +76,18 @@ function FaseProducaoForm() {
     },
     onError: (err) => {
       console.error(err);
-      alert(`Erro ao atualizar Fase de Produção: ${err.response?.data?.message || err.message}`);
+      const msg = err.response?.data?.message || err.message;
+      alert(`Erro ao atualizar Fase de Produção: ${msg}`);
     }
   });
 
   const onSubmit = (data) => {
-    // Mapeamento de Casing (Front-end camelCase para Back-end PascalCase)
-    // O campo "ativo" não está no DTO do Back-end, mas garantimos que as propriedades
-    // principais estejam corretas. O DTO de Update espera Id.
     const mappedData = {
         Id: isEditing ? id : undefined, 
         Nome: data.nome,
-        Ordem: data.ordem,
+        Descricao: data.descricao, 
+        Ordem: Number(data.ordem),
+        TempoPadraoDias: Number(data.tempoPadraoDias),
         Ativo: data.ativo,
     };
     
@@ -108,14 +109,43 @@ function FaseProducaoForm() {
         
         <div className="form-group">
           <label htmlFor="nome">Nome da Fase</label>
-          <input id="nome" {...register('nome')} />
+          <input id="nome" {...register('nome')} placeholder="Ex: Corte, Montagem..." />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="ordem">Ordem de Execução</label>
-          <input id="ordem" type="number" step="1" {...register('ordem', { valueAsNumber: true })} />
-          {errors.ordem && <span className="error">{errors.ordem.message}</span>}
+            <label htmlFor="descricao">Descrição</label>
+            <textarea 
+                id="descricao" 
+                {...register('descricao')} 
+                rows="2" 
+                placeholder="Detalhes sobre esta etapa do processo..."
+            />
+        </div>
+
+        <div style={{ display: 'flex', gap: '20px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="ordem">Ordem de Execução</label>
+                <input 
+                    id="ordem" 
+                    type="number" 
+                    step="1" 
+                    {...register('ordem', { valueAsNumber: true })} 
+                />
+                {errors.ordem && <span className="error">{errors.ordem.message}</span>}
+            </div>
+
+            <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="tempoPadraoDias">Duração Padrão (Dias)</label>
+                <input 
+                    id="tempoPadraoDias" 
+                    type="number" 
+                    step="1" 
+                    {...register('tempoPadraoDias', { valueAsNumber: true })} 
+                />
+                {errors.tempoPadraoDias && <span className="error">{errors.tempoPadraoDias.message}</span>}
+                <small style={{color: '#888', marginTop: '5px'}}>Estimativa para cálculo de prazos.</small>
+            </div>
         </div>
 
         <div className="form-group-checkbox">

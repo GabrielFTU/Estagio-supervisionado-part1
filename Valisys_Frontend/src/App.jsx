@@ -40,7 +40,10 @@ import MovimentacaoForm from './features/estoque/MovimentacaoForm.jsx';
 
 import FichaTecnicaList from './features/fichatecnica/FichaTecnicaList.jsx';
 import FichaTecnicaForm from './features/fichatecnica/FichaTecnicaForm.jsx';
-import FichaTecnicaDetails from './features/fichatecnica/FichaTecnicaDetails.jsx';;
+import FichaTecnicaDetails from './features/fichatecnica/FichaTecnicaDetails.jsx'
+
+import RoteiroList from './features/roteiro/RoteiroList.jsx';
+import RoteiroForm from './features/roteiro/RoteiroForm.jsx';;;
 
 const Placeholder = ({ title }) => <div style={{padding: '20px'}}><h1>{title}</h1><p>Módulo em desenvolvimento.</p></div>;
 
@@ -77,7 +80,9 @@ function App() {
           <Route path="/engenharia/fichas-tecnicas/editar/:id" element={<FichaTecnicaForm />} />
           <Route path="/engenharia/fichas-tecnicas/visualizar/:id" element={<FichaTecnicaDetails />} />
           
-          <Route path="/engenharia/roteiros" element={<Placeholder title="Roteiros de Produção" />} />
+          <Route path="/engenharia/roteiros" element={<RoteiroList />} />
+          <Route path="/engenharia/roteiros/novo" element={<RoteiroForm />} />
+          <Route path="/engenharia/roteiros/editar/:id" element={<RoteiroForm />} />
 
           <Route path="/fabrica/consultar-op" element={<Placeholder title="Chão de Fábrica: Consulta OP" />} />
           <Route path="/fabrica/movimentacoes" element={<Placeholder title="Chão de Fábrica: Apontamentos" />} />

@@ -16,6 +16,11 @@ namespace Valisys_Production.DTOs
         [Range(1, 100)]
         public int Ordem { get; set; }
 
+        public string? Descricao { get; set; }
+
+        [Range(0, 365)]
+        public int TempoPadraoDias { get; set; }
+
         public bool Ativo { get; set; }
     }
 }

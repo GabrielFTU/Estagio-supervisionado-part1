@@ -5,7 +5,7 @@
 namespace Valisys_Production.Migrations
 {
     /// <inheritdoc />
-    public partial class test : Migration
+    public partial class AdicionaTempoPadraoFase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

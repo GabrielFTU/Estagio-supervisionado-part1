@@ -12,8 +12,8 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251121012352_AdicionarFichaTecnica")]
-    partial class AdicionarFichaTecnica
+    [Migration("20251121024202_AdicionaTempoPadraoFase")]
+    partial class AdicionaTempoPadraoFase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -132,6 +132,9 @@ namespace Valisys_Production.Migrations
                     b.Property<int>("Ordem")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TempoPadraoDias")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("FasesProducao");
@@ -142,28 +145,32 @@ namespace Valisys_Production.Migrations
                             Id = new Guid("c0de0000-0000-0000-0000-000000000004"),
                             Descricao = "Início da montagem do chassi.",
                             Nome = "MONTAGEM INICIAL",
-                            Ordem = 1
+                            Ordem = 1,
+                            TempoPadraoDias = 0
                         },
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000013"),
                             Descricao = "Área de preparação e pintura.",
                             Nome = "PINTURA",
-                            Ordem = 2
+                            Ordem = 2,
+                            TempoPadraoDias = 0
                         },
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000014"),
                             Descricao = "Instalação de motor e acabamentos.",
                             Nome = "MONTAGEM FINAL",
-                            Ordem = 3
+                            Ordem = 3,
+                            TempoPadraoDias = 0
                         },
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000015"),
                             Descricao = "Checagem final antes da expedição.",
                             Nome = "TESTE DE QUALIDADE",
-                            Ordem = 4
+                            Ordem = 4,
+                            TempoPadraoDias = 0
                         });
                 });
 

@@ -13,11 +13,12 @@ namespace Valisys_Production.Models
         public string Nome { get; set; }
 
         [MaxLength(500)]
-        public string Descricao { get; set; }
+        public string? Descricao { get; set; } 
 
         public int Ordem { get; set; }
 
+        public int TempoPadraoDias { get; set; } = 0;
+        public bool Ativo { get; set; } = true;
         public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; }
     }
-
 }

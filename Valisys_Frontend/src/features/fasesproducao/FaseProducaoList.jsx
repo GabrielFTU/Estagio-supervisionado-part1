@@ -24,7 +24,7 @@ function FaseProducaoList() {
     },
     onError: (err) => {
       console.error(err);
-      const errorMessage = err.response?.data?.message || "Erro ao excluir. A fase pode estar em uso em Ordens de Produção.";
+      const errorMessage = err.response?.data?.message || "Erro ao excluir. A fase pode estar em uso.";
       alert(errorMessage);
     }
   });
@@ -40,7 +40,6 @@ function FaseProducaoList() {
 
   const basePath = '/settings/cadastros/fases';
 
-  // Ordenar as fases pela propriedade 'Ordem'
   const orderedFases = fases ? [...fases].sort((a, b) => a.ordem - b.ordem) : [];
 
   return (
@@ -53,8 +52,9 @@ function FaseProducaoList() {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Ordem</th>
+            <th style={{ width: '80px' }}>Ordem</th>
             <th>Nome</th>
+            <th>Duração (Dias)</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
@@ -65,6 +65,7 @@ function FaseProducaoList() {
               <tr key={fase.id}>
                 <td>{fase.ordem}</td>
                 <td>{fase.nome}</td>
+                <td>{fase.tempoPadraoDias} dias</td> 
                 <td>
                   <span className={fase.ativo ? 'status-ativo' : 'status-inativo'}>
                     {fase.ativo ? 'Ativo' : 'Inativo'}
@@ -89,7 +90,7 @@ function FaseProducaoList() {
             ))
           ) : (
             <tr>
-              <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+              <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
                 Nenhuma Fase de Produção encontrada.
               </td>
             </tr>

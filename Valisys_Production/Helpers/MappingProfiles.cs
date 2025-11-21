@@ -176,6 +176,30 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.UnidadeMedida, opt => opt.MapFrom(src => src.ProdutoComponente.UnidadeMedida.Sigla));
             CreateMap<FichaTecnicaUpdateDto, FichaTecnica>()
                 .ForMember(dest => dest.Itens, opt => opt.Ignore());
+
+            CreateMap<RoteiroProducao, RoteiroProducaoReadDto>()
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
+
+            CreateMap<RoteiroProducaoEtapa, RoteiroEtapaReadDto>()
+                .ForMember(dest => dest.FaseProducaoNome, opt => opt.MapFrom(src => src.FaseProducao.Nome));
+
+            CreateMap<RoteiroProducaoCreateDto, RoteiroProducao>()
+                .ForMember(dest => dest.Etapas, opt => opt.Ignore()); 
+
+            CreateMap<RoteiroProducaoUpdateDto, RoteiroProducao>()
+                .ForMember(dest => dest.Etapas, opt => opt.Ignore());
+
+            CreateMap<RoteiroProducao, RoteiroProducaoReadDto>()
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
+
+            CreateMap<RoteiroProducaoEtapa, RoteiroEtapaReadDto>()
+                .ForMember(dest => dest.FaseProducaoNome, opt => opt.MapFrom(src => src.FaseProducao.Nome));
+
+            CreateMap<RoteiroProducaoCreateDto, RoteiroProducao>()
+                .ForMember(dest => dest.Etapas, opt => opt.Ignore());
+
+            CreateMap<RoteiroProducaoUpdateDto, RoteiroProducao>()
+                .ForMember(dest => dest.Etapas, opt => opt.Ignore());
         }
     }
 }
