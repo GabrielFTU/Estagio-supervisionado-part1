@@ -16,6 +16,8 @@ namespace Valisys_Production.Data
         private static readonly Guid SampleCategoryId = Guid.Parse("C0DE0000-0000-0000-0000-000000000006");
         private static readonly Guid SampleTipoOrdemDeProducaoId = Guid.Parse("C0DE0000-0000-0000-0000-000000000008");
         private static readonly Guid SampleAlmoxarifadoId = Guid.Parse("C0DE0000-0000-0000-0000-000000000009");
+        private static readonly Guid AdminUserId = Guid.Parse("C0DE0000-0000-0000-0000-000000000000"); 
+
 
         public DbSet<Fornecedor> Fornecedores { get; set; }
         public DbSet<Almoxarifado> Almoxarifados { get; set; }
@@ -44,6 +46,20 @@ namespace Valisys_Production.Data
                 new Perfil { Id = AdminProfileId, Nome = "Administrador" },
                 new Perfil { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000010"), Nome = "Gerente PCP" },
                 new Perfil { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000011"), Nome = "Encarregado Producao" }
+            );
+
+            modelBuilder.Entity<Usuario>().HasData(
+                new Usuario
+                {
+                    Id = AdminUserId,
+                    Nome = "Administrador Master",
+                    Email = "admin@valisys.com",
+                    // Hash da senha "Admin@123" (Gerado com BCrypt.Net.BCrypt.HashPassword("Admin@123"))
+                    SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u",
+                    Ativo = true,
+                    PerfilId = AdminProfileId,
+                    DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
             );
 
             modelBuilder.Entity<CategoriaProduto>().HasData(

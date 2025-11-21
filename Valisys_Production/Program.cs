@@ -110,6 +110,8 @@ builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 builder.Services.AddScoped<IFichaTecnicaRepository, FichaTecnicaRepository>();
 builder.Services.AddScoped<IFichaTecnicaService, FichaTecnicaService>();
+builder.Services.AddScoped<IRoteiroProducaoRepository, RoteiroProducaoRepository>();
+builder.Services.AddScoped<IRoteiroProducaoService, RoteiroProducaoService>();
 
 
 builder.Services.AddCors(options =>

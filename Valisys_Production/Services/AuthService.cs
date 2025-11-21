@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration; 
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,7 +16,7 @@ namespace Valisys_Production.Services
     public class AuthService : IAuthService
     {
         private readonly IUsuarioRepository _usuarioRepository;
-        private readonly IConfiguration _configuration; 
+        private readonly IConfiguration _configuration;
 
 
         public AuthService(IUsuarioRepository usuarioRepository, IConfiguration configuration)
@@ -28,8 +28,7 @@ namespace Valisys_Production.Services
         public async Task<(string Token, Usuario User)> LoginAsync(LoginDto loginDto)
         {
             var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
-
-            if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash))
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash.Trim()))
             {
                 throw new UnauthorizedAccessException("Credenciais inválidas.");
             }
@@ -54,7 +53,7 @@ namespace Valisys_Production.Services
                     new Claim(ClaimTypes.Email, usuario.Email),
                     new Claim("PerfilId", usuario.PerfilId.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddHours(8), 
+                Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

@@ -798,6 +798,18 @@ namespace Valisys_Production.Migrations
                     b.HasIndex("PerfilId");
 
                     b.ToTable("Usuarios");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("c0de0000-0000-0000-0000-000000000000"),
+                            Ativo = true,
+                            DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@valisys.com",
+                            Nome = "Administrador Master",
+                            PerfilId = new Guid("c0de0000-0000-0000-0000-000000000001"),
+                            SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u"
+                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>

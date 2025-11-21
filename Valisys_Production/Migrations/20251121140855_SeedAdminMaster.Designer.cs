@@ -12,8 +12,8 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251121024202_AdicionaTempoPadraoFase")]
-    partial class AdicionaTempoPadraoFase
+    [Migration("20251121140855_SeedAdminMaster")]
+    partial class SeedAdminMaster
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,8 +119,10 @@ namespace Valisys_Production.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Descricao")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -143,6 +145,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000004"),
+                            Ativo = true,
                             Descricao = "Início da montagem do chassi.",
                             Nome = "MONTAGEM INICIAL",
                             Ordem = 1,
@@ -151,6 +154,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000013"),
+                            Ativo = true,
                             Descricao = "Área de preparação e pintura.",
                             Nome = "PINTURA",
                             Ordem = 2,
@@ -159,6 +163,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000014"),
+                            Ativo = true,
                             Descricao = "Instalação de motor e acabamentos.",
                             Nome = "MONTAGEM FINAL",
                             Ordem = 3,
@@ -167,6 +172,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000015"),
+                            Ativo = true,
                             Descricao = "Checagem final antes da expedição.",
                             Nome = "TESTE DE QUALIDADE",
                             Ordem = 4,
@@ -550,6 +556,71 @@ namespace Valisys_Production.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Valisys_Production.Models.RoteiroProducao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("ProdutoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Versao")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProdutoId");
+
+                    b.ToTable("RoteirosProducao");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.RoteiroProducaoEtapa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FaseProducaoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Instrucoes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RoteiroProducaoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TempoDias")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FaseProducaoId");
+
+                    b.HasIndex("RoteiroProducaoId");
+
+                    b.ToTable("RoteiroProducaoEtapas");
+                });
+
             modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -730,6 +801,18 @@ namespace Valisys_Production.Migrations
                     b.HasIndex("PerfilId");
 
                     b.ToTable("Usuarios");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("c0de0000-0000-0000-0000-000000000000"),
+                            Ativo = true,
+                            DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@valisys.com",
+                            Nome = "Administrador Master",
+                            PerfilId = new Guid("c0de0000-0000-0000-0000-000000000001"),
+                            SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u"
+                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>
@@ -888,6 +971,36 @@ namespace Valisys_Production.Migrations
                     b.Navigation("UnidadeMedida");
                 });
 
+            modelBuilder.Entity("Valisys_Production.Models.RoteiroProducao", b =>
+                {
+                    b.HasOne("Valisys_Production.Models.Produto", "Produto")
+                        .WithMany()
+                        .HasForeignKey("ProdutoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Produto");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.RoteiroProducaoEtapa", b =>
+                {
+                    b.HasOne("Valisys_Production.Models.FaseProducao", "FaseProducao")
+                        .WithMany()
+                        .HasForeignKey("FaseProducaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Valisys_Production.Models.RoteiroProducao", "RoteiroProducao")
+                        .WithMany("Etapas")
+                        .HasForeignKey("RoteiroProducaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FaseProducao");
+
+                    b.Navigation("RoteiroProducao");
+                });
+
             modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducao", b =>
                 {
                     b.HasOne("Valisys_Production.Models.Usuario", "Encarregado")
@@ -974,6 +1087,11 @@ namespace Valisys_Production.Migrations
             modelBuilder.Entity("Valisys_Production.Models.Perfil", b =>
                 {
                     b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("Valisys_Production.Models.RoteiroProducao", b =>
+                {
+                    b.Navigation("Etapas");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.SolicitacaoProducao", b =>

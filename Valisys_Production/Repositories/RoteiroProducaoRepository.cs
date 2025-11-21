@@ -36,7 +36,7 @@ namespace Valisys_Production.Repositories
             return await _context.RoteirosProducao
                 .AsNoTracking()
                 .Include(r => r.Produto)
-                .Include(r => r.Etapas) 
+                .Include(r => r.Etapas)
                 .OrderBy(r => r.Produto.Nome)
                 .ToListAsync();
         }
