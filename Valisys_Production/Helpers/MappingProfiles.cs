@@ -77,14 +77,14 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.SolicitacaoProducao, opt => opt.Ignore())
                 .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore());
 
-            // Perfil
             CreateMap<Perfil, PerfilReadDto>();
             CreateMap<PerfilCreateDto, Perfil>();
             CreateMap<PerfilUpdateDto, Perfil>();
 
-            // Produto
             CreateMap<Produto, ProdutoReadDto>()
                 .ForMember(dest => dest.Codigo, opt => opt.MapFrom(src => src.CodigoInternoProduto))
+                .ForMember(dest => dest.Classificacao, opt => opt.MapFrom(src => src.Classificacao.ToString()))
+                .ForMember(dest => dest.ClassificacaoId, opt => opt.MapFrom(src => (int)src.Classificacao))
                 .ForMember(dest => dest.EstoqueMinimo, opt => opt.Ignore())
                 .ForMember(dest => dest.CategoriaProdutoNome, opt => opt.MapFrom(src => src.CategoriaProduto.Nome))
                 .ForMember(dest => dest.UnidadeMedidaSigla, opt => opt.MapFrom(src => src.UnidadeMedida.Sigla))
@@ -104,7 +104,6 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Descricao))
                 .ForMember(dest => dest.Observacoes, opt => opt.MapFrom(src => src.Observacoes));
 
-            // Solicitação Produção
             CreateMap<SolicitacaoProducao, SolicitacaoProducaoReadDto>()
                 .ForMember(dest => dest.Codigo, opt => opt.MapFrom(src => src.CodigoSolicitacao))
                 .ForMember(dest => dest.QuantidadeSolicitada, opt => opt.MapFrom(src => src.Quantidade))
@@ -147,7 +146,6 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Itens, opt => opt.Ignore())
                 .ForMember(dest => dest.Observacoes, opt => opt.Ignore());
 
-            // Tipo Ordem de Produção
             CreateMap<TipoOrdemDeProducao, TipoOrdemDeProducaoReadDto>();
             CreateMap<TipoOrdemDeProducaoCreateDto, TipoOrdemDeProducao>()
                 .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
@@ -157,7 +155,6 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
                 .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
 
-            // Usuário
             CreateMap<Usuario, UsuarioReadDto>()
                  .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil != null ? src.Perfil.Nome : "Sem Perfil"));
             CreateMap<UsuarioCreateDto, Usuario>()
@@ -169,6 +166,16 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.SenhaHash, opt => opt.Ignore())
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore())
                 .ForMember(dest => dest.Perfil, opt => opt.Ignore());
+
+            CreateMap<FichaTecnica, FichaTecnicaReadDto>()
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
+
+            CreateMap<FichaTecnicaItem, FichaTecnicaItemReadDto>()
+                .ForMember(dest => dest.ProdutoComponenteNome, opt => opt.MapFrom(src => src.ProdutoComponente.Nome))
+                .ForMember(dest => dest.ProdutoComponenteCodigo, opt => opt.MapFrom(src => src.ProdutoComponente.CodigoInternoProduto))
+                .ForMember(dest => dest.UnidadeMedida, opt => opt.MapFrom(src => src.ProdutoComponente.UnidadeMedida.Sigla));
+            CreateMap<FichaTecnicaUpdateDto, FichaTecnica>()
+                .ForMember(dest => dest.Itens, opt => opt.Ignore());
         }
     }
 }

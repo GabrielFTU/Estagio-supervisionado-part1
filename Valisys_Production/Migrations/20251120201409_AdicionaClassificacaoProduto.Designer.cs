@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Valisys_Production.Data;
@@ -11,9 +12,11 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120201409_AdicionaClassificacaoProduto")]
+    partial class AdicionaClassificacaoProduto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,70 +165,6 @@ namespace Valisys_Production.Migrations
                             Nome = "TESTE DE QUALIDADE",
                             Ordem = 4
                         });
-                });
-
-            modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Ativa")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("CodigoFicha")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("ProdutoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Versao")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProdutoId");
-
-                    b.ToTable("FichasTecnicas");
-                });
-
-            modelBuilder.Entity("Valisys_Production.Models.FichaTecnicaItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FichaTecnicaId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("PerdaPercentual")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("ProdutoComponenteId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Quantidade")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FichaTecnicaId");
-
-                    b.HasIndex("ProdutoComponenteId");
-
-                    b.ToTable("FichaTecnicaItens");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Fornecedor", b =>
@@ -722,36 +661,6 @@ namespace Valisys_Production.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>
-                {
-                    b.HasOne("Valisys_Production.Models.Produto", "Produto")
-                        .WithMany()
-                        .HasForeignKey("ProdutoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Produto");
-                });
-
-            modelBuilder.Entity("Valisys_Production.Models.FichaTecnicaItem", b =>
-                {
-                    b.HasOne("Valisys_Production.Models.FichaTecnica", "FichaTecnica")
-                        .WithMany("Itens")
-                        .HasForeignKey("FichaTecnicaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Valisys_Production.Models.Produto", "ProdutoComponente")
-                        .WithMany()
-                        .HasForeignKey("ProdutoComponenteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FichaTecnica");
-
-                    b.Navigation("ProdutoComponente");
-                });
-
             modelBuilder.Entity("Valisys_Production.Models.Lote", b =>
                 {
                     b.HasOne("Valisys_Production.Models.Almoxarifado", "Almoxarifado")
@@ -949,11 +858,6 @@ namespace Valisys_Production.Migrations
             modelBuilder.Entity("Valisys_Production.Models.FaseProducao", b =>
                 {
                     b.Navigation("OrdensDeProducao");
-                });
-
-            modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>
-                {
-                    b.Navigation("Itens");
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.Lote", b =>

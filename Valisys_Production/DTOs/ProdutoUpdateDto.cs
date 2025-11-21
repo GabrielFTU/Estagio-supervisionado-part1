@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Valisys_Production.Models.Enums;
 
 namespace Valisys_Production.DTOs
 {
@@ -15,6 +16,9 @@ namespace Valisys_Production.DTOs
         [Required(ErrorMessage = "O nome do produto é obrigatório.")]
         [StringLength(100)]
         public string Nome { get; set; }
+
+        [Required]
+        public ClassificacaoProduto Classificacao { get; set; }
 
         [Required(ErrorMessage ="A descrição é obrigatória.")]
         [StringLength(500)]

@@ -64,7 +64,9 @@ namespace Valisys_Production.Repositories
 
             if (produto != null)
             {
-                _context.Produtos.Remove(produto);
+                produto.Ativo = false;
+                _context.Entry(produto).State = EntityState.Modified;
+
                 var affectedRows = await _context.SaveChangesAsync();
                 return affectedRows > 0;
             }

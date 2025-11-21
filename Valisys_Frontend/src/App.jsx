@@ -35,6 +35,13 @@ import UnidadeMedidaForm from './features/unidade/UnidadeMedidaForm.jsx';
 import OrdemDeProducaoList from './features/producao/OrdemDeProducaoList.jsx';
 import OrdemDeProducaoForm from './features/producao/OrdemDeProducaoForm.jsx';
 
+import MovimentacaoList from './features/estoque/MovimentacaoList.jsx';
+import MovimentacaoForm from './features/estoque/MovimentacaoForm.jsx';
+
+import FichaTecnicaList from './features/fichatecnica/FichaTecnicaList.jsx';
+import FichaTecnicaForm from './features/fichatecnica/FichaTecnicaForm.jsx';
+import FichaTecnicaDetails from './features/fichatecnica/FichaTecnicaDetails.jsx';;
+
 const Placeholder = ({ title }) => <div style={{padding: '20px'}}><h1>{title}</h1><p>Módulo em desenvolvimento.</p></div>;
 
 import './index.css';
@@ -65,8 +72,11 @@ function App() {
           <Route path="/producao/op/editar/:id" element={<OrdemDeProducaoForm />} />
           <Route path="/producao/lotes" element={<Placeholder title="Gerenciamento de Lotes" />} />
 
-          <Route path="/engenharia/fichas-tecnicas" element={<Placeholder title="Fichas Técnicas" />} />
-          <Route path="/engenharia/fichas-tecnicas/novo" element={<Placeholder title="Nova Ficha Técnica" />} />
+          <Route path="/engenharia/fichas-tecnicas" element={<FichaTecnicaList />} />
+          <Route path="/engenharia/fichas-tecnicas/novo" element={<FichaTecnicaForm />} />
+          <Route path="/engenharia/fichas-tecnicas/editar/:id" element={<FichaTecnicaForm />} />
+          <Route path="/engenharia/fichas-tecnicas/visualizar/:id" element={<FichaTecnicaDetails />} />
+          
           <Route path="/engenharia/roteiros" element={<Placeholder title="Roteiros de Produção" />} />
 
           <Route path="/fabrica/consultar-op" element={<Placeholder title="Chão de Fábrica: Consulta OP" />} />

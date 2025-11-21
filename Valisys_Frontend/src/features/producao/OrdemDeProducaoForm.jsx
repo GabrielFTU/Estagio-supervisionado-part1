@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import produtoService from '../../services/produtoService.js';
 import almoxarifadoService from '../../services/almoxarifadoService.js';
@@ -22,7 +23,7 @@ const ordemDeProducaoSchema = z.object({
   almoxarifadoId: z.string().uuid("Selecione um Almoxarifado."),
   faseAtualId: z.string().uuid("Selecione uma Fase Inicial."),
   tipoOrdemDeProducaoId: z.string().uuid("Selecione o Tipo de OP."),
-  loteId: z.string().uuid("Selecione um Lote.").optional().nullable(),
+  loteId: z.string().nullable().optional(),
   status: z.coerce.number().optional(), 
 });
 
@@ -32,7 +33,6 @@ const statusOptions = [
     { value: 3, label: 'Finalizada' },
     { value: 4, label: 'Cancelada' },
 ];
-
 
 function OrdemDeProducaoForm() {
   const { id } = useParams();
@@ -51,6 +51,9 @@ function OrdemDeProducaoForm() {
     resolver: zodResolver(ordemDeProducaoSchema),
     defaultValues: { quantidade: 1, status: 1 }
   });
+
+  // Observar o produto selecionado para validação dinâmica de lote
+  const selectedProdutoId = watch('produtoId');
   
   const { data: produtos } = useQuery({ queryKey: ['produtos'], queryFn: produtoService.getAll });
   const { data: almoxarifados } = useQuery({ queryKey: ['almoxarifados'], queryFn: almoxarifadoService.getAll });
@@ -62,6 +65,11 @@ function OrdemDeProducaoForm() {
     queryFn: () => ordemDeProducaoService.getById(id),
     enabled: isEditing,
   });
+
+  // Determinar se o produto selecionado exige lote
+  const produtoSelecionadoObj = useMemo(() => {
+    return produtos?.find(p => p.id === selectedProdutoId);
+  }, [produtos, selectedProdutoId]);
 
   useEffect(() => {
     if (isEditing && ordem) {
@@ -77,15 +85,13 @@ function OrdemDeProducaoForm() {
         loteId: ordem.loteId || null,
         status: ordem.status, 
       });
-    } else if (!isEditing) {
-        const faseInicial = fases?.find(f => f.ordem === 1);
-        reset({
-            faseAtualId: faseInicial?.id || '',
-            status: 1
-        });
+    } else if (!isEditing && fases) {
+        const faseInicial = fases.find(f => f.ordem === 1);
+        if (faseInicial) {
+            reset({ faseAtualId: faseInicial.id, status: 1 });
+        }
     }
   }, [ordem, isEditing, reset, fases]);
-
 
   const createMutation = useMutation({
     mutationFn: ordemDeProducaoService.create,
@@ -94,8 +100,8 @@ function OrdemDeProducaoForm() {
       navigate(basePath);
     },
     onError: (error) => {
-      console.error("Erro ao criar Ordem de Produção:", error);
-      alert(`Falha ao criar a OP: ${error.response?.data?.message || error.message}`);
+      console.error("Erro:", error);
+      alert(`Falha ao salvar: ${error.response?.data?.message || error.message}`);
     }
   });
 
@@ -103,16 +109,21 @@ function OrdemDeProducaoForm() {
     mutationFn: (data) => ordemDeProducaoService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
-      queryClient.invalidateQueries({ queryKey: ['ordemDeProducao', id] });
       navigate(basePath);
     },
     onError: (err) => {
       console.error(err);
-      alert(`Erro ao atualizar OP: ${err.response?.data?.message || err.message}`);
+      alert(`Erro ao atualizar: ${err.response?.data?.message || err.message}`);
     }
   });
 
   const onSubmit = (data) => {
+    // Validação manual extra para Lote
+    if (produtoSelecionadoObj?.controlarPorLote && !data.loteId) {
+        alert("Este produto exige um Lote. Por favor, informe o ID do Lote.");
+        return;
+    }
+
     const mappedData = {
         Id: isEditing ? id : undefined,
         CodigoOrdem: data.codigoOrdem,
@@ -133,41 +144,19 @@ function OrdemDeProducaoForm() {
     }
   };
 
-  const isLoadingData = [produtos, almoxarifados, fases, tiposOP].some(q => q.isLoading) || isLoadingOrdem;
-  const isPending = createMutation.isPending || updateMutation.isPending || isLoadingData;
-  
-  if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando Ordem de Produção...</div>;
-  if (isLoadingData) return <div className="loading-message">Carregando dados de cadastros...</div>;
-
+  const isLoadingData = [produtos, almoxarifados, fases, tiposOP].some(q => !q);
+  if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando OP...</div>;
 
   return (
     <div className="form-container">
-      <h1>{isEditing ? `Editar Ordem de Produção: ${ordem?.codigoOrdem}` : 'Criar Nova Ordem de Produção'}</h1>
+      <h1>{isEditing ? `Editar OP: ${ordem?.codigoOrdem}` : 'Criar Nova Ordem de Produção'}</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
           <label htmlFor="codigoOrdem">Código da OP</label>
-          <input id="codigoOrdem" {...register('codigoOrdem')} />
+          <input id="codigoOrdem" {...register('codigoOrdem')} placeholder="Ex: OP-2024-001" />
           {errors.codigoOrdem && <span className="error">{errors.codigoOrdem.message}</span>}
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="quantidade">Quantidade</label>
-          <input id="quantidade" type="number" step="1" {...register('quantidade', { valueAsNumber: true })} />
-          {errors.quantidade && <span className="error">{errors.quantidade.message}</span>}
-        </div>
-
-        {isEditing && (
-            <div className="form-group">
-                <label htmlFor="status">Status</label>
-                <select id="status" {...register('status', { valueAsNumber: true })}>
-                    {statusOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                </select>
-                {errors.status && <span className="error">{errors.status.message}</span>}
-            </div>
-        )}
         
         <div className="form-group">
           <label htmlFor="produtoId">Produto</label>
@@ -178,6 +167,26 @@ function OrdemDeProducaoForm() {
             ))}
           </select>
           {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
+          {produtoSelecionadoObj?.controlarPorLote && (
+              <small style={{color: '#eab308', marginTop: '4px'}}>⚠ Este produto requer controle por Lote.</small>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="quantidade">Quantidade</label>
+          <input id="quantidade" type="number" step="1" {...register('quantidade', { valueAsNumber: true })} />
+          {errors.quantidade && <span className="error">{errors.quantidade.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="loteId">Lote {produtoSelecionadoObj?.controlarPorLote ? '*' : '(Opcional)'}</label>
+          <input 
+            id="loteId" 
+            {...register('loteId')} 
+            placeholder="Insira o ID do Lote" 
+            style={{ borderColor: produtoSelecionadoObj?.controlarPorLote ? '#eab308' : '' }}
+          />
+          {errors.loteId && <span className="error">{errors.loteId.message}</span>}
         </div>
 
         <div className="form-group">
@@ -185,7 +194,7 @@ function OrdemDeProducaoForm() {
           <select id="tipoOrdemDeProducaoId" {...register('tipoOrdemDeProducaoId')} defaultValue="">
             <option value="" disabled>Selecione o tipo</option>
             {tiposOP?.map(t => (
-              <option key={t.id} value={t.id}>{t.nome} ({t.codigo})</option>
+              <option key={t.id} value={t.id}>{t.nome}</option>
             ))}
           </select>
           {errors.tipoOrdemDeProducaoId && <span className="error">{errors.tipoOrdemDeProducaoId.message}</span>}
@@ -203,7 +212,7 @@ function OrdemDeProducaoForm() {
         </div>
         
         <div className="form-group">
-          <label htmlFor="faseAtualId">Fase Atual/Inicial</label>
+          <label htmlFor="faseAtualId">Fase Inicial</label>
           <select id="faseAtualId" {...register('faseAtualId')} defaultValue="">
             <option value="" disabled>Selecione a fase</option>
             {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
@@ -212,25 +221,29 @@ function OrdemDeProducaoForm() {
           </select>
           {errors.faseAtualId && <span className="error">{errors.faseAtualId.message}</span>}
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="loteId">Lote (Opcional)</label>
-          <input id="loteId" {...register('loteId')} placeholder="Insira o ID do Lote se aplicável" />
-          {errors.loteId && <span className="error">{errors.loteId.message}</span>}
-        </div>
+
+        {isEditing && (
+            <div className="form-group">
+                <label htmlFor="status">Status</label>
+                <select id="status" {...register('status', { valueAsNumber: true })}>
+                    {statusOptions.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+            </div>
+        )}
 
         <div className="form-group">
           <label htmlFor="observacoes">Observações</label>
           <textarea id="observacoes" {...register('observacoes')} rows="3" />
-          {errors.observacoes && <span className="error">{errors.observacoes.message}</span>}
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={() => navigate(basePath)} className="btn-cancelar">
             Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? (isEditing ? 'Salvando...' : 'Criando...') : 'Salvar'}
+          <button type="submit" className="btn-salvar" disabled={createMutation.isPending || updateMutation.isPending}>
+            {(createMutation.isPending || updateMutation.isPending) ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
 

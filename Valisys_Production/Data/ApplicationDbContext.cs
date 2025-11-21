@@ -31,24 +31,23 @@ namespace Valisys_Production.Data
         public DbSet<CategoriaProduto> CategoriasProduto { get; set; }
         public DbSet<UnidadeMedida> UnidadesMedida { get; set; }
         public DbSet<TipoOrdemDeProducao> TiposDeOrdemDeProducao { get; set; }
+        public DbSet<FichaTecnica> FichasTecnicas { get; set; }
+        public DbSet<FichaTecnicaItem> FichaTecnicaItens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Seed Perfis
             modelBuilder.Entity<Perfil>().HasData(
                 new Perfil { Id = AdminProfileId, Nome = "Administrador" },
                 new Perfil { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000010"), Nome = "Gerente PCP" },
                 new Perfil { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000011"), Nome = "Encarregado Producao" }
             );
 
-            // Seed Categoria Produto
             modelBuilder.Entity<CategoriaProduto>().HasData(
                 new CategoriaProduto { Id = SampleCategoryId, Nome = "Veículos Pesados", Descricao = "VP" }
             );
 
-            // Seed Almoxarifado
             modelBuilder.Entity<Almoxarifado>().HasData(
                 new Almoxarifado
                 {
@@ -64,14 +63,12 @@ namespace Valisys_Production.Data
                 }
             );
 
-            // Seed Unidades de Medida
             modelBuilder.Entity<UnidadeMedida>().HasData(
                 new UnidadeMedida { Id = UnitId, Nome = "Unidade", Sigla = "UN" },
                 new UnidadeMedida { Id = KgId, Nome = "Kilograma", Sigla = "KG" },
                 new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000012"), Nome = "Metro", Sigla = "M" }
             );
 
-            // Seed Fases de Produção
             modelBuilder.Entity<FaseProducao>().HasData(
                 new FaseProducao { Id = Phase1Id, Nome = "MONTAGEM INICIAL", Descricao = "Início da montagem do chassi.", Ordem = 1 },
                 new FaseProducao { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000013"), Nome = "PINTURA", Descricao = "Área de preparação e pintura.", Ordem = 2 },
@@ -79,12 +76,10 @@ namespace Valisys_Production.Data
                 new FaseProducao { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000015"), Nome = "TESTE DE QUALIDADE", Descricao = "Checagem final antes da expedição.", Ordem = 4 }
             );
 
-            // Seed Tipo de Ordem de Produção
             modelBuilder.Entity<TipoOrdemDeProducao>().HasData(
                 new TipoOrdemDeProducao { Id = SampleTipoOrdemDeProducaoId, Nome = "Normal", Descricao = "NOR" }
             );
 
-            // Seed Produto
             modelBuilder.Entity<Produto>().HasData(
                 new Produto
                 {
@@ -101,7 +96,6 @@ namespace Valisys_Production.Data
                 }
             );
 
-            // Configurações de relacionamentos
             modelBuilder.Entity<OrdemDeProducao>()
                 .HasOne(o => o.SolicitacaoProducao)
                 .WithOne(s => s.OrdemDeProducao)
@@ -142,6 +136,24 @@ namespace Valisys_Production.Data
                 .HasMany(s => s.Itens)
                 .WithOne(i => i.SolicitacaoProducao)
                 .HasForeignKey(i => i.SolicitacaoProducaoId);
+
+            modelBuilder.Entity<FichaTecnica>()
+                .HasOne(f => f.Produto)
+                .WithMany()
+                .HasForeignKey(f => f.ProdutoId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<FichaTecnicaItem>()
+                .HasOne(i => i.FichaTecnica)
+                .WithMany(f => f.Itens)
+                .HasForeignKey(i => i.FichaTecnicaId)
+                .OnDelete(DeleteBehavior.Cascade); 
+
+            modelBuilder.Entity<FichaTecnicaItem>()
+                .HasOne(i => i.ProdutoComponente)
+                .WithMany()
+                .HasForeignKey(i => i.ProdutoComponenteId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Valisys_Production.Models.Enums;
 
 namespace Valisys_Production.Models
 {
@@ -17,6 +18,8 @@ namespace Valisys_Production.Models
         [Required]
         [MaxLength(50)]
         public string CodigoInternoProduto { get; set; }
+
+        public ClassificacaoProduto Classificacao { get; set; }
 
         public bool ControlarPorLote { get; set; } = false;
 

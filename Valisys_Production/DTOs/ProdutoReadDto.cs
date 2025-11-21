@@ -7,6 +7,8 @@ namespace Valisys_Production.DTOs
         public Guid Id { get; set; }
         public string Codigo { get; set; }
         public string Nome { get; set; }
+        public string Classificacao { get; set; } 
+        public int ClassificacaoId { get; set; }
         public decimal EstoqueMinimo { get; set; }
         public bool ControlarPorLote { get; set; }
         public bool Ativo { get; set; }

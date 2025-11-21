@@ -14,13 +14,20 @@ import './ProdutoForm.css';
 const produtoSchema = z.object({
   nome: z.string().min(3, "O nome precisa ter pelo menos 3 caracteres."),
   descricao: z.string().min(1, "A descrição é obrigatória."),
-  codigoInternoProduto: z.string().min(1, "O código é obrigatório."),
-  controlarPorLote: z.boolean().default(false),
+  controlarPorLote: z.boolean(),
   observacoes: z.string().optional(),
-  
-  unidadeMedidaId: z.string().uuid("Você deve selecionar uma Unidade de Medida."),
-  categoriaProdutoId: z.string().uuid("Você deve selecionar uma Categoria."),
+  classificacao: z.coerce.number().min(0, "Selecione uma classificação válida."),
+  unidadeMedidaId: z.string().min(1, "Selecione uma Unidade de Medida."),
+  categoriaProdutoId: z.string().min(1, "Selecione uma Categoria."),
 });
+
+const CLASSIFICACAO_OPTIONS = [
+  { value: 0, label: 'Matéria Prima' },
+  { value: 1, label: 'Componente' },
+  { value: 2, label: 'Semi-Acabado' },
+  { value: 3, label: 'Produto Acabado' },
+  { value: 4, label: 'Material de Consumo' },
+];
 
 function ProdutoForm() {
   const navigate = useNavigate();
@@ -29,9 +36,13 @@ function ProdutoForm() {
   const { 
     register, 
     handleSubmit, 
-    formState: { errors } 
+    formState: { errors, isSubmitting } 
   } = useForm({
-    resolver: zodResolver(produtoSchema)
+    resolver: zodResolver(produtoSchema),
+    defaultValues: {
+      controlarPorLote: false,
+      classificacao: "" 
+    }
   });
 
   const { data: categorias, isLoading: isLoadingCategorias } = useQuery({
@@ -52,7 +63,8 @@ function ProdutoForm() {
     },
     onError: (error) => {
       console.error("Erro ao criar produto:", error);
-      alert("Falha ao criar o produto. Tente novamente.");
+      const msg = error.response?.data?.message || "Verifique os dados e tente novamente.";
+      alert(`Falha ao criar o produto: ${msg}`);
     }
   });
 
@@ -60,14 +72,18 @@ function ProdutoForm() {
     const mappedData = {
       Nome: data.nome,
       Descricao: data.descricao,
-      CodigoInternoProduto: data.codigoInternoProduto,
       ControlarPorLote: data.controlarPorLote,
+      Classificacao: Number(data.classificacao),
       Observacoes: data.observacoes,
       UnidadeMedidaId: data.unidadeMedidaId,
       CategoriaProdutoId: data.categoriaProdutoId,
     };
     createProdutoMutation.mutate(mappedData);
   };
+
+  const isLoadingDependencies = isLoadingCategorias || isLoadingUnidades;
+  
+  if (isLoadingDependencies) return <div className="loading-message">Carregando opções...</div>;
 
   return (
     <div className="form-container">
@@ -76,24 +92,29 @@ function ProdutoForm() {
         
         <div className="form-group">
           <label htmlFor="nome">Nome do Produto</label>
-          <input id="nome" {...register('nome')} />
+          <input id="nome" {...register('nome')} placeholder="Ex: Parafuso Sextavado" />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="codigoInternoProduto">Código Interno</label>
-          <input id="codigoInternoProduto" {...register('codigoInternoProduto')} />
-          {errors.codigoInternoProduto && <span className="error">{errors.codigoInternoProduto.message}</span>}
+          <label htmlFor="classificacao">Classificação</label>
+          <select id="classificacao" {...register('classificacao')}>
+            <option value="" disabled>Selecione a classificação</option>
+            {CLASSIFICACAO_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {errors.classificacao && <span className="error">{errors.classificacao.message}</span>}
         </div>
 
         <div className="form-group">
           <label htmlFor="categoriaProdutoId">Categoria</label>
           <select id="categoriaProdutoId" {...register('categoriaProdutoId')} defaultValue="">
-            <option value="" disabled>
-              {isLoadingCategorias ? 'Carregando...' : 'Selecione uma categoria'}
-            </option>
+            <option value="" disabled>Selecione uma categoria</option>
             {categorias?.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.nome}</option>
+              <option key={cat.id || cat.Id} value={cat.id || cat.Id}>
+                {cat.nome || cat.Nome}
+              </option>
             ))}
           </select>
           {errors.categoriaProdutoId && <span className="error">{errors.categoriaProdutoId.message}</span>}
@@ -102,11 +123,11 @@ function ProdutoForm() {
         <div className="form-group">
           <label htmlFor="unidadeMedidaId">Unidade de Medida</label>
           <select id="unidadeMedidaId" {...register('unidadeMedidaId')} defaultValue="">
-            <option value="" disabled>
-              {isLoadingUnidades ? 'Carregando...' : 'Selecione uma unidade'}
-            </option>
+            <option value="" disabled>Selecione uma unidade</option>
             {unidades?.map(un => (
-              <option key={un.id} value={un.id}>{un.nome} ({un.sigla})</option>
+              <option key={un.id || un.Id} value={un.id || un.Id}>
+                {un.nome || un.Nome} ({un.sigla || un.Sigla})
+              </option>
             ))}
           </select>
           {errors.unidadeMedidaId && <span className="error">{errors.unidadeMedidaId.message}</span>}
@@ -114,13 +135,13 @@ function ProdutoForm() {
 
         <div className="form-group">
           <label htmlFor="descricao">Descrição</label>
-          <textarea id="descricao" {...register('descricao')} rows={3}></textarea>
+          <textarea id="descricao" {...register('descricao')} rows={3} placeholder="Detalhes técnicos..."></textarea>
           {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
         
         <div className="form-group">
           <label htmlFor="observacoes">Observações</label>
-          <textarea id="observacoes" {...register('observacoes')} rows={3}></textarea>
+          <textarea id="observacoes" {...register('observacoes')} rows={2} />
         </div>
 
         <div className="form-group-checkbox">
@@ -132,8 +153,8 @@ function ProdutoForm() {
           <button type="button" onClick={() => navigate('/estoque/produtos')} className="btn-cancelar">
             Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={createProdutoMutation.isPending}>
-            {createProdutoMutation.isPending ? 'Salvando...' : 'Salvar'}
+          <button type="submit" className="btn-salvar" disabled={createProdutoMutation.isPending || isSubmitting}>
+            {createProdutoMutation.isPending ? 'Salvando...' : 'Salvar Produto'}
           </button>
         </div>
 

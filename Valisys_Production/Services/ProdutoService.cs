@@ -1,6 +1,10 @@
 ﻿using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using Valisys_Production.Repositories.Interfaces;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Valisys_Production.Services
 {
@@ -19,19 +23,35 @@ namespace Valisys_Production.Services
             {
                 throw new ArgumentException("O nome do produto não pode ser vazio.");
             }
+
+            produto.CodigoInternoProduto = await GerarProximoCodigoSequencialAsync();
+
             produto.DataCadastro = DateTime.UtcNow;
             return await _repository.AddAsync(produto);
         }
 
+        private async Task<string> GerarProximoCodigoSequencialAsync()
+        {
+            var produtos = await _repository.GetAllAsync();
+            var codigosExistentes = produtos
+                .Select(p => p.CodigoInternoProduto)
+                .Where(c => int.TryParse(c, out _))
+                .Select(c => int.Parse(c))
+                .ToList();
+
+            int proximoNumero = 1; 
+
+            if (codigosExistentes.Any())
+            {
+                proximoNumero = codigosExistentes.Max() + 1;
+            }
+            return proximoNumero.ToString("D4");
+        }
         public async Task<Produto?> GetByIdAsync(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Produto inválido.");
-            }
+            if (id == Guid.Empty) throw new ArgumentException("ID inválido.");
             return await _repository.GetByIdAsync(id);
         }
-
         public async Task<IEnumerable<Produto>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
@@ -39,38 +59,19 @@ namespace Valisys_Production.Services
 
         public async Task<bool> UpdateAsync(Produto produto)
         {
-            if (produto.Id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Produto ausente para atualização.");
-            }
-            if (string.IsNullOrEmpty(produto.Nome))
-            {
-                throw new ArgumentException("O nome do produto não pode ser vazio.");
-            }
+            if (produto.Id == Guid.Empty) throw new ArgumentException("ID ausente.");
 
             var existingProduto = await _repository.GetByIdAsync(produto.Id);
-            if (existingProduto == null)
-            {
-                throw new KeyNotFoundException($"Produto com ID {produto.Id} não encontrado.");
-            }
+            if (existingProduto == null) throw new KeyNotFoundException("Produto não encontrado.");
+            produto.CodigoInternoProduto = existingProduto.CodigoInternoProduto;
+            produto.DataCadastro = existingProduto.DataCadastro;
 
             return await _repository.UpdateAsync(produto);
         }
-
         public async Task<bool> DeleteAsync(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Produto inválido para exclusão.");
-            }
-
             var existingProduto = await _repository.GetByIdAsync(id);
-
-            if (existingProduto == null)
-            {
-                return false;
-            }
-
+            if (existingProduto == null) return false;
             return await _repository.DeleteAsync(id);
         }
     }

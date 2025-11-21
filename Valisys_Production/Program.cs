@@ -108,6 +108,8 @@ builder.Services.AddScoped<IOrdemDeProducaoService, OrdemDeProducaoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
+builder.Services.AddScoped<IFichaTecnicaRepository, FichaTecnicaRepository>();
+builder.Services.AddScoped<IFichaTecnicaService, FichaTecnicaService>();
 
 
 builder.Services.AddCors(options =>

@@ -1,20 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Valisys_Production.Models.Enums;
 
 namespace Valisys_Production.DTOs
 {
     public class ProdutoCreateDto
     {
-        [Required]
+        [Required(ErrorMessage = "O nome é obrigatório.")]
         [MaxLength(150)]
         public string Nome { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "A descrição é obrigatória.")]
         [MaxLength(255)]
         public string Descricao { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string CodigoInternoProduto { get; set; }
+        [Required(ErrorMessage = "A classificação é obrigatória.")]
+        public ClassificacaoProduto Classificacao { get; set; }
 
         public bool ControlarPorLote { get; set; }
 
