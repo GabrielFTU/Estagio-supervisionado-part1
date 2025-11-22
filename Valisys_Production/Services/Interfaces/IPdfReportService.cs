@@ -18,5 +18,11 @@ namespace Valisys_Production.Services.Interfaces
             string filtroStatus,
             string filtroCategoria
         );
+
+        byte[] GerarRelatorioProducao(
+            IEnumerable<OrdemDeProducao> ordens,
+            string periodo,
+            string filtroStatus
+        );
     }
 }

@@ -63,6 +63,20 @@ namespace Valisys_Production.Controllers
             }
         }
 
+        [HttpGet("codigo/{codigo}")]
+        [ProducesResponseType(typeof(OrdemDeProducaoReadDto), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<OrdemDeProducaoReadDto>> GetByCodigo(string codigo)
+        {
+            var codigoDecodificado = System.Net.WebUtility.UrlDecode(codigo);
+            var ordem = await _service.GetByCodigoAsync(codigoDecodificado);
+
+            if (ordem == null) return NotFound();
+
+            var dto = _mapper.Map<OrdemDeProducaoReadDto>(ordem);
+            return Ok(dto);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(OrdemDeProducaoReadDto), 201)]
         [ProducesResponseType(400)]
@@ -93,9 +107,9 @@ namespace Valisys_Production.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = "Recurso dependente (Produto, Lote, etc.) não encontrado." });
+                return NotFound(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -167,6 +181,31 @@ namespace Valisys_Production.Controllers
             }
         }
 
+        [HttpPatch("{id:guid}/fase/{faseId:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> TrocarFase(Guid id, Guid faseId)
+        {
+            try
+            {
+                await _service.TrocarFaseAsync(id, faseId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro interno.", details = ex.Message });
+            }
+        }
+
         [HttpPost("{id:guid}/finalizar")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -190,22 +229,6 @@ namespace Valisys_Production.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Erro interno.", details = ex.Message });
-            }
-        }
-
-        [HttpPatch("{id:guid}/fase/{faseId:guid}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        public async Task<IActionResult> TrocarFase(Guid id, Guid faseId)
-        {
-            try
-            {
-                await _service.TrocarFaseAsync(id, faseId);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
             }
         }
 

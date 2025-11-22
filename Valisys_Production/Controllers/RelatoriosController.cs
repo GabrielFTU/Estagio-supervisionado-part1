@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Valisys_Production.Models; 
 using Valisys_Production.Services;
 using Valisys_Production.Services.Interfaces;
 
@@ -13,7 +14,7 @@ namespace Valisys_Production.Controllers
         private readonly IMovimentacaoService _movimentacaoService;
         private readonly IProdutoService _produtoService;
         private readonly IAlmoxarifadoService _almoxarifadoService;
-        private readonly ICategoriaProdutoService _categoriaService; // Injeção Nova
+        private readonly ICategoriaProdutoService _categoriaService;
 
         public RelatoriosController(
             IPdfReportService pdfService,
@@ -159,6 +160,63 @@ namespace Valisys_Production.Controllers
                     pdfBytes,
                     "application/pdf",
                     $"CatalogoProdutos_{DateTime.Now:yyyyMMdd}.pdf"
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao gerar relatório.", details = ex.Message });
+            }
+        }
+
+
+        [HttpGet("producao")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<IActionResult> GerarRelatorioProducao(
+            [FromQuery] DateTime? dataInicio,
+            [FromQuery] DateTime? dataFim,
+            [FromQuery] StatusOrdemDeProducao? status) 
+        {
+            try
+            { 
+                var ordens = await _ordemService.GetAllAsync();
+
+                string textoPeriodo = "Todo o período";
+                string textoStatus = "Todos";
+
+                if (dataInicio.HasValue)
+                {
+                    ordens = ordens.Where(o => o.DataInicio.Date >= dataInicio.Value.Date);
+                    textoPeriodo = $"De {dataInicio.Value:dd/MM/yyyy}";
+                }
+
+                if (dataFim.HasValue)
+                {
+                    ordens = ordens.Where(o => o.DataInicio.Date <= dataFim.Value.Date);
+                    textoPeriodo += $" até {dataFim.Value:dd/MM/yyyy}";
+                }
+                else if (dataInicio.HasValue)
+                {
+                    textoPeriodo += " até hoje";
+                }
+
+                if (status.HasValue)
+                {
+                    ordens = ordens.Where(o => o.Status == status.Value);
+                    textoStatus = status.Value.ToString();
+                }
+
+                ordens = ordens.OrderByDescending(o => o.DataInicio);
+
+                var pdfBytes = _pdfService.GerarRelatorioProducao(
+                    ordens,
+                    textoPeriodo,
+                    textoStatus
+                );
+
+                return File(
+                    pdfBytes,
+                    "application/pdf",
+                    $"RelatorioProducao_{DateTime.Now:yyyyMMdd}.pdf"
                 );
             }
             catch (Exception ex)
