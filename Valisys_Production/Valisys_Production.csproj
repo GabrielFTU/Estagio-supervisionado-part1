@@ -14,6 +14,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20251121123926_AdicionaUsuarioAdminFinal.cs" />
+    <Compile Remove="Migrations\20251121123926_AdicionaUsuarioAdminFinal.Designer.cs" />
+    <Compile Remove="Migrations\20251121140855_SeedAdminMaster.cs" />
+    <Compile Remove="Migrations\20251121140855_SeedAdminMaster.Designer.cs" />
+    <Compile Remove="Migrations\20251122125013_AdicionaRoteiroNaOrdem.cs" />
+    <Compile Remove="Migrations\20251122125013_AdicionaRoteiroNaOrdem.Designer.cs" />
+    <Compile Remove="Migrations\20251122130634_AdicionaRoteiroNaOrdem2.cs" />
+    <Compile Remove="Migrations\20251122130634_AdicionaRoteiroNaOrdem2.Designer.cs" />
+    <Compile Remove="Migrations\20251122135140_AdicionaRoteiroProducaoId.cs" />
+    <Compile Remove="Migrations\20251122135140_AdicionaRoteiroProducaoId.Designer.cs" />
+    <Compile Remove="Migrations\20251122180050_AdicionaAtivoCategoria.cs" />
+    <Compile Remove="Migrations\20251122180050_AdicionaAtivoCategoria.Designer.cs" />
+    <Compile Remove="Migrations\20251122181259_AdicionaUnicidadeCodigoProduto.cs" />
+    <Compile Remove="Migrations\20251122181259_AdicionaUnicidadeCodigoProduto.Designer.cs" />
+    <Compile Remove="Migrations\20251122182823_AdicionaUnicidadeCategoria.cs" />
+    <Compile Remove="Migrations\20251122182823_AdicionaUnicidadeCategoria.Designer.cs" />
+    <Compile Remove="Migrations\20251122185217_AdicionarUnidadeMedida.cs" />
+    <Compile Remove="Migrations\20251122185217_AdicionarUnidadeMedida.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />

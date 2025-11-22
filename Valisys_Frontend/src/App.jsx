@@ -46,6 +46,9 @@ import RoteiroList from './features/roteiro/RoteiroList.jsx';
 import RoteiroForm from './features/roteiro/RoteiroForm.jsx';
 
 import EstoqueAcabado from './features/estoque/EstoqueAcabado.jsx';
+import KanbanProducao from './features/producao/KanbanProducao.jsx';
+
+import Dashboard from './features/dashboard/Dashboard.jsx';
 
 import LoteList from './features/lote/LoteList.jsx';
 import LoteForm from './features/lote/LoteForm.jsx';
@@ -68,7 +71,7 @@ function App() {
         
         <Route element={<Layout />}>
           
-          <Route path="/" element={<Placeholder title="Dashboard" />} />
+          <Route path="/" element={<Dashboard />} />
           
           <Route path="/estoque/produtos" element={<ProdutoList />} />
           <Route path="/estoque/produtos/novo" element={<ProdutoForm />} /> 
@@ -89,7 +92,7 @@ function App() {
           <Route path="/engenharia/roteiros/editar/:id" element={<RoteiroForm />} />
 
           <Route path="/estoque/acabados" element={<EstoqueAcabado />} />
-          
+
           <Route path="/fabrica/consultar-op" element={<Placeholder title="Chão de Fábrica: Consulta OP" />} />
           <Route path="/fabrica/movimentacoes" element={<Placeholder title="Chão de Fábrica: Apontamentos" />} />
 
@@ -138,6 +141,8 @@ function App() {
           
           <Route path="/relatorios/producao" element={<Placeholder title="Relatório: Produção" />} />
           <Route path="/relatorios/clientes" element={<Placeholder title="Relatório: Clientes" />} />
+
+          <Route path="/fabrica/kanban" element={<KanbanProducao />} />
 
         </Route>
       </Route>

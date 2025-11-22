@@ -193,6 +193,22 @@ namespace Valisys_Production.Controllers
             }
         }
 
+        [HttpPatch("{id:guid}/fase/{faseId:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> TrocarFase(Guid id, Guid faseId)
+        {
+            try
+            {
+                await _service.TrocarFaseAsync(id, faseId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]

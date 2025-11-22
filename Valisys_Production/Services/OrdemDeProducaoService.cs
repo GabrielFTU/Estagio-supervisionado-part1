@@ -34,21 +34,20 @@ namespace Valisys_Production.Services
         {
             if (loteId.HasValue)
             {
-                
-                var ordensComLote = await _repository.GetAllAsync(); 
-
-                var usoExistente = ordensComLote.FirstOrDefault(o =>
+                var ordens = await _repository.GetAllAsync();
+                var usoExistente = ordens.FirstOrDefault(o =>
                     o.LoteId == loteId.Value &&
-                    o.Id != ordemIdIgnorar && 
+                    o.Id != ordemIdIgnorar &&
                     o.Status != StatusOrdemDeProducao.Cancelada
                 );
 
                 if (usoExistente != null)
                 {
-                    throw new InvalidOperationException($"O Lote informado já está sendo utilizado na Ordem de Produção {usoExistente.CodigoOrdem}.");
+                    throw new InvalidOperationException($"O Lote informado já está em uso na OP {usoExistente.CodigoOrdem}.");
                 }
             }
         }
+
         public async Task<OrdemDeProducao> CreateAsync(OrdemDeProducao ordemDeProducao, Guid usuarioId)
         {
             if (ordemDeProducao == null) throw new ArgumentNullException(nameof(ordemDeProducao));
@@ -62,7 +61,7 @@ namespace Valisys_Production.Services
 
             if (produto.ControlarPorLote && ordemDeProducao.LoteId == null)
                 throw new ArgumentException("Este produto exige controle por lote. 'LoteId' é obrigatório.");
-            
+
             await ValidarLoteUnicoAsync(ordemDeProducao.LoteId);
 
             var roteiros = await _roteiroRepository.GetAllAsync();
@@ -108,6 +107,13 @@ namespace Valisys_Production.Services
         }
 
         public async Task<OrdemDeProducao?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
+
+        public async Task<OrdemDeProducao?> GetByCodigoAsync(string codigo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo)) return null;
+            return await _repository.GetByCodigoAsync(codigo);
+        }
+
         public async Task<IEnumerable<OrdemDeProducao>> GetAllAsync() => await _repository.GetAllAsync();
 
         public async Task<bool> UpdateAsync(OrdemDeProducao ordemDeProducao)
@@ -119,14 +125,14 @@ namespace Valisys_Production.Services
             if (existingOrder == null)
                 throw new KeyNotFoundException("OP não encontrada.");
 
+            await ValidarLoteUnicoAsync(ordemDeProducao.LoteId, ordemDeProducao.Id);
+
             ordemDeProducao.DataInicio = existingOrder.DataInicio;
             ordemDeProducao.RoteiroProducaoId = existingOrder.RoteiroProducaoId;
             ordemDeProducao.SolicitacaoProducaoId = existingOrder.SolicitacaoProducaoId;
             ordemDeProducao.DataFim = existingOrder.DataFim;
 
             ordemDeProducao.Observacoes = ordemDeProducao.Observacoes ?? string.Empty;
-
-            await ValidarLoteUnicoAsync(ordemDeProducao.LoteId);
 
             return await _repository.UpdateAsync(ordemDeProducao);
         }
@@ -141,7 +147,6 @@ namespace Valisys_Production.Services
 
             return await _repository.DeleteAsync(id);
         }
-
         public async Task<bool> MovimentarProximaFaseAsync(Guid ordemId)
         {
             var ordem = await _repository.GetByIdAsync(ordemId);
@@ -182,6 +187,31 @@ namespace Valisys_Production.Services
 
             return await _repository.UpdateAsync(ordem);
         }
+        public async Task TrocarFaseAsync(Guid ordemId, Guid novaFaseId)
+        {
+            var ordem = await _repository.GetByIdAsync(ordemId);
+            if (ordem == null) throw new KeyNotFoundException("Ordem não encontrada.");
+
+
+            if (ordem.RoteiroProducaoId.HasValue)
+            {
+                var roteiro = await _roteiroRepository.GetByIdAsync(ordem.RoteiroProducaoId.Value);
+                if (roteiro != null && !roteiro.Etapas.Any(e => e.FaseProducaoId == novaFaseId))
+                {
+                    throw new InvalidOperationException("Esta fase não pertence ao Roteiro de Produção deste produto.");
+                }
+            }
+
+            ordem.FaseAtualId = novaFaseId;
+            ordem.FaseAtual = null;
+            ordem.RoteiroProducao = null;
+            ordem.Produto = null;
+            ordem.Almoxarifado = null;
+            ordem.Lote = null;
+            ordem.TipoOrdemDeProducao = null;
+
+            await _repository.UpdateAsync(ordem);
+        }
         public async Task FinalizarOrdemAsync(Guid ordemId, Guid usuarioId)
         {
             var ordem = await _repository.GetByIdAsync(ordemId);
@@ -197,7 +227,7 @@ namespace Valisys_Production.Services
             ordem.DataFim = DateTime.UtcNow;
 
             if (ordem.Lote != null)
-            { 
+            {
                 ordem.Lote.statusLote = StatusLote.Concluido;
                 ordem.Lote.DataConclusao = DateTime.UtcNow;
             }
@@ -208,11 +238,18 @@ namespace Valisys_Production.Services
                 Quantidade = ordem.Quantidade,
                 OrdemDeProducaoId = ordem.Id,
                 AlmoxarifadoOrigemId = AlmoxarifadoMateriaPrimaPadraoId,
-               
                 AlmoxarifadoDestinoId = ordem.AlmoxarifadoId
             };
 
             await _movimentacaoService.CreateAsync(movimentacaoEntrada, usuarioId);
+
+            ordem.FaseAtual = null;
+            ordem.RoteiroProducao = null;
+            ordem.Produto = null;
+            ordem.Almoxarifado = null;
+            ordem.TipoOrdemDeProducao = null;
+           
+
             await _repository.UpdateAsync(ordem);
         }
     }

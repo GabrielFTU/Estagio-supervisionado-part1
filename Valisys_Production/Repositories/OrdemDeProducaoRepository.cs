@@ -5,7 +5,7 @@ using Valisys_Production.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Linq; // Necessário para o Where e Any
+using System.Linq; 
 
 namespace Valisys_Production.Repositories
 {
@@ -34,8 +34,20 @@ namespace Valisys_Production.Repositories
                 .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
                 .Include(o => o.TipoOrdemDeProducao)
-                .Include(o => o.RoteiroProducao)
+                .Include(o => o.RoteiroProducao) 
                 .FirstOrDefaultAsync(o => o.Id == id);
+        }
+        public async Task<OrdemDeProducao?> GetByCodigoAsync(string codigo)
+        {
+            return await _context.OrdensDeProducao
+                .AsNoTracking()
+                .Include(o => o.Lote)
+                .Include(o => o.Produto)
+                .Include(o => o.Almoxarifado)
+                .Include(o => o.FaseAtual)
+                .Include(o => o.TipoOrdemDeProducao)
+                .Include(o => o.RoteiroProducao)
+                .FirstOrDefaultAsync(o => o.CodigoOrdem == codigo);
         }
 
         public async Task<IEnumerable<OrdemDeProducao>> GetAllAsync()
@@ -65,7 +77,6 @@ namespace Valisys_Production.Repositories
                 return false;
             }
         }
-
         public async Task<bool> DeleteAsync(Guid id)
         {
             var ordemDeProducao = await _context.OrdensDeProducao.FindAsync(id);

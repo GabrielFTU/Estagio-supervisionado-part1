@@ -32,6 +32,10 @@ const ordemDeProducaoService = {
     const response = await api.post(`${endpoint}/${id}/finalizar`);
     return response.data;
   },
+  trocarFase: async (id, faseId) => {
+    const response = await api.patch(`${endpoint}/${id}/fase/${faseId}`);
+    return response.data;
+  },
   getReportUrl: (id) => {
     return `${api.defaults.baseURL.replace('/api', '')}/api/Relatorios/ordem-producao/${id}/visualizar`;
   }

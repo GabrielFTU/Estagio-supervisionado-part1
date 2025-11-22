@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, Settings, LogOut, ChevronDown, ChevronUp, ArrowLeft, ArrowRight,
-  Factory, Box, Layers, Key, ClipboardList, DraftingCompass, ChartBar, ShieldAlert
+  Factory, Box, Layers, Key, ClipboardList, DraftingCompass, ChartBar, ShieldAlert,
+  Trello 
 } from 'lucide-react';
 import useAuthStore from '../stores/useAuthStore.js';
 
@@ -36,20 +37,22 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       name: 'Produção', icon: Factory, menuName: 'producao',
       subMenu: [
         { name: 'Ordens de Produção', link: '/producao/op' },
-        { name: 'Lotes', link: '/producao/lotes' },
+        { name: 'Lotes (Chassis)', link: '/producao/lotes' },
       ]
     },
     {
-      name: 'Fábrica', icon: ClipboardList, menuName: 'fabrica',
+      name: 'Chão de Fábrica', icon: ClipboardList, menuName: 'fabrica',
       subMenu: [
-        { name: 'Consultar O.P.', link: '/fabrica/consultar-op' },
+        { name: 'Quadro Kanban', link: '/fabrica/kanban' }, 
+        { name: 'Consulta e Ação', link: '/fabrica/consultar-op' }, 
         { name: 'Apontamentos', link: '/fabrica/movimentacoes' },
       ]
     },
     { 
       name: 'Estoque', icon: Box, menuName: 'estoque',
       subMenu: [
-        { name: 'Produtos', link: '/estoque/produtos' },
+        { name: 'Produtos Acabados', link: '/estoque/acabados' }, 
+        { name: 'Matéria Prima', link: '/estoque/produtos' },
         { name: 'Movimentações', link: '/estoque/movimentacoes' },
       ]
     },
@@ -57,9 +60,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       name: 'Relatórios', icon: ChartBar, menuName: 'relatorios',
       subMenu: [
         { name: 'Movimentações', link: '/relatorios/movimentacoes' },
-        { name: 'Posição de Estoque', link: '/relatorios/estoque' },
-        { name: 'Produção por Período', link: '/relatorios/producao' },
-        { name: 'Clientes/Parceiros', link: '/relatorios/clientes' },
+        { name: 'Catálogo de Produtos', link: '/relatorios/estoque' },
+        { name: 'Produção', link: '/relatorios/producao' },
       ]
     },
     { 
