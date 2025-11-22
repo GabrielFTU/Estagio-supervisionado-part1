@@ -38,11 +38,14 @@ namespace Valisys_Production.Data
         public DbSet<RoteiroProducao> RoteirosProducao { get; set; }
         public DbSet<RoteiroProducaoEtapa> RoteiroProducaoEtapas { get; set; }
 
+        // --- NOVO: ADICIONADO PARA OS LOGS ---
+        public DbSet<LogSistema> LogsSistema { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Regras de Unicidade
+            // --- REGRAS DE UNICIDADE ---
             modelBuilder.Entity<Produto>()
                 .HasIndex(p => p.CodigoInternoProduto)
                 .IsUnique();
@@ -51,7 +54,15 @@ namespace Valisys_Production.Data
                 .HasIndex(c => c.Codigo)
                 .IsUnique();
 
-            // Relacionamentos
+            // --- RELACIONAMENTOS ---
+
+            // Configuração do Log de Sistema (NOVO)
+            modelBuilder.Entity<LogSistema>()
+                .HasOne(l => l.Usuario)
+                .WithMany()
+                .HasForeignKey(l => l.UsuarioId)
+                .OnDelete(DeleteBehavior.SetNull); // Se usuário for deletado, mantemos o log histórico
+
             modelBuilder.Entity<OrdemDeProducao>()
                 .HasOne(o => o.SolicitacaoProducao)
                 .WithOne(s => s.OrdemDeProducao)
@@ -136,7 +147,7 @@ namespace Valisys_Production.Data
                     Id = AdminUserId,
                     Nome = "Administrador Master",
                     Email = "admin@valisys.com",
-                    SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u", // Senha: Admin@123
+                    SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u",
                     Ativo = true,
                     PerfilId = AdminProfileId,
                     DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -169,199 +180,34 @@ namespace Valisys_Production.Data
                 }
             );
 
-            // --- LISTA BRUTA DE UNIDADES DE MEDIDA ---
+            // UNIDADES DE MEDIDA (Lista Completa)
             modelBuilder.Entity<UnidadeMedida>().HasData(
-                // UNIDADE (Contagem)
-                new UnidadeMedida
-                {
-                    Id = UnitId, // Mantém o ID original para não quebrar relações
-                    Nome = "Unidade",
-                    Sigla = "UN",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000020"),
-                    Nome = "Peça",
-                    Sigla = "PC",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 1,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000021"),
-                    Nome = "Caixa",
-                    Sigla = "CX",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 1, // Atenção: Caixas podem variar, geralmente se usa fator 1 e controla a qtd dentro
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000022"),
-                    Nome = "Kit",
-                    Sigla = "KIT",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 1,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000023"),
-                    Nome = "Dúzia",
-                    Sigla = "DZ",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 12,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000024"),
-                    Nome = "Milheiro",
-                    Sigla = "MIL",
-                    Grandeza = GrandezaUnidade.Unidade,
-                    FatorConversao = 1000,
-                    EhUnidadeBase = false
-                },
+                new UnidadeMedida { Id = UnitId, Nome = "Unidade", Sigla = "UN", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000020"), Nome = "Peça", Sigla = "PC", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 1, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000021"), Nome = "Caixa", Sigla = "CX", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 1, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000022"), Nome = "Kit", Sigla = "KIT", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 1, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000023"), Nome = "Dúzia", Sigla = "DZ", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 12, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000024"), Nome = "Milheiro", Sigla = "MIL", Grandeza = GrandezaUnidade.Unidade, FatorConversao = 1000, EhUnidadeBase = false },
 
-                // MASSA (Peso) - Base: KG
-                new UnidadeMedida
-                {
-                    Id = KgId, // Mantém o ID original
-                    Nome = "Kilograma",
-                    Sigla = "KG",
-                    Grandeza = GrandezaUnidade.Massa,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000099"), // Grama já usado no exemplo anterior
-                    Nome = "Grama",
-                    Sigla = "G",
-                    Grandeza = GrandezaUnidade.Massa,
-                    FatorConversao = 0.001m,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000031"),
-                    Nome = "Miligrama",
-                    Sigla = "MG",
-                    Grandeza = GrandezaUnidade.Massa,
-                    FatorConversao = 0.000001m,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000032"),
-                    Nome = "Tonelada",
-                    Sigla = "TON",
-                    Grandeza = GrandezaUnidade.Massa,
-                    FatorConversao = 1000m,
-                    EhUnidadeBase = false
-                },
+                new UnidadeMedida { Id = KgId, Nome = "Kilograma", Sigla = "KG", Grandeza = GrandezaUnidade.Massa, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000099"), Nome = "Grama", Sigla = "G", Grandeza = GrandezaUnidade.Massa, FatorConversao = 0.001m, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000031"), Nome = "Miligrama", Sigla = "MG", Grandeza = GrandezaUnidade.Massa, FatorConversao = 0.000001m, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000032"), Nome = "Tonelada", Sigla = "TON", Grandeza = GrandezaUnidade.Massa, FatorConversao = 1000m, EhUnidadeBase = false },
 
-                // COMPRIMENTO - Base: METRO
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000012"), // ID original do Metro
-                    Nome = "Metro",
-                    Sigla = "M",
-                    Grandeza = GrandezaUnidade.Comprimento,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000040"),
-                    Nome = "Centímetro",
-                    Sigla = "CM",
-                    Grandeza = GrandezaUnidade.Comprimento,
-                    FatorConversao = 0.01m,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000041"),
-                    Nome = "Milímetro",
-                    Sigla = "MM",
-                    Grandeza = GrandezaUnidade.Comprimento,
-                    FatorConversao = 0.001m,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000042"),
-                    Nome = "Quilômetro",
-                    Sigla = "KM",
-                    Grandeza = GrandezaUnidade.Comprimento,
-                    FatorConversao = 1000m,
-                    EhUnidadeBase = false
-                },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000012"), Nome = "Metro", Sigla = "M", Grandeza = GrandezaUnidade.Comprimento, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000040"), Nome = "Centímetro", Sigla = "CM", Grandeza = GrandezaUnidade.Comprimento, FatorConversao = 0.01m, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000041"), Nome = "Milímetro", Sigla = "MM", Grandeza = GrandezaUnidade.Comprimento, FatorConversao = 0.001m, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000042"), Nome = "Quilômetro", Sigla = "KM", Grandeza = GrandezaUnidade.Comprimento, FatorConversao = 1000m, EhUnidadeBase = false },
 
-                // VOLUME - Base: LITRO
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000050"),
-                    Nome = "Litro",
-                    Sigla = "L",
-                    Grandeza = GrandezaUnidade.Volume,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000051"),
-                    Nome = "Mililitro",
-                    Sigla = "ML",
-                    Grandeza = GrandezaUnidade.Volume,
-                    FatorConversao = 0.001m,
-                    EhUnidadeBase = false
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000052"),
-                    Nome = "Metro Cúbico",
-                    Sigla = "M3",
-                    Grandeza = GrandezaUnidade.Volume,
-                    FatorConversao = 1000m,
-                    EhUnidadeBase = false
-                },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000050"), Nome = "Litro", Sigla = "L", Grandeza = GrandezaUnidade.Volume, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000051"), Nome = "Mililitro", Sigla = "ML", Grandeza = GrandezaUnidade.Volume, FatorConversao = 0.001m, EhUnidadeBase = false },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000052"), Nome = "Metro Cúbico", Sigla = "M3", Grandeza = GrandezaUnidade.Volume, FatorConversao = 1000m, EhUnidadeBase = false },
 
-                // AREA - Base: METRO QUADRADO
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000060"),
-                    Nome = "Metro Quadrado",
-                    Sigla = "M2",
-                    Grandeza = GrandezaUnidade.Area,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000060"), Nome = "Metro Quadrado", Sigla = "M2", Grandeza = GrandezaUnidade.Area, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000061"), Nome = "Centímetro Quadrado", Sigla = "CM2", Grandeza = GrandezaUnidade.Area, FatorConversao = 0.0001m, EhUnidadeBase = false },
 
-                // TEMPO - Base: HORA
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000070"),
-                    Nome = "Hora",
-                    Sigla = "H",
-                    Grandeza = GrandezaUnidade.Tempo,
-                    FatorConversao = 1,
-                    EhUnidadeBase = true
-                },
-                new UnidadeMedida
-                {
-                    Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000071"),
-                    Nome = "Minuto",
-                    Sigla = "MIN",
-                    Grandeza = GrandezaUnidade.Tempo,
-                    FatorConversao = 0.0166667m, // 1/60
-                    EhUnidadeBase = false
-                }
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000070"), Nome = "Hora", Sigla = "H", Grandeza = GrandezaUnidade.Tempo, FatorConversao = 1, EhUnidadeBase = true },
+                new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000071"), Nome = "Minuto", Sigla = "MIN", Grandeza = GrandezaUnidade.Tempo, FatorConversao = 0.0166667m, EhUnidadeBase = false }
             );
 
             modelBuilder.Entity<FaseProducao>().HasData(

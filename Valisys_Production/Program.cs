@@ -113,6 +113,8 @@ builder.Services.AddScoped<IFichaTecnicaService, FichaTecnicaService>();
 builder.Services.AddScoped<IRoteiroProducaoRepository, RoteiroProducaoRepository>();
 builder.Services.AddScoped<IRoteiroProducaoService, RoteiroProducaoService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ILogSistemaRepository, LogSistemaRepository>();
+builder.Services.AddScoped<ILogSistemaService, LogSistemaService>();
 
 
 builder.Services.AddCors(options =>

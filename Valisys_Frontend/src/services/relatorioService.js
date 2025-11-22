@@ -10,12 +10,7 @@ const relatorioService = {
 
   downloadMovimentacoes: async (dataInicio, dataFim, produtoId, almoxarifadoId) => {
     const response = await api.get(`${endpoint}/movimentacoes`, {
-      params: { 
-        dataInicio, 
-        dataFim,
-        produtoId: produtoId || null,
-        almoxarifadoId: almoxarifadoId || null
-      },
+      params: { dataInicio, dataFim, produtoId: produtoId || null, almoxarifadoId: almoxarifadoId || null },
       responseType: 'blob'
     });
     return response.data;
@@ -23,9 +18,19 @@ const relatorioService = {
 
   downloadProdutos: async (apenasAtivos, categoriaId) => {
     const response = await api.get(`${endpoint}/produtos`, {
+      params: { apenasAtivos, categoriaId: categoriaId || null },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+
+  downloadProducao: async (dataInicio, dataFim, status) => {
+    const response = await api.get(`${endpoint}/producao`, {
       params: { 
-        apenasAtivos,
-        categoriaId: categoriaId || null
+        dataInicio: dataInicio || null, 
+        dataFim: dataFim || null,
+        status: status || null 
       },
       responseType: 'blob'
     });

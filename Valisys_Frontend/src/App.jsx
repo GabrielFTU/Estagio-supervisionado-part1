@@ -53,6 +53,10 @@ import Dashboard from './features/dashboard/Dashboard.jsx';
 import LoteList from './features/lote/LoteList.jsx';
 import LoteForm from './features/lote/LoteForm.jsx';
 
+import ConsultaOP from './features/fabrica/ConsultaOP.jsx';
+import RelatorioProducao from './features/relatorios/RelatorioProducao.jsx';
+import LogList from './features/logs/LogList.jsx';
+
 const Placeholder = ({ title }) => <div style={{padding: '20px'}}><h1>{title}</h1><p>Módulo em desenvolvimento.</p></div>;
 
 import './index.css';
@@ -92,8 +96,6 @@ function App() {
           <Route path="/engenharia/roteiros/editar/:id" element={<RoteiroForm />} />
 
           <Route path="/estoque/acabados" element={<EstoqueAcabado />} />
-
-          <Route path="/fabrica/consultar-op" element={<Placeholder title="Chão de Fábrica: Consulta OP" />} />
           <Route path="/fabrica/movimentacoes" element={<Placeholder title="Chão de Fábrica: Apontamentos" />} />
 
           <Route path="/settings/cadastros/fornecedores" element={<FornecedorList />} />
@@ -128,7 +130,7 @@ function App() {
           <Route path="/settings/perfis/novo" element={<PerfilForm />} /> 
           <Route path="/settings/perfis/editar/:id" element={<PerfilForm />} /> 
 
-          <Route path="/settings/sistema/logs" element={<Placeholder title="Logs do Sistema" />} />
+          <Route path="/settings/sistema/logs" element={<LogList />} />
           <Route path="/settings/sistema/auditoria" element={<Placeholder title="Auditoria" />} />
 
           <Route path="/producao/lotes" element={<LoteList />} />
@@ -139,10 +141,11 @@ function App() {
           
           <Route path="/relatorios/estoque" element={<RelatorioProdutos />} /> 
           
-          <Route path="/relatorios/producao" element={<Placeholder title="Relatório: Produção" />} />
+          <Route path="/relatorios/producao" element={<RelatorioProducao />} />
           <Route path="/relatorios/clientes" element={<Placeholder title="Relatório: Clientes" />} />
 
           <Route path="/fabrica/kanban" element={<KanbanProducao />} />
+          <Route path="/fabrica/consultar-op" element={<ConsultaOP />} />
 
         </Route>
       </Route>
