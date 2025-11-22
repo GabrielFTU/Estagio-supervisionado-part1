@@ -4,27 +4,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Save, X, Layers, Hash, FileText, Type, Lock } from 'lucide-react'; 
+
 import categoriaProdutoService from '../../services/categoriaProdutoService.js';
 import '../../features/produto/ProdutoForm.css';
 
 const MAX_STRING_LENGTH = 100;
-const MAX_CODE_LENGTH = 10;
 
-const baseSchema = z.object({
+const schema = z.object({
   id: z.string().optional(),
   nome: z.string().min(1, "O nome da categoria é obrigatório.").max(MAX_STRING_LENGTH),
-  codigo: z.string().min(1, "O código é obrigatório.").max(MAX_CODE_LENGTH),
-  descricao: z.string().min(1, "A descrição é obrigatória.").max(500),
-  ativo: z.boolean().default(true),
+  codigo: z.string().optional(),
+  descricao: z.string().optional(),
 });
-
-const updateSchema = z.object({
-    id: z.string().uuid(),
-    nome: z.string().min(1, "O nome da categoria é obrigatório.").max(MAX_STRING_LENGTH),
-    codigo: z.string().min(1, "O código é obrigatório.").max(MAX_CODE_LENGTH),
-    ativo: z.boolean().default(true),
-});
-
 
 function CategoriaProdutoForm() {
   const { id } = useParams();
@@ -33,8 +25,6 @@ function CategoriaProdutoForm() {
   const queryClient = useQueryClient();
   const basePath = '/settings/cadastros/categorias';
   
-  const schema = isEditing ? updateSchema : baseSchema;
-
   const { 
     register, 
     handleSubmit, 
@@ -42,7 +32,7 @@ function CategoriaProdutoForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { ativo: true, nome: '', codigo: '', descricao: '' }
+    defaultValues: { nome: '', codigo: '', descricao: '' }
   });
 
   const { data: categoria, isLoading: isLoadingCategoria } = useQuery({
@@ -56,9 +46,8 @@ function CategoriaProdutoForm() {
       reset({
         id: categoria.id,
         nome: categoria.nome,
-        codigo: categoria.codigo || '',
+        codigo: categoria.codigo,
         descricao: categoria.descricao || '', 
-        ativo: categoria.ativo ?? true,
       });
     }
   }, [categoria, isEditing, reset]);
@@ -71,7 +60,7 @@ function CategoriaProdutoForm() {
     },
     onError: (error) => {
       console.error("Erro ao criar categoria:", error);
-      alert(`Falha ao criar a categoria: ${error.response?.data?.message || error.message}`);
+      alert(`Falha ao criar: ${error.response?.data?.message || error.message}`);
     }
   });
 
@@ -84,7 +73,7 @@ function CategoriaProdutoForm() {
     },
     onError: (err) => {
       console.error(err);
-      alert(`Erro ao atualizar categoria: ${err.response?.data?.message || err.message}`);
+      alert(`Erro ao salvar: ${err.response?.data?.message || err.message}`);
     }
   });
 
@@ -92,13 +81,10 @@ function CategoriaProdutoForm() {
     const mappedData = {
         Id: isEditing ? id : undefined, 
         Nome: data.nome,
-        Codigo: data.codigo,
-        Ativo: data.ativo,
+        Codigo: isEditing ? data.codigo : undefined,
+        Descricao: data.descricao,
+        Ativo: isEditing ? (categoria?.ativo ?? true) : true,
     };
-    
-    if (!isEditing) {
-        mappedData.Descricao = data.descricao;
-    }
     
     if (isEditing) {
       updateMutation.mutate(mappedData);
@@ -109,44 +95,87 @@ function CategoriaProdutoForm() {
 
   const isPending = createMutation.isPending || updateMutation.isPending || isLoadingCategoria;
 
-  if (isEditing && isLoadingCategoria) return <div className="loading-message">Carregando categoria...</div>;
+  if (isEditing && isLoadingCategoria) return <div className="loading-message">Carregando dados...</div>;
 
   return (
     <div className="form-container">
-      <h1>{isEditing ? 'Editar Categoria de Produto' : 'Adicionar Nova Categoria de Produto'}</h1>
+      <div style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '20px', paddingBottom: '10px' }}>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)' }}>
+            <Layers size={24} className="text-primary" />
+            {isEditing ? 'Editar Categoria' : 'Nova Categoria'}
+        </h1>
+        <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            {isEditing ? 'Atualize os dados da categoria abaixo.' : 'Preencha os dados para criar uma nova categoria de produtos.'}
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
-        <div className="form-group">
-          <label htmlFor="nome">Nome da Categoria</label>
-          <input id="nome" {...register('nome')} />
-          {errors.nome && <span className="error">{errors.nome.message}</span>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="codigo">Código</label>
-          <input id="codigo" {...register('codigo')} />
-          {errors.codigo && <span className="error">{errors.codigo.message}</span>}
-        </div>
-
-        {!isEditing && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
             <div className="form-group">
-                <label htmlFor="descricao">Descrição</label>
-                <textarea id="descricao" {...register('descricao')} rows="3" />
-                {errors.descricao && <span className="error">{errors.descricao.message}</span>}
+                <label htmlFor="codigo" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {isEditing ? <Hash size={16} /> : <Lock size={16} />} Código
+                </label>
+                <input 
+                    id="codigo" 
+                    {...register('codigo')} 
+                    disabled 
+                    placeholder={isEditing ? "" : "Automático"}
+                    style={{ 
+                        backgroundColor: 'var(--bg-tertiary)', 
+                        cursor: 'not-allowed', 
+                        color: 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        textAlign: 'center'
+                    }}
+                />
+                {!isEditing && <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gerado pelo sistema ao salvar.</small>}
             </div>
-        )}
 
-        <div className="form-group-checkbox">
-          <input type="checkbox" id="ativo" {...register('ativo')} />
-          <label htmlFor="ativo">Categoria Ativa?</label>
+            <div className="form-group">
+                <label htmlFor="nome" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Type size={16} /> Nome da Categoria
+                </label>
+                <input 
+                    id="nome" 
+                    {...register('nome')} 
+                    placeholder="Ex: Veículos Pesados, Eletrônicos..." 
+                    autoFocus={!isEditing}
+                />
+                {errors.nome && <span className="error">{errors.nome.message}</span>}
+            </div>
+        </div>
+
+        <div className="form-group">
+            <label htmlFor="descricao" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <FileText size={16} /> Descrição
+            </label>
+            <textarea 
+                id="descricao" 
+                {...register('descricao')} 
+                rows="4" 
+                placeholder="Adicione detalhes sobre esta categoria para facilitar a identificação..."
+            />
+            {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
         
         <div className="form-actions">
-          <button type="button" onClick={() => navigate(basePath)} className="btn-cancelar">
-            Cancelar
+          <button 
+            type="button" 
+            onClick={() => navigate(basePath)} 
+            className="btn-cancelar"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <X size={18} /> Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? (isEditing ? 'Salvando...' : 'Criando...') : 'Salvar'}
+          
+          <button 
+            type="submit" 
+            className="btn-salvar" 
+            disabled={isPending}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            {isPending ? 'Salvando...' : <><Save size={18} /> Salvar Categoria</>}
           </button>
         </div>
 

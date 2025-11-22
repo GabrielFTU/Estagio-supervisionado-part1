@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Valisys_Production.Data;
@@ -11,9 +12,11 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122135140_AdicionaRoteiroProducaoId")]
+    partial class AdicionaRoteiroProducaoId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,14 +91,6 @@ namespace Valisys_Production.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Codigo")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
                     b.Property<string>("Descricao")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -107,17 +102,12 @@ namespace Valisys_Production.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Codigo")
-                        .IsUnique();
-
                     b.ToTable("CategoriasProduto");
 
                     b.HasData(
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000006"),
-                            Ativo = true,
-                            Codigo = "CAT-001",
                             Descricao = "VP",
                             Nome = "Veículos Pesados"
                         });
@@ -488,6 +478,18 @@ namespace Valisys_Production.Migrations
                             Id = new Guid("c0de0000-0000-0000-0000-000000000001"),
                             Ativo = true,
                             Nome = "Administrador"
+                        },
+                        new
+                        {
+                            Id = new Guid("c0de0000-0000-0000-0000-000000000010"),
+                            Ativo = true,
+                            Nome = "Gerente PCP"
+                        },
+                        new
+                        {
+                            Id = new Guid("c0de0000-0000-0000-0000-000000000011"),
+                            Ativo = true,
+                            Nome = "Encarregado Producao"
                         });
                 });
 
@@ -537,9 +539,6 @@ namespace Valisys_Production.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaProdutoId");
-
-                    b.HasIndex("CodigoInternoProduto")
-                        .IsUnique();
 
                     b.HasIndex("UnidadeMedidaId");
 
@@ -738,15 +737,6 @@ namespace Valisys_Production.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("EhUnidadeBase")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("FatorConversao")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Grandeza")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -765,38 +755,20 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000002"),
-                            EhUnidadeBase = true,
-                            FatorConversao = 1m,
-                            Grandeza = 0,
                             Nome = "Unidade",
                             Sigla = "UN"
                         },
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000003"),
-                            EhUnidadeBase = true,
-                            FatorConversao = 1m,
-                            Grandeza = 1,
                             Nome = "Kilograma",
                             Sigla = "KG"
                         },
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000012"),
-                            EhUnidadeBase = true,
-                            FatorConversao = 1m,
-                            Grandeza = 2,
                             Nome = "Metro",
                             Sigla = "M"
-                        },
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000099"),
-                            EhUnidadeBase = false,
-                            FatorConversao = 0.001m,
-                            Grandeza = 1,
-                            Nome = "Grama",
-                            Sigla = "G"
                         });
                 });
 

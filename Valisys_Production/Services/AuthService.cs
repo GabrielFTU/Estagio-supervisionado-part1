@@ -9,7 +9,7 @@ using Valisys_Production.DTOs;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
-using BCrypt.Net;
+
 
 namespace Valisys_Production.Services
 {
@@ -17,7 +17,6 @@ namespace Valisys_Production.Services
     {
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IConfiguration _configuration;
-
 
         public AuthService(IUsuarioRepository usuarioRepository, IConfiguration configuration)
         {
@@ -28,18 +27,21 @@ namespace Valisys_Production.Services
         public async Task<(string Token, Usuario User)> LoginAsync(LoginDto loginDto)
         {
             var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
+
+           
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash.Trim()))
+
+            if (usuario == null) 
             {
-                throw new UnauthorizedAccessException("Credenciais inválidas.");
+                throw new UnauthorizedAccessException("Usuário não encontrado.");
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-
-
             var secretKey = _configuration["JwtSettings:SecretKey"];
+
             if (string.IsNullOrEmpty(secretKey))
             {
-                throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) não está configurada no appsettings.json.");
+                throw new InvalidOperationException("A chave JWT não está configurada.");
             }
 
             var key = Encoding.ASCII.GetBytes(secretKey);

@@ -5,7 +5,18 @@ namespace Valisys_Production.Services.Interfaces
     public interface IPdfReportService
     {
         byte[] GerarRelatorioOrdemProducao(OrdemDeProducao ordem);
-        byte[] GerarRelatorioMovimentacoes(IEnumerable<Movimentacao> movimentacoes);
-        byte[] GerarRelatorioProdutos(IEnumerable<Produto> produtos);
+
+        byte[] GerarRelatorioMovimentacoes(
+            IEnumerable<Movimentacao> movimentacoes,
+            string periodo,
+            string filtroProduto,
+            string filtroAlmoxarifado
+        );
+
+        byte[] GerarRelatorioProdutos(
+            IEnumerable<Produto> produtos,
+            string filtroStatus,
+            string filtroCategoria
+        );
     }
 }

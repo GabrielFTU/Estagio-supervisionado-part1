@@ -11,10 +11,13 @@ import almoxarifadoService from '../../services/almoxarifadoService.js';
 
 import '../../features/produto/ProdutoForm.css';
 
+// Esquema de validação ajustado para ser mais flexível com selects
 const loteSchema = z.object({
   codigoLote: z.string().min(1, "O código do lote é obrigatório.").max(50),
-  produtoId: z.string().min(1, "Selecione um Produto.").uuid("ID de produto inválido."),
-  almoxarifadoId: z.string().min(1, "Selecione um Almoxarifado.").uuid("ID de almoxarifado inválido."),
+  // Usamos .min(1) em vez de .uuid() para garantir que algo foi selecionado
+  // Isso evita o erro "ID inválido" quando o campo está vazio ou em formato inesperado
+  produtoId: z.string().min(1, "Selecione um Produto."),
+  almoxarifadoId: z.string().min(1, "Selecione um Almoxarifado."),
   descricao: z.string().optional(),
   observacoes: z.string().optional(),
   dataFabricacao: z.string().optional(), 
@@ -35,10 +38,13 @@ function LoteForm() {
     formState: { errors, isSubmitting } 
   } = useForm({
     resolver: zodResolver(loteSchema),
+    // Valores padrão iniciais para evitar componentes não controlados
     defaultValues: {
       ativo: true,
       descricao: '',
       observacoes: '',
+      produtoId: '',
+      almoxarifadoId: '',
       dataFabricacao: new Date().toISOString().split('T')[0]
     }
   });
@@ -56,8 +62,9 @@ function LoteForm() {
     if (isEditing && lote) {
       reset({
         codigoLote: lote.numeroLote || lote.codigoLote,
-        produtoId: lote.produtoId,
-        almoxarifadoId: lote.almoxarifadoId, 
+        // Garante que lemos o ID corretamente independente se vier id ou Id
+        produtoId: lote.produtoId || lote.ProdutoId || '',
+        almoxarifadoId: lote.almoxarifadoId || lote.AlmoxarifadoId || '', 
         descricao: lote.descricao || '',
         observacoes: lote.observacoes || '',
         dataFabricacao: lote.dataFabricacao ? new Date(lote.dataFabricacao).toISOString().split('T')[0] : '',
@@ -106,8 +113,10 @@ function LoteForm() {
           <label htmlFor="produtoId">Produto</label>
           <select id="produtoId" {...register('produtoId')} disabled={isEditing && lote}>
             <option value="" disabled>Selecione o produto...</option>
-            {produtos?.filter(p => p.controlarPorLote).map(p => (
-              <option key={p.id} value={p.id}>{p.nome} ({p.codigo})</option>
+            {produtos?.filter(p => p.controlarPorLote || p.ControlarPorLote).map(p => (
+              <option key={p.id || p.Id} value={p.id || p.Id}>
+                {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
+              </option>
             ))}
           </select>
           <small style={{color: '#666'}}>Apenas produtos controlados por lote são exibidos.</small>
@@ -119,7 +128,9 @@ function LoteForm() {
           <select id="almoxarifadoId" {...register('almoxarifadoId')}>
             <option value="" disabled>Selecione o almoxarifado...</option>
             {almoxarifados?.map(a => (
-              <option key={a.id} value={a.id}>{a.nome}</option>
+              <option key={a.id || a.Id} value={a.id || a.Id}>
+                {a.nome || a.Nome}
+              </option>
             ))}
           </select>
           {errors.almoxarifadoId && <span className="error">{errors.almoxarifadoId.message}</span>}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Edit, Trash2 } from 'lucide-react';
+import { FileText, Edit, Trash2, PlayCircle, CheckCircle } from 'lucide-react'; 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -24,9 +24,31 @@ function OrdemDeProducaoList() {
       alert("Ordem de Produção excluída com sucesso!");
     },
     onError: (err) => {
-      console.error(err);
-      const errorMessage = err.response?.data?.message || "Erro ao excluir. Verifique se a OP não está finalizada.";
+      const errorMessage = err.response?.data?.message || "Erro ao excluir.";
       alert(errorMessage);
+    }
+  });
+
+  const avancarFaseMutation = useMutation({
+    mutationFn: ordemDeProducaoService.avancarFase,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || "Não foi possível avançar a fase.";
+      alert(msg);
+    }
+  });
+
+  const finalizarMutation = useMutation({
+    mutationFn: ordemDeProducaoService.finalizar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
+      alert("Ordem finalizada com sucesso! Produto enviado ao estoque.");
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || "Erro ao finalizar a ordem.";
+      alert(msg);
     }
   });
 
@@ -36,6 +58,18 @@ function OrdemDeProducaoList() {
     }
   };
   
+  const handleAvanacarFase = (id) => {
+      if(window.confirm("Confirmar avanço para a próxima fase do roteiro?")) {
+          avancarFaseMutation.mutate(id);
+      }
+  };
+
+  const handleFinalizar = (id) => {
+      if(window.confirm("Confirma a conclusão da produção? O produto entrará no estoque.")) {
+          finalizarMutation.mutate(id);
+      }
+  };
+  
   const handleViewReport = (id) => {
     const reportUrl = ordemDeProducaoService.getReportUrl(id);
     window.open(reportUrl, '_blank');
@@ -43,14 +77,14 @@ function OrdemDeProducaoList() {
 
   const getStatusClass = (status) => {
       if (status === 'Ativa') return 'status-ativo';
-      if (status === 'Finalizada') return 'status-inativo';
+      if (status === 'Finalizada') return 'status-inativo'; 
       return 'status-pendente';
   };
   
   const basePath = '/producao/op';
 
   if (isLoading) return <div className="loading-message">Carregando...</div>;
-  if (isError) return <div className="error-message">Erro ao carregar Ordens de Produção: {error.message}</div>;
+  if (isError) return <div className="error-message">Erro: {error.message}</div>;
 
   return (
     <div className="page-container">
@@ -65,7 +99,6 @@ function OrdemDeProducaoList() {
             <th>Código</th>
             <th>Produto</th>
             <th>Qtd</th>
-            <th>Almoxarifado</th>
             <th>Fase Atual</th>
             <th>Status</th>
             <th>Início</th>
@@ -78,9 +111,11 @@ function OrdemDeProducaoList() {
               <tr key={op.id}>
                 <td>{op.codigoOrdem}</td>
                 <td>{op.produtoNome}</td>
-                <td>{op.quantidade}</td>
-                <td>{op.almoxarifadoNome}</td>
-                <td>{op.faseAtualNome}</td>
+                <td style={{fontWeight: 'bold'}}>{op.quantidade}</td>
+                <td>
+                    {op.faseAtualNome}
+                    {op.roteiroCodigo && <span style={{fontSize: '0.7rem', color: '#666', display: 'block'}}>Rot: {op.roteiroCodigo}</span>}
+                </td>
                 <td>
                   <span className={getStatusClass(op.status)}>
                     {op.status}
@@ -91,6 +126,26 @@ function OrdemDeProducaoList() {
                   
                   <button 
                     className="icon-action"
+                    title="Avançar Próxima Fase"
+                    onClick={() => handleAvanacarFase(op.id)}
+                    style={{color: '#16a34a'}}
+                    disabled={op.status === 'Finalizada' || avancarFaseMutation.isPending}
+                  >
+                    <PlayCircle size={20} />
+                  </button>
+
+                  <button 
+                    className="icon-action"
+                    title="Finalizar Produção (Gerar Estoque)"
+                    onClick={() => handleFinalizar(op.id)}
+                    style={{color: '#2563eb'}}
+                    disabled={op.status === 'Finalizada' || finalizarMutation.isPending}
+                  >
+                    <CheckCircle size={20} />
+                  </button>
+
+                  <button 
+                    className="icon-action"
                     title="Visualizar Relatório"
                     onClick={() => handleViewReport(op.id)}
                   >
@@ -98,13 +153,14 @@ function OrdemDeProducaoList() {
                   </button>
                   
                   <button 
-                    className="btn-editar" 
+                    className="btn-icon btn-edit" 
                     onClick={() => navigate(`${basePath}/editar/${op.id}`)}
+                    disabled={op.status === 'Finalizada'}
                   >
                     <Edit size={16} />
                   </button>
                   <button 
-                    className="btn-deletar" 
+                    className="btn-icon btn-delete" 
                     onClick={() => handleDelete(op.id)}
                     disabled={deleteMutation.isPending || op.status === 'Finalizada'}
                   >
@@ -115,7 +171,7 @@ function OrdemDeProducaoList() {
             ))
           ) : (
             <tr>
-              <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
+              <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
                 Nenhuma Ordem de Produção encontrada.
               </td>
             </tr>

@@ -35,6 +35,11 @@ namespace Valisys_Production.Services
                 DataMovimentacao = DateTime.UtcNow
             };
 
+            if (movimentacaoDto.OrdemDeProducaoId.HasValue)
+            {
+                movimentacao.OrdemDeProducaoId = movimentacaoDto.OrdemDeProducaoId.Value;
+            }
+
             return await _repository.AddAsync(movimentacao);
         }
 

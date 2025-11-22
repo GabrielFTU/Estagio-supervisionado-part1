@@ -33,9 +33,10 @@ namespace Valisys_Production.Services
         private async Task<string> GerarProximoCodigoSequencialAsync()
         {
             var produtos = await _repository.GetAllAsync();
+
             var codigosExistentes = produtos
                 .Select(p => p.CodigoInternoProduto)
-                .Where(c => int.TryParse(c, out _))
+                .Where(c => int.TryParse(c, out _)) 
                 .Select(c => int.Parse(c))
                 .ToList();
 
@@ -45,13 +46,16 @@ namespace Valisys_Production.Services
             {
                 proximoNumero = codigosExistentes.Max() + 1;
             }
+
             return proximoNumero.ToString("D4");
         }
+
         public async Task<Produto?> GetByIdAsync(Guid id)
         {
             if (id == Guid.Empty) throw new ArgumentException("ID inválido.");
             return await _repository.GetByIdAsync(id);
         }
+
         public async Task<IEnumerable<Produto>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
@@ -63,11 +67,13 @@ namespace Valisys_Production.Services
 
             var existingProduto = await _repository.GetByIdAsync(produto.Id);
             if (existingProduto == null) throw new KeyNotFoundException("Produto não encontrado.");
+
             produto.CodigoInternoProduto = existingProduto.CodigoInternoProduto;
             produto.DataCadastro = existingProduto.DataCadastro;
 
             return await _repository.UpdateAsync(produto);
         }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var existingProduto = await _repository.GetByIdAsync(id);

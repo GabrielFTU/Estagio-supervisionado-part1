@@ -27,6 +27,7 @@ namespace Valisys_Production.Repositories
         public async Task<CategoriaProduto?> GetByIdAsync(Guid id)
         {
             return await _context.CategoriasProduto
+                .AsNoTracking() 
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -56,7 +57,9 @@ namespace Valisys_Production.Repositories
 
             if (categoriaProduto != null)
             {
-                _context.CategoriasProduto.Remove(categoriaProduto);
+                categoriaProduto.Ativo = false;
+                _context.Entry(categoriaProduto).State = EntityState.Modified;
+
                 var affectedRows = await _context.SaveChangesAsync();
                 return affectedRows > 0;
             }

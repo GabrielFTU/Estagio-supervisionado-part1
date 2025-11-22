@@ -4,18 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Ruler, Save, X, Scale, Calculator } from 'lucide-react'; 
 import unidadeMedidaService from '../../services/unidadeMedidaService.js';
 import '../../features/produto/ProdutoForm.css';
 
-const MAX_NAME_LENGTH = 50;
-const MAX_SIGLA_LENGTH = 10;
-
 const unidadeMedidaSchema = z.object({
   id: z.string().optional(),
-  nome: z.string().min(1, "O nome é obrigatório.").max(MAX_NAME_LENGTH, `Máximo ${MAX_NAME_LENGTH} caracteres.`),
-  sigla: z.string().min(1, "A sigla é obrigatória.").max(MAX_SIGLA_LENGTH, `Máximo ${MAX_SIGLA_LENGTH} caracteres.`),
+  nome: z.string().min(1, "O nome é obrigatório.").max(50),
+  sigla: z.string().min(1, "A sigla é obrigatória.").max(10),
+  grandeza: z.coerce.number().min(0, "Selecione uma grandeza."),
+  fatorConversao: z.coerce.number().min(0.000001, "O fator deve ser maior que zero."),
+  ehUnidadeBase: z.boolean().default(false)
 });
 
+const GRANDEZAS = [
+  { value: 0, label: 'Unidade (Contagem)' },
+  { value: 1, label: 'Massa (Peso)' },
+  { value: 2, label: 'Comprimento' },
+  { value: 3, label: 'Volume' },
+  { value: 4, label: 'Tempo' },
+  { value: 5, label: 'Área' },
+];
 
 function UnidadeMedidaForm() {
   const { id } = useParams();
@@ -24,106 +33,113 @@ function UnidadeMedidaForm() {
   const queryClient = useQueryClient();
   const basePath = '/settings/cadastros/unidades';
   
-  const { 
-    register, 
-    handleSubmit, 
-    reset,
-    formState: { errors } 
-  } = useForm({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     resolver: zodResolver(unidadeMedidaSchema),
-    defaultValues: { nome: '', sigla: '' }
+    defaultValues: { nome: '', sigla: '', grandeza: 0, fatorConversao: 1, ehUnidadeBase: false }
   });
 
-  // Fetch data in edit mode
-  const { data: unidade, isLoading: isLoadingUnidade } = useQuery({
+  const { data: unidade, isLoading } = useQuery({
     queryKey: ['unidadeMedida', id],
     queryFn: () => unidadeMedidaService.getById(id),
     enabled: isEditing,
   });
 
-  // Populate form fields on data load (Edit mode)
   useEffect(() => {
     if (isEditing && unidade) {
       reset({
         id: unidade.id,
         nome: unidade.nome,
         sigla: unidade.sigla,
+        grandeza: unidade.grandeza,
+        fatorConversao: unidade.fatorConversao,
+        ehUnidadeBase: unidade.ehUnidadeBase
       });
     }
   }, [unidade, isEditing, reset]);
 
-  // Mutations
-  const createMutation = useMutation({
-    mutationFn: unidadeMedidaService.create,
+  const mutation = useMutation({
+    mutationFn: (data) => isEditing ? unidadeMedidaService.update(id, data) : unidadeMedidaService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unidadesMedida'] });
       navigate(basePath);
     },
-    onError: (error) => {
-      console.error("Erro ao criar Unidade de Medida:", error);
-      alert(`Falha ao criar a Unidade de Medida: ${error.response?.data?.message || error.message}`);
-    }
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data) => unidadeMedidaService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unidadesMedida'] });
-      queryClient.invalidateQueries({ queryKey: ['unidadeMedida', id] });
-      navigate(basePath);
-    },
-    onError: (err) => {
-      console.error(err);
-      alert(`Erro ao atualizar Unidade de Medida: ${err.response?.data?.message || err.message}`);
-    }
+    onError: (err) => alert(`Erro: ${err.response?.data?.message || err.message}`)
   });
 
   const onSubmit = (data) => {
-    // Mapeamento de Casing (Front-end camelCase para Back-end PascalCase)
-    // O controller C# (UnidadeMedidaController.cs) espera o modelo completo (Id, Nome, Sigla)
-    const mappedData = {
-        Id: isEditing ? id : undefined, 
-        Nome: data.nome,
-        Sigla: data.sigla,
-    };
-    
-    if (isEditing) {
-      updateMutation.mutate(mappedData);
-    } else {
-      createMutation.mutate(mappedData);
-    }
+      const dataToSend = {
+          Id: isEditing ? id : undefined,
+          Nome: data.nome,
+          Sigla: data.sigla,
+          Grandeza: Number(data.grandeza),
+          FatorConversao: Number(data.fatorConversao),
+          EhUnidadeBase: data.ehUnidadeBase
+      };
+      mutation.mutate(dataToSend);
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending || isLoadingUnidade;
+  if (isEditing && isLoading) return <div className="loading-message">Carregando...</div>;
 
-  if (isEditing && isLoadingUnidade) return <div className="loading-message">Carregando Unidade de Medida...</div>;
+  const ehBase = watch('ehUnidadeBase');
 
   return (
     <div className="form-container">
-      <h1>{isEditing ? 'Editar Unidade de Medida' : 'Adicionar Nova Unidade de Medida'}</h1>
+      <h1>{isEditing ? 'Editar Unidade de Medida' : 'Nova Unidade de Medida'}</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
-        <div className="form-group">
-          <label htmlFor="nome">Nome</label>
-          <input id="nome" {...register('nome')} />
-          {errors.nome && <span className="error">{errors.nome.message}</span>}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+            <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Ruler size={16}/> Nome</label>
+                <input {...register('nome')} placeholder="Ex: Grama" />
+                {errors.nome && <span className="error">{errors.nome.message}</span>}
+            </div>
+            
+            <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>Sigla</label>
+                <input {...register('sigla')} placeholder="Ex: G" style={{textAlign: 'center', fontWeight: 'bold'}}/>
+                {errors.sigla && <span className="error">{errors.sigla.message}</span>}
+            </div>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="sigla">Sigla</label>
-          <input id="sigla" {...register('sigla')} />
-          {errors.sigla && <span className="error">{errors.sigla.message}</span>}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Scale size={16}/> Tipo de Grandeza</label>
+                <select {...register('grandeza')}>
+                    {GRANDEZAS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+                </select>
+            </div>
+
+            <div className="form-group">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calculator size={16}/> Fator de Conversão</label>
+                <input 
+                    type="number" step="0.000001" 
+                    {...register('fatorConversao')} 
+                    disabled={ehBase} 
+                    style={ehBase ? {backgroundColor: '#e5e7eb'} : {}}
+                />
+                <small style={{color: '#666'}}>Ex: 1 para base, 0.001 para mili...</small>
+            </div>
+        </div>
+
+        <div className="form-group-checkbox" style={{backgroundColor: '#f3f4f6', padding: '15px', borderRadius: '8px'}}>
+          <input type="checkbox" id="ehUnidadeBase" {...register('ehUnidadeBase')} />
+          <label htmlFor="ehUnidadeBase">
+              Esta é a <strong>Unidade Base</strong> (Padrão) para esta grandeza?
+              <br/>
+              <span style={{fontSize: '0.8rem', fontWeight: 'normal'}}>
+                  (Ex: Marque se for KG para Massa ou Metro para Comprimento)
+              </span>
+          </label>
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={() => navigate(basePath)} className="btn-cancelar">
-            Cancelar
+            <X size={18} /> Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? (isEditing ? 'Salvando...' : 'Criando...') : 'Salvar'}
+          <button type="submit" className="btn-salvar" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Salvando...' : <><Save size={18} /> Salvar</>}
           </button>
         </div>
-
       </form>
     </div>
   );

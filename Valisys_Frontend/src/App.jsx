@@ -35,15 +35,17 @@ import UnidadeMedidaForm from './features/unidade/UnidadeMedidaForm.jsx';
 import OrdemDeProducaoList from './features/producao/OrdemDeProducaoList.jsx';
 import OrdemDeProducaoForm from './features/producao/OrdemDeProducaoForm.jsx';
 
-import MovimentacaoList from './features/estoque/MovimentacaoList.jsx';
-import MovimentacaoForm from './features/estoque/MovimentacaoForm.jsx';
+import RelatorioMovimentacoes from './features/relatorios/RelatorioMovimentacoes.jsx';
+import RelatorioProdutos from './features/relatorios/RelatorioProdutos.jsx';
 
 import FichaTecnicaList from './features/fichatecnica/FichaTecnicaList.jsx';
 import FichaTecnicaForm from './features/fichatecnica/FichaTecnicaForm.jsx';
 import FichaTecnicaDetails from './features/fichatecnica/FichaTecnicaDetails.jsx'
 
 import RoteiroList from './features/roteiro/RoteiroList.jsx';
-import RoteiroForm from './features/roteiro/RoteiroForm.jsx';;;
+import RoteiroForm from './features/roteiro/RoteiroForm.jsx';
+
+import EstoqueAcabado from './features/estoque/EstoqueAcabado.jsx';
 
 import LoteList from './features/lote/LoteList.jsx';
 import LoteForm from './features/lote/LoteForm.jsx';
@@ -86,13 +88,10 @@ function App() {
           <Route path="/engenharia/roteiros/novo" element={<RoteiroForm />} />
           <Route path="/engenharia/roteiros/editar/:id" element={<RoteiroForm />} />
 
+          <Route path="/estoque/acabados" element={<EstoqueAcabado />} />
+          
           <Route path="/fabrica/consultar-op" element={<Placeholder title="Chão de Fábrica: Consulta OP" />} />
           <Route path="/fabrica/movimentacoes" element={<Placeholder title="Chão de Fábrica: Apontamentos" />} />
-
-          <Route path="/relatorios/movimentacoes" element={<Placeholder title="Relatório: Movimentações" />} />
-          <Route path="/relatorios/estoque" element={<Placeholder title="Relatório: Posição de Estoque" />} />
-          <Route path="/relatorios/producao" element={<Placeholder title="Relatório: Produção" />} />
-          <Route path="/relatorios/clientes" element={<Placeholder title="Relatório: Clientes" />} />
 
           <Route path="/settings/cadastros/fornecedores" element={<FornecedorList />} />
           <Route path="/settings/cadastros/fornecedores/novo" element={<FornecedorForm />} />
@@ -132,6 +131,13 @@ function App() {
           <Route path="/producao/lotes" element={<LoteList />} />
           <Route path="/producao/lotes/novo" element={<LoteForm />} />
           <Route path="/producao/lotes/editar/:id" element={<LoteForm />} />
+
+          <Route path="/relatorios/movimentacoes" element={<RelatorioMovimentacoes />} />
+          
+          <Route path="/relatorios/estoque" element={<RelatorioProdutos />} /> 
+          
+          <Route path="/relatorios/producao" element={<Placeholder title="Relatório: Produção" />} />
+          <Route path="/relatorios/clientes" element={<Placeholder title="Relatório: Clientes" />} />
 
         </Route>
       </Route>

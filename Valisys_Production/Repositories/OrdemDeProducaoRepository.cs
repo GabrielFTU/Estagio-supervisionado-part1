@@ -5,6 +5,7 @@ using Valisys_Production.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq; // Necessário para o Where e Any
 
 namespace Valisys_Production.Repositories
 {
@@ -33,6 +34,7 @@ namespace Valisys_Production.Repositories
                 .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
                 .Include(o => o.TipoOrdemDeProducao)
+                .Include(o => o.RoteiroProducao)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -45,6 +47,7 @@ namespace Valisys_Production.Repositories
                 .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
                 .Include(o => o.TipoOrdemDeProducao)
+                .Include(o => o.RoteiroProducao)
                 .ToListAsync();
         }
 
@@ -72,9 +75,26 @@ namespace Valisys_Production.Repositories
                 return false;
             }
 
+            var movimentacoesVinculadas = await _context.Movimentacoes
+                .Where(m => m.OrdemDeProducaoId == id)
+                .ToListAsync();
+
+            if (movimentacoesVinculadas.Any())
+            {
+                _context.Movimentacoes.RemoveRange(movimentacoesVinculadas);
+            }
+
             _context.OrdensDeProducao.Remove(ordemDeProducao);
-            var affectedRows = await _context.SaveChangesAsync();
-            return affectedRows > 0;
+
+            try
+            {
+                var affectedRows = await _context.SaveChangesAsync();
+                return affectedRows > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

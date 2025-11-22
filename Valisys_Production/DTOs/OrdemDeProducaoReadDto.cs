@@ -1,5 +1,5 @@
 ﻿using System;
-using Valisys_Production.Models; 
+using Valisys_Production.Models;
 
 namespace Valisys_Production.DTOs
 {
@@ -21,5 +21,8 @@ namespace Valisys_Production.DTOs
         public string FaseAtualNome { get; set; }
         public Guid? LoteId { get; set; }
         public string? LoteNumero { get; set; }
+
+        public Guid? RoteiroProducaoId { get; set; }
+        public string? RoteiroCodigo { get; set; }
     }
 }

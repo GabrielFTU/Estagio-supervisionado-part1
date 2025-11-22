@@ -26,6 +26,7 @@ namespace Valisys_Production.Repositories
             return await _context.Movimentacoes
                 .AsNoTracking()
                 .Include(m => m.OrdemDeProducao)
+                .Include(m => m.Produto)
                 .Include(m => m.AlmoxarifadoOrigem)
                 .Include(m => m.AlmoxarifadoDestino)
                 .Include(m => m.Usuario)
@@ -37,6 +38,7 @@ namespace Valisys_Production.Repositories
             return await _context.Movimentacoes
                 .AsNoTracking()
                 .Include(m => m.OrdemDeProducao)
+                .Include(m => m.Produto)
                 .Include(m => m.AlmoxarifadoOrigem)
                 .Include(m => m.AlmoxarifadoDestino)
                 .Include(m => m.Usuario)

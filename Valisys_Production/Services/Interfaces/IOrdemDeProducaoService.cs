@@ -10,5 +10,7 @@ namespace Valisys_Production.Services.Interfaces
         Task<IEnumerable<OrdemDeProducao>> GetAllAsync();
         Task<bool> UpdateAsync(OrdemDeProducao ordemDeProducao);
         Task<bool> DeleteAsync(Guid id);
+        Task<bool> MovimentarProximaFaseAsync(Guid ordemId);
+        Task FinalizarOrdemAsync(Guid ordemId, Guid usuarioId);
     }
 }

@@ -4,12 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Info } from 'lucide-react';
 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import produtoService from '../../services/produtoService.js';
 import almoxarifadoService from '../../services/almoxarifadoService.js';
 import faseProducaoService from '../../services/faseProducaoService.js';
 import tipoOrdemDeProducaoService from '../../services/tipoOrdemDeProducaoService.js';
+import loteService from '../../services/loteService.js';
+import roteiroProducaoService from '../../services/roteiroProducaoService.js';
 
 import '../../features/produto/ProdutoForm.css'; 
 
@@ -19,10 +22,11 @@ const ordemDeProducaoSchema = z.object({
   quantidade: z.coerce.number().min(1, "A quantidade deve ser maior que zero."),
   observacoes: z.string().max(500).optional(),
   
-  produtoId: z.string().uuid("Selecione um Produto."),
-  almoxarifadoId: z.string().uuid("Selecione um Almoxarifado."),
-  faseAtualId: z.string().uuid("Selecione uma Fase Inicial."),
-  tipoOrdemDeProducaoId: z.string().uuid("Selecione o Tipo de OP."),
+  produtoId: z.string().optional(), 
+  almoxarifadoId: z.string().optional(),
+  tipoOrdemDeProducaoId: z.string().optional(),
+  
+  faseAtualId: z.string().optional(),
   loteId: z.string().nullable().optional(),
   status: z.coerce.number().optional(), 
 });
@@ -46,19 +50,29 @@ function OrdemDeProducaoForm() {
     handleSubmit, 
     reset,
     watch,
+    setValue, 
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(ordemDeProducaoSchema),
-    defaultValues: { quantidade: 1, status: 1 }
+    defaultValues: { 
+        quantidade: 1, 
+        status: 1,
+        produtoId: "",
+        almoxarifadoId: "",
+        faseAtualId: "",
+        tipoOrdemDeProducaoId: "",
+        loteId: ""
+    }
   });
 
-  // Observar o produto selecionado para validação dinâmica de lote
   const selectedProdutoId = watch('produtoId');
   
   const { data: produtos } = useQuery({ queryKey: ['produtos'], queryFn: produtoService.getAll });
   const { data: almoxarifados } = useQuery({ queryKey: ['almoxarifados'], queryFn: almoxarifadoService.getAll });
   const { data: fases } = useQuery({ queryKey: ['fasesProducao'], queryFn: faseProducaoService.getAll });
   const { data: tiposOP } = useQuery({ queryKey: ['tiposOrdemDeProducao'], queryFn: tipoOrdemDeProducaoService.getAll });
+  const { data: lotes } = useQuery({ queryKey: ['lotes'], queryFn: loteService.getAll });
+  const { data: roteiros } = useQuery({ queryKey: ['roteirosProducao'], queryFn: roteiroProducaoService.getAll });
   
   const { data: ordem, isLoading: isLoadingOrdem } = useQuery({
     queryKey: ['ordemDeProducao', id],
@@ -66,10 +80,49 @@ function OrdemDeProducaoForm() {
     enabled: isEditing,
   });
 
-  // Determinar se o produto selecionado exige lote
   const produtoSelecionadoObj = useMemo(() => {
-    return produtos?.find(p => p.id === selectedProdutoId);
+    if (!produtos || !selectedProdutoId) return null;
+    return produtos.find(p => (p.id || p.Id) === selectedProdutoId);
   }, [produtos, selectedProdutoId]);
+
+  const roteiroAtivo = useMemo(() => {
+      if (!roteiros || !selectedProdutoId) return null;
+      return roteiros.find(r => (r.produtoId === selectedProdutoId || r.ProdutoId === selectedProdutoId) && r.ativo);
+  }, [roteiros, selectedProdutoId]);
+
+  const primeiraFaseRoteiro = useMemo(() => {
+      if (!roteiroAtivo || !roteiroAtivo.etapas || roteiroAtivo.etapas.length === 0) return null;
+      const etapasOrdenadas = [...roteiroAtivo.etapas].sort((a, b) => a.ordem - b.ordem);
+      return etapasOrdenadas[0].faseProducaoId;
+  }, [roteiroAtivo]);
+
+  const lotesDisponiveis = useMemo(() => {
+    if (!lotes || !selectedProdutoId) return [];
+    
+    return lotes.filter(l => {
+        const mesmoProduto = (l.produtoId === selectedProdutoId || l.ProdutoId === selectedProdutoId);
+        
+        const estaAtivo = (l.ativo === true || l.Ativo === true);
+        
+        const emUso = l.emUso || l.EmUso;
+        
+        const ehLoteDestaOrdem = isEditing && ordem && (l.id === ordem.loteId || l.id === ordem.LoteId);
+
+        return mesmoProduto && estaAtivo && (!emUso || ehLoteDestaOrdem);
+    });
+  }, [lotes, selectedProdutoId, isEditing, ordem])
+
+  useEffect(() => {
+      if (!isEditing) {
+          setValue('loteId', ""); 
+      }
+  }, [selectedProdutoId, setValue, isEditing]);
+
+  useEffect(() => {
+      if (!isEditing && roteiroAtivo && primeiraFaseRoteiro) {
+          setValue('faseAtualId', primeiraFaseRoteiro);
+      }
+  }, [roteiroAtivo, primeiraFaseRoteiro, setValue, isEditing]);
 
   useEffect(() => {
     if (isEditing && ordem) {
@@ -78,20 +131,15 @@ function OrdemDeProducaoForm() {
         codigoOrdem: ordem.codigoOrdem,
         quantidade: ordem.quantidade,
         observacoes: ordem.observacoes || "",
-        produtoId: ordem.produtoId,
-        almoxarifadoId: ordem.almoxarifadoId,
-        faseAtualId: ordem.faseAtualId,
-        tipoOrdemDeProducaoId: ordem.tipoOrdemDeProducaoId,
-        loteId: ordem.loteId || null,
+        produtoId: ordem.produtoId || ordem.ProdutoId,
+        almoxarifadoId: ordem.almoxarifadoId || ordem.AlmoxarifadoId,
+        faseAtualId: ordem.faseAtualId || ordem.FaseAtualId,
+        tipoOrdemDeProducaoId: ordem.tipoOrdemDeProducaoId || ordem.TipoOrdemDeProducaoId,
+        loteId: ordem.loteId || ordem.LoteId || "", 
         status: ordem.status, 
       });
-    } else if (!isEditing && fases) {
-        const faseInicial = fases.find(f => f.ordem === 1);
-        if (faseInicial) {
-            reset({ faseAtualId: faseInicial.id, status: 1 });
-        }
     }
-  }, [ordem, isEditing, reset, fases]);
+  }, [ordem, isEditing, reset]);
 
   const createMutation = useMutation({
     mutationFn: ordemDeProducaoService.create,
@@ -118,9 +166,21 @@ function OrdemDeProducaoForm() {
   });
 
   const onSubmit = (data) => {
-    // Validação manual extra para Lote
-    if (produtoSelecionadoObj?.controlarPorLote && !data.loteId) {
-        alert("Este produto exige um Lote. Por favor, informe o ID do Lote.");
+    const produtoFinalId = isEditing ? (ordem.produtoId || ordem.ProdutoId) : data.produtoId;
+    const almoxarifadoFinalId = isEditing ? (ordem.almoxarifadoId || ordem.AlmoxarifadoId) : data.almoxarifadoId;
+    const tipoOpFinalId = isEditing ? (ordem.tipoOrdemDeProducaoId || ordem.TipoOrdemDeProducaoId) : data.tipoOrdemDeProducaoId;
+
+    if (!produtoFinalId) { alert("Selecione um Produto."); return; }
+    if (!almoxarifadoFinalId) { alert("Selecione um Almoxarifado."); return; }
+    if (!tipoOpFinalId) { alert("Selecione um Tipo de OP."); return; }
+
+    const prodCheck = produtos?.find(p => (p.id || p.Id) === produtoFinalId);
+    if (prodCheck && (prodCheck.controlarPorLote || prodCheck.ControlarPorLote) && !data.loteId) {
+        alert("Este produto exige um Lote. Por favor, selecione um Lote.");
+        return;
+    }
+    if (!isEditing && !roteiroAtivo && !data.faseAtualId) {
+        alert("Este produto não possui Roteiro. Selecione a Fase Inicial.");
         return;
     }
 
@@ -129,10 +189,10 @@ function OrdemDeProducaoForm() {
         CodigoOrdem: data.codigoOrdem,
         Quantidade: data.quantidade,
         Observacoes: data.observacoes || "",
-        ProdutoId: data.produtoId,
-        AlmoxarifadoId: data.almoxarifadoId,
-        FaseAtualId: data.faseAtualId,
-        TipoOrdemDeProducaoId: data.tipoOrdemDeProducaoId,
+        ProdutoId: produtoFinalId,
+        AlmoxarifadoId: almoxarifadoFinalId,
+        TipoOrdemDeProducaoId: tipoOpFinalId,
+        FaseAtualId: isEditing ? (ordem.faseAtualId || ordem.FaseAtualId) : (roteiroAtivo ? null : data.faseAtualId),
         LoteId: data.loteId || null,
     };
     
@@ -144,8 +204,9 @@ function OrdemDeProducaoForm() {
     }
   };
 
-  const isLoadingData = [produtos, almoxarifados, fases, tiposOP].some(q => !q);
   if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando OP...</div>;
+
+  const exigeLote = produtoSelecionadoObj?.controlarPorLote || produtoSelecionadoObj?.ControlarPorLote;
 
   return (
     <div className="form-container">
@@ -160,15 +221,19 @@ function OrdemDeProducaoForm() {
         
         <div className="form-group">
           <label htmlFor="produtoId">Produto</label>
-          <select id="produtoId" {...register('produtoId')} defaultValue="">
-            <option value="" disabled>Selecione um produto</option>
+          <select id="produtoId" {...register('produtoId')} disabled={isEditing}>
+            <option value="">Selecione um produto</option>
             {produtos?.map(p => (
-              <option key={p.id} value={p.id}>{p.nome} ({p.codigo})</option>
+              <option key={p.id || p.Id} value={p.id || p.Id}>
+                {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
+              </option>
             ))}
           </select>
-          {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
-          {produtoSelecionadoObj?.controlarPorLote && (
-              <small style={{color: '#eab308', marginTop: '4px'}}>⚠ Este produto requer controle por Lote.</small>
+          {errors.produtoId && !isEditing && <span className="error">{errors.produtoId.message}</span>}
+          {isEditing && <small style={{color: '#666'}}>O produto não pode ser alterado após a criação.</small>}
+          
+          {exigeLote && (
+              <small style={{color: '#eab308', marginTop: '4px', display: 'block'}}>⚠ Este produto requer seleção de Lote.</small>
           )}
         </div>
 
@@ -179,48 +244,77 @@ function OrdemDeProducaoForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="loteId">Lote {produtoSelecionadoObj?.controlarPorLote ? '*' : '(Opcional)'}</label>
-          <input 
+          <label htmlFor="loteId">Lote {exigeLote ? '*' : '(Opcional)'}</label>
+          <select 
             id="loteId" 
             {...register('loteId')} 
-            placeholder="Insira o ID do Lote" 
-            style={{ borderColor: produtoSelecionadoObj?.controlarPorLote ? '#eab308' : '' }}
-          />
+            style={{ borderColor: exigeLote ? '#eab308' : '' }}
+            disabled={!selectedProdutoId || lotesDisponiveis.length === 0}
+          >
+            <option value="">
+                {lotesDisponiveis.length === 0 && selectedProdutoId 
+                    ? "Nenhum lote disponível" 
+                    : "Selecione um lote"}
+            </option>
+            {lotesDisponiveis.map(l => (
+              <option key={l.id || l.Id} value={l.id || l.Id}>
+                {l.numeroLote || l.NumeroLote} {l.descricao ? `- ${l.descricao}` : ''}
+              </option>
+            ))}
+          </select>
           {errors.loteId && <span className="error">{errors.loteId.message}</span>}
         </div>
 
         <div className="form-group">
           <label htmlFor="tipoOrdemDeProducaoId">Tipo de OP</label>
-          <select id="tipoOrdemDeProducaoId" {...register('tipoOrdemDeProducaoId')} defaultValue="">
-            <option value="" disabled>Selecione o tipo</option>
+          <select id="tipoOrdemDeProducaoId" {...register('tipoOrdemDeProducaoId')} disabled={isEditing}>
+            <option value="">Selecione o tipo</option>
             {tiposOP?.map(t => (
-              <option key={t.id} value={t.id}>{t.nome}</option>
+              <option key={t.id || t.Id} value={t.id || t.Id}>{t.nome || t.Nome}</option>
             ))}
           </select>
-          {errors.tipoOrdemDeProducaoId && <span className="error">{errors.tipoOrdemDeProducaoId.message}</span>}
+          {errors.tipoOrdemDeProducaoId && !isEditing && <span className="error">{errors.tipoOrdemDeProducaoId.message}</span>}
         </div>
 
         <div className="form-group">
           <label htmlFor="almoxarifadoId">Almoxarifado de Destino</label>
-          <select id="almoxarifadoId" {...register('almoxarifadoId')} defaultValue="">
-            <option value="" disabled>Selecione o almoxarifado</option>
+          <select id="almoxarifadoId" {...register('almoxarifadoId')} disabled={isEditing}>
+            <option value="">Selecione o almoxarifado</option>
             {almoxarifados?.map(a => (
-              <option key={a.id} value={a.id}>{a.nome}</option>
+              <option key={a.id || a.Id} value={a.id || a.Id}>{a.nome || a.Nome}</option>
             ))}
           </select>
-          {errors.almoxarifadoId && <span className="error">{errors.almoxarifadoId.message}</span>}
+          {errors.almoxarifadoId && !isEditing && <span className="error">{errors.almoxarifadoId.message}</span>}
         </div>
         
-        <div className="form-group">
-          <label htmlFor="faseAtualId">Fase Inicial</label>
-          <select id="faseAtualId" {...register('faseAtualId')} defaultValue="">
-            <option value="" disabled>Selecione a fase</option>
-            {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
-              <option key={f.id} value={f.id}>{f.ordem} - {f.nome}</option>
-            ))}
-          </select>
-          {errors.faseAtualId && <span className="error">{errors.faseAtualId.message}</span>}
-        </div>
+        {!isEditing && (
+            <div className="form-group">
+            <label htmlFor="faseAtualId">Fase Inicial</label>
+            {roteiroAtivo ? (
+                <div style={{padding: '12px', backgroundColor: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'flex-start', gap: '12px'}}>
+                    <Info size={24} color="#2563eb" style={{marginTop: '2px'}} />
+                    <div>
+                        <strong style={{color: '#1e40af', display: 'block', marginBottom: '4px'}}>Roteiro Vinculado: {roteiroAtivo.codigo}</strong>
+                        <span style={{fontSize: '0.9rem', color: '#3b82f6', lineHeight: '1.4'}}>
+                            A fase inicial será definida automaticamente conforme o roteiro.
+                            <br/>
+                            Primeira etapa: <strong>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</strong>
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <select id="faseAtualId" {...register('faseAtualId')}>
+                        <option value="">Selecione a fase</option>
+                        {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
+                        <option key={f.id || f.Id} value={f.id || f.Id}>{f.ordem} - {f.nome || f.Nome}</option>
+                        ))}
+                    </select>
+                    <small style={{color: '#666'}}>Selecione manualmente (Produto sem Roteiro).</small>
+                </>
+            )}
+            </div>
+        )}
 
         {isEditing && (
             <div className="form-group">

@@ -140,6 +140,59 @@ namespace Valisys_Production.Controllers
             }
         }
 
+        [HttpPost("{id:guid}/proxima-fase")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> MovimentarProximaFase(Guid id)
+        {
+            try
+            {
+                var sucesso = await _service.MovimentarProximaFaseAsync(id);
+                if (!sucesso) return BadRequest(new { message = "Não foi possível avançar a fase." });
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro interno.", details = ex.Message });
+            }
+        }
+
+        [HttpPost("{id:guid}/finalizar")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> FinalizarOrdem(Guid id)
+        {
+            try
+            {
+                var usuarioId = GetAuthenticatedUserId();
+                await _service.FinalizarOrdemAsync(id, usuarioId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro interno.", details = ex.Message });
+            }
+        }
+
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]

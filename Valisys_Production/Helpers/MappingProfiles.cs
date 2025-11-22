@@ -29,11 +29,15 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
 
+            // Lote
             CreateMap<FornecedorUpdateDto, Fornecedor>()
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
-            // Lote
             CreateMap<Lote, LoteReadDto>()
-                .ForMember(dest => dest.NumeroLote, opt => opt.MapFrom(src => src.CodigoLote));
+                .ForMember(dest => dest.NumeroLote, opt => opt.MapFrom(src => src.CodigoLote))
+                .ForMember(dest => dest.Ativo, opt => opt.MapFrom(src =>
+                    src.statusLote == StatusLote.Pendente ||
+                    src.statusLote == StatusLote.EmProducao))
+                .ForMember(dest => dest.EmUso, opt => opt.MapFrom(src => src.OrdensDeProducao != null && src.OrdensDeProducao.Any()));
             CreateMap<LoteCreateDto, Lote>();
             CreateMap<LoteUpdateDto, Lote>()
                 .ForMember(dest => dest.CodigoLote, opt => opt.MapFrom(src => src.NumeroLote));
@@ -52,7 +56,8 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome))
                 .ForMember(dest => dest.AlmoxarifadoNome, opt => opt.MapFrom(src => src.Almoxarifado.Nome))
                 .ForMember(dest => dest.FaseAtualNome, opt => opt.MapFrom(src => src.FaseAtual.Nome))
-                .ForMember(dest => dest.LoteNumero, opt => opt.MapFrom(src => src.Lote != null ? src.Lote.CodigoLote : null));
+                .ForMember(dest => dest.LoteNumero, opt => opt.MapFrom(src => src.Lote != null ? src.Lote.CodigoLote : null))
+                .ForMember(dest => dest.RoteiroCodigo, opt => opt.MapFrom(src => src.RoteiroProducao != null ? src.RoteiroProducao.Codigo : null));
 
             CreateMap<OrdemDeProducaoCreateDto, OrdemDeProducao>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -62,20 +67,13 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore())
                 .ForMember(dest => dest.Produto, opt => opt.Ignore())
                 .ForMember(dest => dest.Almoxarifado, opt => opt.Ignore())
-                .ForMember(dest => dest.FaseAtual, opt => opt.Ignore())
-                .ForMember(dest => dest.Lote, opt => opt.Ignore())
-                .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
-                .ForMember(dest => dest.SolicitacaoProducao, opt => opt.Ignore());
-
-            CreateMap<OrdemDeProducaoUpdateDto, OrdemDeProducao>()
-                .ForMember(dest => dest.DataInicio, opt => opt.Ignore())
-                .ForMember(dest => dest.Produto, opt => opt.Ignore())
-                .ForMember(dest => dest.Almoxarifado, opt => opt.Ignore())
+                .ForMember(dest => dest.FaseAtualId, opt => opt.MapFrom(src => src.FaseAtualId ?? Guid.Empty))
                 .ForMember(dest => dest.FaseAtual, opt => opt.Ignore())
                 .ForMember(dest => dest.Lote, opt => opt.Ignore())
                 .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
                 .ForMember(dest => dest.SolicitacaoProducao, opt => opt.Ignore())
-                .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore());
+                .ForMember(dest => dest.RoteiroProducao, opt => opt.Ignore())
+                .ForMember(dest => dest.RoteiroProducaoId, opt => opt.Ignore());
 
             CreateMap<Perfil, PerfilReadDto>();
             CreateMap<PerfilCreateDto, Perfil>();

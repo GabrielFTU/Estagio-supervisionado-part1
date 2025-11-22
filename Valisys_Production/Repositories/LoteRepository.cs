@@ -30,6 +30,7 @@ namespace Valisys_Production.Repositories
                 .AsNoTracking()
                 .Include(l => l.Produto)
                 .Include(l => l.Almoxarifado)
+                .Include(l => l.OrdensDeProducao)
                 .FirstOrDefaultAsync(l => l.Id == id);
         }
 
@@ -39,6 +40,7 @@ namespace Valisys_Production.Repositories
                 .AsNoTracking()
                 .Include(l => l.Produto)
                 .Include(l => l.Almoxarifado)
+                .Include(l => l.OrdensDeProducao)
                 .ToListAsync();
         }
 

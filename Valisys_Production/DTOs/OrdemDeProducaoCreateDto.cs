@@ -21,8 +21,7 @@ namespace Valisys_Production.DTOs
         [Required]
         public Guid AlmoxarifadoId { get; set; }
 
-        [Required]
-        public Guid FaseAtualId { get; set; }
+        public Guid? FaseAtualId { get; set; }
 
         [Required]
         public Guid TipoOrdemDeProducaoId { get; set; }

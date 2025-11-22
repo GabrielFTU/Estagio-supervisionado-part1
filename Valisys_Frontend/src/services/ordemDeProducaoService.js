@@ -24,6 +24,14 @@ const ordemDeProducaoService = {
     const response = await api.delete(`${endpoint}/${id}`);
     return response.data;
   },
+  avancarFase: async (id) => {
+    const response = await api.post(`${endpoint}/${id}/proxima-fase`);
+    return response.data;
+  },
+  finalizar: async (id) => {
+    const response = await api.post(`${endpoint}/${id}/finalizar`);
+    return response.data;
+  },
   getReportUrl: (id) => {
     return `${api.defaults.baseURL.replace('/api', '')}/api/Relatorios/ordem-producao/${id}/visualizar`;
   }

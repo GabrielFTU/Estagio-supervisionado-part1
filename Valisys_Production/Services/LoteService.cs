@@ -24,15 +24,14 @@ namespace Valisys_Production.Services
             var lote = new Lote
             {
                 CodigoLote = dto.CodigoLote,
-                Descricao = dto.Descricao,
+                Descricao = dto.Descricao ?? string.Empty,
+                Observacoes = dto.Observacoes ?? string.Empty,
                 ProdutoId = dto.ProdutoId,
                 AlmoxarifadoId = dto.AlmoxarifadoId,
                 DataAbertura = DateTime.UtcNow
             };
 
             lote.statusLote = StatusLote.Pendente;
-            lote.DataAbertura = DateTime.UtcNow;
-
             return await _repository.AddAsync(lote);
         }
 
@@ -66,6 +65,10 @@ namespace Valisys_Production.Services
             {
                 throw new KeyNotFoundException($"Lote com ID {lote.Id} não encontrado.");
             }
+
+            // Garante que campos obrigatórios no update também não fiquem nulos
+            lote.Observacoes ??= string.Empty;
+            lote.Descricao ??= string.Empty;
 
             return await _repository.UpdateAsync(lote);
         }

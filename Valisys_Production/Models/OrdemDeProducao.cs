@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Valisys_Production.Models 
+namespace Valisys_Production.Models
 {
-
     public enum StatusOrdemDeProducao
     {
         Ativa = 1,
@@ -26,7 +25,7 @@ namespace Valisys_Production.Models
         public DateTime? DataFim { get; set; }
 
         [MaxLength(500)]
-        public string Observacoes { get; set; }
+        public string Observacoes { get; set; } = string.Empty; 
 
         public Guid ProdutoId { get; set; }
         public Produto Produto { get; set; }
@@ -39,6 +38,9 @@ namespace Valisys_Production.Models
 
         public Guid? LoteId { get; set; }
         public Lote Lote { get; set; }
+
+        public Guid? RoteiroProducaoId { get; set; }
+        public RoteiroProducao RoteiroProducao { get; set; }
 
         public Guid TipoOrdemDeProducaoId { get; set; }
         public TipoOrdemDeProducao TipoOrdemDeProducao { get; set; }
