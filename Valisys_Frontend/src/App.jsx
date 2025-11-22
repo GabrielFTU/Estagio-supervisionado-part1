@@ -45,6 +45,9 @@ import FichaTecnicaDetails from './features/fichatecnica/FichaTecnicaDetails.jsx
 import RoteiroList from './features/roteiro/RoteiroList.jsx';
 import RoteiroForm from './features/roteiro/RoteiroForm.jsx';;;
 
+import LoteList from './features/lote/LoteList.jsx';
+import LoteForm from './features/lote/LoteForm.jsx';
+
 const Placeholder = ({ title }) => <div style={{padding: '20px'}}><h1>{title}</h1><p>Módulo em desenvolvimento.</p></div>;
 
 import './index.css';
@@ -73,7 +76,6 @@ function App() {
           <Route path="/producao/op" element={<OrdemDeProducaoList />} />
           <Route path="/producao/op/novo" element={<OrdemDeProducaoForm />} />
           <Route path="/producao/op/editar/:id" element={<OrdemDeProducaoForm />} />
-          <Route path="/producao/lotes" element={<Placeholder title="Gerenciamento de Lotes" />} />
 
           <Route path="/engenharia/fichas-tecnicas" element={<FichaTecnicaList />} />
           <Route path="/engenharia/fichas-tecnicas/novo" element={<FichaTecnicaForm />} />
@@ -126,6 +128,10 @@ function App() {
 
           <Route path="/settings/sistema/logs" element={<Placeholder title="Logs do Sistema" />} />
           <Route path="/settings/sistema/auditoria" element={<Placeholder title="Auditoria" />} />
+
+          <Route path="/producao/lotes" element={<LoteList />} />
+          <Route path="/producao/lotes/novo" element={<LoteForm />} />
+          <Route path="/producao/lotes/editar/:id" element={<LoteForm />} />
 
         </Route>
       </Route>

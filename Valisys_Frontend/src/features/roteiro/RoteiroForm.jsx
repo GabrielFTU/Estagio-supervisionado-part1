@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, Clock, ArrowUp, ArrowDown, GripVertical, AlertCircle } from 'lucide-react'; 
 
 import roteiroProducaoService from '../../services/roteiroProducaoService.js';
 import produtoService from '../../services/produtoService.js';
 import faseProducaoService from '../../services/faseProducaoService.js';
 
 import '../../features/produto/ProdutoForm.css';
+import './RoteiroForm.css'; 
 
 const roteiroSchema = z.object({
   id: z.string().optional(),
@@ -21,10 +22,10 @@ const roteiroSchema = z.object({
   ativo: z.boolean().default(true),
   etapas: z.array(z.object({
     faseProducaoId: z.string().min(1, "Selecione a fase."),
-    ordem: z.coerce.number().min(1, "Ordem inválida."),
-    tempoDias: z.coerce.number().min(0, "Tempo não pode ser negativo."),
+    ordem: z.coerce.number().min(1),
+    tempoDias: z.coerce.number().min(0, "Tempo inválido."),
     instrucoes: z.string().optional()
-  })).min(1, "Adicione pelo menos uma etapa.")
+  })).min(1, "O roteiro deve conter pelo menos uma etapa.")
 });
 
 function RoteiroForm() {
@@ -32,13 +33,26 @@ function RoteiroForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  const defaultCodigo = isEditing ? '' : `RASCUNHO-${Date.now().toString().slice(-6)}`;
 
-  const { register, control, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm({
+  const { 
+    register, control, handleSubmit, reset, watch, setValue, getValues, 
+    formState: { errors, isSubmitting } 
+  } = useForm({
     resolver: zodResolver(roteiroSchema),
-    defaultValues: { versao: "1.0", ativo: true, etapas: [{ faseProducaoId: "", ordem: 1, tempoDias: 0 }] }
+    defaultValues: { 
+        versao: "1.0", 
+        ativo: true, 
+        etapas: [{ faseProducaoId: "", ordem: 1, tempoDias: 0 }],
+        codigo: defaultCodigo
+    }
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "etapas" });
+  const { fields, append, remove, move } = useFieldArray({ control, name: "etapas" });
+
+  const etapasAssistidas = watch('etapas');
+  const tempoTotalProducao = etapasAssistidas?.reduce((acc, etapa) => acc + (Number(etapa.tempoDias) || 0), 0) || 0;
 
   const { data: produtos } = useQuery({ queryKey: ['produtos'], queryFn: produtoService.getAll });
   const { data: fases } = useQuery({ queryKey: ['fasesProducao'], queryFn: faseProducaoService.getAll });
@@ -48,13 +62,34 @@ function RoteiroForm() {
     enabled: isEditing
   });
 
-  useEffect(() => {
-    if (isEditing && roteiro) {
-      reset({ ...roteiro, etapas: roteiro.etapas.sort((a, b) => a.ordem - b.ordem) });
-    }
-  }, [isEditing, roteiro, reset]);
+  const updateOrdemSequencial = useCallback(() => {
+    const currentEtapas = getValues('etapas'); 
+    const needsUpdate = currentEtapas.some((item, index) => Number(item.ordem) !== index + 1);
 
-  // Lógica Inteligente: Quando selecionar uma fase, puxar o tempo padrão dela
+    if (needsUpdate) { 
+        const newEtapas = currentEtapas.map((item, index) => ({ ...item, ordem: index + 1 }));
+        setValue('etapas', newEtapas, { shouldValidate: true }); 
+    }
+  }, [getValues, setValue]); 
+
+  useEffect(() => {
+      if (isEditing && roteiro) {
+        reset({ 
+            ...roteiro, 
+            codigo: roteiro.codigo, 
+            etapas: roteiro.etapas.sort((a, b) => a.ordem - b.ordem) 
+        });
+      }
+  }, [isEditing, roteiro, reset]);
+  
+  useEffect(() => {
+    updateOrdemSequencial();
+  }, [fields.length, updateOrdemSequencial]); 
+
+  const handleMoveEtapa = (fromIndex, toIndex) => {
+    move(fromIndex, toIndex);
+  };
+  
   const handleFaseChange = (index, faseId) => {
     const faseSelecionada = fases?.find(f => f.id === faseId);
     if (faseSelecionada) {
@@ -68,100 +103,156 @@ function RoteiroForm() {
       queryClient.invalidateQueries({ queryKey: ['roteirosProducao'] });
       navigate('/engenharia/roteiros');
     },
-    onError: (error) => alert(`Erro: ${error.response?.data?.message || error.message}`)
+    onError: (error) => {
+        const msg = error.response?.data?.message || error.message;
+        alert(`Erro ao salvar: ${msg}`);
+    }
   });
 
   const onSubmit = (data) => mutation.mutate(data);
 
   return (
-    <div className="form-container" style={{maxWidth: '1000px'}}>
-      <h1>{isEditing ? 'Editar Roteiro' : 'Novo Roteiro de Produção'}</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
+    <div className="form-container full-width">
+      <div className="form-header-title">
+        <h1>{isEditing ? 'Editar Roteiro de Produção' : 'Novo Roteiro de Produção'}</h1>
+      </div>
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="roteiro-form-wrapper">
         
-        {/* Cabeçalho */}
-        <div className="form-section" style={{borderBottom: '1px solid var(--border-color)', paddingBottom: '20px', marginBottom: '20px'}}>
-            <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-                <div className="form-group" style={{flex: 2}}>
-                    <label>Produto</label>
-                    <select {...register('produtoId')} disabled={isEditing}>
-                        <option value="">Selecione...</option>
+        <div className="card-section">
+            <h3 className="section-title">Informações Gerais</h3>
+            <div className="grid-layout">
+                <div className="form-group span-2">
+                    <label>Produto Base</label>
+                    <select {...register('produtoId')} disabled={isEditing} className={errors.produtoId ? 'input-error' : ''}>
+                        <option value="">Selecione o produto...</option>
                         {produtos?.filter(p => p.classificacaoId === 2 || p.classificacaoId === 3).map(p => (
                             <option key={p.id} value={p.id}>{p.nome} ({p.codigo})</option>
                         ))}
                     </select>
-                    {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
+                    {errors.produtoId && <span className="error-msg">{errors.produtoId.message}</span>}
                 </div>
-                <div className="form-group" style={{flex: 1}}>
-                    <label>Código</label>
-                    <input {...register('codigo')} />
-                    {errors.codigo && <span className="error">{errors.codigo.message}</span>}
+                <div className="form-group">
+                    <label>Código do Roteiro</label>
+                    <input {...register('codigo')} readOnly className="input-readonly" />
+                    {errors.codigo && <span className="error-msg">{errors.codigo.message}</span>}
                 </div>
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group">
                     <label>Versão</label>
-                    <input {...register('versao')} />
+                    <input {...register('versao')} placeholder="1.0" className={errors.versao ? 'input-error' : ''}/>
+                    {errors.versao && <span className="error-msg">{errors.versao.message}</span>}
                 </div>
-            </div>
-            <div className="form-group">
-                <label>Descrição</label>
-                <textarea {...register('descricao')} rows={2} />
-            </div>
-            <div className="form-group-checkbox">
-                <input type="checkbox" id="ativo" {...register('ativo')} />
-                <label htmlFor="ativo">Ativo?</label>
+                <div className="form-group span-3">
+                    <label>Descrição</label>
+                    <input {...register('descricao')} placeholder="Descrição detalhada do processo..." />
+                </div>
+                <div className="form-group-checkbox">
+                    <input type="checkbox" id="ativo" {...register('ativo')} />
+                    <label htmlFor="ativo">Roteiro Ativo</label>
+                </div>
             </div>
         </div>
 
-        {/* Etapas */}
-        <div className="form-section">
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                <h3>Etapas do Processo</h3>
-                <button type="button" className="btn-new" onClick={() => append({ faseProducaoId: "", ordem: fields.length + 1, tempoDias: 0 })} style={{fontSize: '0.8rem', padding: '5px 10px'}}>
-                    <Plus size={16} style={{marginRight: 5}} /> Adicionar
+        <div className="card-section">
+            <div className="section-header">
+                <h3>Sequência Operacional</h3>
+                <button type="button" className="btn-new-small" onClick={() => append({ faseProducaoId: "", ordem: fields.length + 1, tempoDias: 0 })}>
+                    <Plus size={16} /> Adicionar Etapa
                 </button>
             </div>
-            {errors.etapas && <div className="error">{errors.etapas.message}</div>}
+            
+            {errors.etapas && <div className="alert-box error"><AlertCircle size={16}/> {errors.etapas.message}</div>}
 
-            <div className="table-responsive">
-                <table className="data-table">
+            <div className="table-container">
+                <table className="roteiro-table">
                     <thead>
                         <tr>
-                            <th style={{width: '60px'}}>Ord.</th>
-                            <th>Fase</th>
-                            <th style={{width: '100px'}}>Dias</th>
-                            <th>Instruções</th>
-                            <th style={{width: '50px'}}></th>
+                            <th width="40"></th>
+                            <th width="60">Ord.</th>
+                            <th>Fase de Produção</th>
+                            <th width="100">Dias</th>
+                            <th>Instruções Específicas</th>
+                            <th width="100">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {fields.map((item, index) => (
                             <tr key={item.id}>
-                                <td><input type="number" {...register(`etapas.${index}.ordem`)} style={{width: '100%', padding: '5px'}} /></td>
+                                <td className="grip-col"><GripVertical size={16} color="#9ca3af" /></td>
+                                <td>
+                                    <input 
+                                        type="number" 
+                                        {...register(`etapas.${index}.ordem`)} 
+                                        readOnly 
+                                        className="input-plain text-center" 
+                                    />
+                                </td>
                                 <td>
                                     <select 
                                         {...register(`etapas.${index}.faseProducaoId`)} 
                                         onChange={(e) => {
                                             register(`etapas.${index}.faseProducaoId`).onChange(e);
-                                            handleFaseChange(index, e.target.value); // Auto-preenche dias
+                                            handleFaseChange(index, e.target.value); 
                                         }}
-                                        style={{width: '100%', padding: '5px'}}
+                                        className={errors.etapas?.[index]?.faseProducaoId ? 'input-error' : ''}
                                     >
                                         <option value="">Selecione...</option>
                                         {fases?.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
                                     </select>
                                 </td>
-                                <td><input type="number" {...register(`etapas.${index}.tempoDias`)} style={{width: '100%', padding: '5px'}} /></td>
-                                <td><input type="text" {...register(`etapas.${index}.instrucoes`)} style={{width: '100%', padding: '5px'}} /></td>
-                                <td><button type="button" className="btn-icon btn-delete" onClick={() => remove(index)}><Trash2 size={16} /></button></td>
+                                <td>
+                                    <input 
+                                        type="number" 
+                                        step="1" 
+                                        {...register(`etapas.${index}.tempoDias`, { valueAsNumber: true })} 
+                                        className={errors.etapas?.[index]?.tempoDias ? 'input-error' : ''}
+                                    />
+                                </td>
+                                <td>
+                                    <input type="text" {...register(`etapas.${index}.instrucoes`)} placeholder="Opcional..." />
+                                </td>
+                                <td className='actions-col'>
+                                    <div className="action-group">
+                                        <button type="button" className="btn-icon-mini" onClick={() => handleMoveEtapa(index, index - 1)} disabled={index === 0}>
+                                            <ArrowUp size={14} />
+                                        </button>
+                                        <button type="button" className="btn-icon-mini" onClick={() => handleMoveEtapa(index, index + 1)} disabled={index === fields.length - 1}>
+                                            <ArrowDown size={14} />
+                                        </button>
+                                        <button type="button" className="btn-icon-mini danger" onClick={() => remove(index)}>
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         ))}
+                        {fields.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="empty-row">Nenhuma etapa adicionada ao roteiro.</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
+
+            <div className="summary-bar">
+                <div className="summary-item">
+                    <Clock size={20} />
+                    <span>Lead Time Total:</span>
+                    <strong>{tempoTotalProducao} dias</strong>
+                </div>
+                <div className="summary-item">
+                    <span>Total de Etapas:</span>
+                    <strong>{fields.length}</strong>
+                </div>
+            </div>
         </div>
 
-        <div className="form-actions">
+        <div className="form-footer">
             <button type="button" onClick={() => navigate('/engenharia/roteiros')} className="btn-cancelar">Cancelar</button>
-            <button type="submit" className="btn-salvar" disabled={mutation.isPending}><Save size={18} style={{marginRight: 5}} /> Salvar</button>
+            <button type="submit" className="btn-salvar" disabled={mutation.isPending || isSubmitting}>
+                {(mutation.isPending || isSubmitting) ? 'Salvando...' : <><Save size={18} /> Salvar Roteiro</>}
+            </button>
         </div>
       </form>
     </div>

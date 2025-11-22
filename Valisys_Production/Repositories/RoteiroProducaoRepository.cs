@@ -2,6 +2,10 @@
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -60,7 +64,14 @@ namespace Valisys_Production.Repositories
                 _context.RoteiroProducaoEtapas.Add(etapa);
             }
 
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> DeleteAsync(Guid id)
@@ -69,6 +80,7 @@ namespace Valisys_Production.Repositories
             if (roteiro != null)
             {
                 roteiro.Ativo = false;
+                _context.Entry(roteiro).State = EntityState.Modified;
                 return await _context.SaveChangesAsync() > 0;
             }
             return false;
