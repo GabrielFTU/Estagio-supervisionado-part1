@@ -50,7 +50,6 @@ function RelatorioMovimentacoes() {
     });
   }, [todasMovimentacoes, filtros, produtos, almoxarifados]);
 
-  // Função Genérica para obter o Blob
   const fetchPdfBlob = async () => {
     return await relatorioService.downloadMovimentacoes(
       filtros.dataInicio || null, 
@@ -84,11 +83,8 @@ function RelatorioMovimentacoes() {
     setIsProcessing(true);
     try {
       const blob = await fetchPdfBlob();
-      // Cria uma URL para o Blob e abre em nova aba
       const url = window.URL.createObjectURL(blob);
       window.open(url, '_blank');
-      // Nota: O navegador gerencia a memória do blob ao fechar a aba, 
-      // mas em SPAs complexas pode ser bom revogar manualmente depois de um tempo se necessário.
     } catch (error) {
       console.error("Erro ao abrir impressão:", error);
       alert("Erro ao gerar a visualização de impressão.");
@@ -171,18 +167,15 @@ function RelatorioMovimentacoes() {
         </div>
 
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
-            {/* Botão Imprimir / Visualizar */}
             <button 
                 onClick={handleImprimirPDF}
                 disabled={isProcessing}
-                className="btn-cancelar" // Usando estilo secundário para diferenciar
+                className="btn-cancelar" 
                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#fff', color: '#333', border: '1px solid #ccc' }}
                 title="Abre o PDF em nova aba para impressão"
             >
                 <Printer size={18} /> {isProcessing ? 'Gerando...' : 'Imprimir'}
             </button>
-
-            {/* Botão Salvar / Download */}
             <button 
                 onClick={handleSalvarPDF}
                 disabled={isProcessing}
@@ -195,7 +188,6 @@ function RelatorioMovimentacoes() {
         </div>
       </div>
 
-      {/* Área de Pré-visualização */}
       <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Search size={20} /> Pré-visualização dos Dados

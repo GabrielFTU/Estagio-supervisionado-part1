@@ -6,13 +6,12 @@ import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import faseProducaoService from '../../services/faseProducaoService.js';
 import './Kanban.css';
 
-// Função auxiliar para traduzir o status (se vier número ou texto)
 const normalizarStatus = (status) => {
     if (status === 1 || status === '1') return 'Ativa';
     if (status === 2 || status === '2') return 'Aguardando';
     if (status === 3 || status === '3') return 'Finalizada';
     if (status === 4 || status === '4') return 'Cancelada';
-    return status; // Retorna o próprio texto se já vier correto
+    return status; 
 };
 
 function KanbanProducao() {
@@ -50,7 +49,6 @@ function KanbanProducao() {
     if (ordensRaw && fasesOrdenadas.length > 0) {
       const grouped = {};
       
-      // 1. Cria as colunas (usando ID em minúsculo como chave segura)
       fasesOrdenadas.forEach(fase => {
         const key = (fase.id || fase.Id).toLowerCase();
         grouped[key] = [];
@@ -59,15 +57,12 @@ function KanbanProducao() {
       console.log("--- INÍCIO DO PROCESSAMENTO DO KANBAN ---");
       let count = 0;
 
-      // 2. Distribui as ordens
       ordensRaw.forEach(o => {
-          // Normaliza propriedades (backend pode mandar PascalCase ou camelCase)
           const rawStatus = o.status !== undefined ? o.status : o.Status;
           const status = normalizarStatus(rawStatus);
           
           const faseIdRaw = o.faseAtualId || o.FaseAtualId;
           
-          // Se não tiver fase, ignora
           if (!faseIdRaw) {
               console.warn(`Ordem ${o.codigoOrdem || o.CodigoOrdem} ignorada: Sem Fase definida.`);
               return;

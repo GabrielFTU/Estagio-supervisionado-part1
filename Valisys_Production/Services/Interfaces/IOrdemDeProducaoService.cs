@@ -1,4 +1,5 @@
-﻿using Valisys_Production.Models;
+﻿using Valisys_Production.DTOs;
+using Valisys_Production.Models;
 
 namespace Valisys_Production.Services.Interfaces
 {
@@ -9,9 +10,11 @@ namespace Valisys_Production.Services.Interfaces
         Task<OrdemDeProducao?> GetByCodigoAsync(string codigo);
         Task<IEnumerable<OrdemDeProducao>> GetAllAsync();
         Task<bool> UpdateAsync(OrdemDeProducao ordemDeProducao);
+        Task<IEnumerable<OrdemDeProducaoReadDto>> GetAllReadDtosAsync();
         Task<bool> DeleteAsync(Guid id);
         Task<bool> MovimentarProximaFaseAsync(Guid ordemId);
         Task FinalizarOrdemAsync(Guid ordemId, Guid usuarioId);
         Task TrocarFaseAsync(Guid ordemId, Guid novaFaseId);
+       
     }
 }

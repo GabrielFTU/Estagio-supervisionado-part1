@@ -56,7 +56,6 @@ const isValidCNPJ = (cnpj) => {
 
 const formatDocument = (doc, type) => {
     let cleaned = cleanAndValidate(doc);
-    // Garante que type seja tratado como número
     if (Number(type) === 1) { 
         return cleaned
             .replace(/(\d{3})(\d)/, '$1.$2')
@@ -123,13 +122,12 @@ function FornecedorForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(fornecedorSchema),
-    defaultValues: { tipoDocumento: 2 } // Garante valor inicial
+    defaultValues: { tipoDocumento: 2 } 
   });
   
   const watchedTipoDocumento = watch('tipoDocumento', 2); 
   const watchedDocumento = watch('documento', ''); 
   
-  // Correção do BUG: Força a conversão para número para garantir a comparação correta
   const isPessoaJuridica = Number(watchedTipoDocumento) === 2;
 
   const { data: fornecedor, isLoading: isLoadingFornecedor } = useQuery({

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 import useAuthStore from '../../stores/useAuthStore';
-import './Login.css';
+import './login.css';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),

@@ -5,9 +5,8 @@ import { FileText, Download, Search, Filter, Calendar, Activity, Printer } from 
 import relatorioService from '../../services/relatorioService.js';
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 
-import '../../features/produto/ProdutoList.css'; // Reaproveita estilos de lista/tabela
+import '../../features/produto/ProdutoList.css'; 
 
-// Mapeamento dos status (Deve bater com o Enum do C#: 1=Ativa, 2=Aguardando, etc.)
 const STATUS_OPTIONS = [
     { value: '', label: 'Todos os Status' },
     { value: 1, label: 'Ativa' },
@@ -15,8 +14,6 @@ const STATUS_OPTIONS = [
     { value: 3, label: 'Finalizada' },
     { value: 4, label: 'Cancelada' }
 ];
-
-// Mapeamento Reverso para a Pré-visualização (Backend retorna String, Filtro usa Int)
 const STATUS_MAP = { 1: 'Ativa', 2: 'Aguardando', 3: 'Finalizada', 4: 'Cancelada' };
 
 function RelatorioProducao() {
@@ -28,27 +25,22 @@ function RelatorioProducao() {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Carrega todas as ordens para a pré-visualização
   const { data: ordens, isLoading: isLoadingData } = useQuery({ 
     queryKey: ['ordensDeProducao'], 
     queryFn: ordemDeProducaoService.getAll 
   });
 
-  // Lógica de filtragem local para a tabela de pré-visualização
   const dadosFiltrados = useMemo(() => {
     if (!ordens) return [];
 
     return ordens.filter(op => {
       const dataOp = new Date(op.dataInicio).toISOString().split('T')[0];
       
-      // Filtro de Data
       if (filtros.dataInicio && dataOp < filtros.dataInicio) return false;
       if (filtros.dataFim && dataOp > filtros.dataFim) return false;
       
-      // Filtro de Status
       if (filtros.status) {
           const statusTextoEsperado = STATUS_MAP[filtros.status];
-          // Verifica se o status da OP bate com o selecionado
           if (op.status !== statusTextoEsperado) return false;
       }
 
@@ -115,7 +107,6 @@ function RelatorioProducao() {
         </h1>
       </div>
 
-      {/* --- CARD DE FILTROS --- */}
       <div className="card" style={{ padding: '20px', marginBottom: '25px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', color: 'var(--color-primary)', fontWeight: 'bold' }}>
             <Filter size={20} />
@@ -123,7 +114,6 @@ function RelatorioProducao() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            {/* Data Início */}
             <div className="form-group">
                 <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Início</label>
                 <input 
@@ -134,8 +124,6 @@ function RelatorioProducao() {
                     style={{width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)'}}
                 />
             </div>
-
-            {/* Data Fim */}
             <div className="form-group">
                 <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Fim</label>
                 <input 
@@ -146,8 +134,6 @@ function RelatorioProducao() {
                     style={{width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)'}}
                 />
             </div>
-
-            {/* Status */}
             <div className="form-group">
                 <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Activity size={14}/> Status da O.P.</label>
                 <select 
@@ -162,8 +148,6 @@ function RelatorioProducao() {
                 </select>
             </div>
         </div>
-
-        {/* Botões de Ação */}
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
             <button 
                 onClick={handleImprimirPDF}
@@ -184,8 +168,6 @@ function RelatorioProducao() {
             </button>
         </div>
       </div>
-
-      {/* --- TABELA DE PRÉ-VISUALIZAÇÃO --- */}
       <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Search size={20} /> Pré-visualização

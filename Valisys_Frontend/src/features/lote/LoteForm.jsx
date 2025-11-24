@@ -11,11 +11,8 @@ import almoxarifadoService from '../../services/almoxarifadoService.js';
 
 import '../../features/produto/ProdutoForm.css';
 
-// Esquema de validação ajustado para ser mais flexível com selects
 const loteSchema = z.object({
   codigoLote: z.string().min(1, "O código do lote é obrigatório.").max(50),
-  // Usamos .min(1) em vez de .uuid() para garantir que algo foi selecionado
-  // Isso evita o erro "ID inválido" quando o campo está vazio ou em formato inesperado
   produtoId: z.string().min(1, "Selecione um Produto."),
   almoxarifadoId: z.string().min(1, "Selecione um Almoxarifado."),
   descricao: z.string().optional(),
@@ -38,7 +35,6 @@ function LoteForm() {
     formState: { errors, isSubmitting } 
   } = useForm({
     resolver: zodResolver(loteSchema),
-    // Valores padrão iniciais para evitar componentes não controlados
     defaultValues: {
       ativo: true,
       descricao: '',
@@ -62,7 +58,6 @@ function LoteForm() {
     if (isEditing && lote) {
       reset({
         codigoLote: lote.numeroLote || lote.codigoLote,
-        // Garante que lemos o ID corretamente independente se vier id ou Id
         produtoId: lote.produtoId || lote.ProdutoId || '',
         almoxarifadoId: lote.almoxarifadoId || lote.AlmoxarifadoId || '', 
         descricao: lote.descricao || '',

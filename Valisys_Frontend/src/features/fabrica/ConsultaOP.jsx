@@ -5,7 +5,7 @@ import {
   CheckCircle, AlertCircle, Info, Layers, ArrowRight
 } from 'lucide-react';
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
-import '../../features/produto/ProdutoList.css'; // Importa estilos base
+import '../../features/produto/ProdutoList.css'; 
 
 function ConsultaOP() {
   const [searchCode, setSearchCode] = useState('');
@@ -14,8 +14,6 @@ function ConsultaOP() {
   const [loading, setLoading] = useState(false);
   
   const inputRef = useRef(null);
-
-  // Foca no input ao carregar (para coletores)
   useEffect(() => {
     if(inputRef.current) inputRef.current.focus();
   }, []);
@@ -91,8 +89,6 @@ function ConsultaOP() {
             Consulta de Chão de Fábrica
         </h1>
       </div>
-
-      {/* ÁREA DE BUSCA */}
       <div className="card" style={{ 
           padding: '30px', 
           marginBottom: '30px', 
@@ -158,8 +154,6 @@ function ConsultaOP() {
             </div>
         )}
       </div>
-
-      {/* CARD DE DETALHES */}
       {ordem && (
         <div className="card" style={{ 
             padding: '0', 
@@ -169,8 +163,6 @@ function ConsultaOP() {
             overflow: 'hidden',
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
         }}>
-          
-          {/* Cabeçalho do Card */}
           <div style={{ 
               padding: '25px 30px', 
               borderBottom: '1px solid #f3f4f6', 

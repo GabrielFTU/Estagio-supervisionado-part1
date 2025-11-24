@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: valisys_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: FKQWEjd2d1jp04hanphciowq
+      POSTGRES_DB: ValisysProduction
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data_final:/var/lib/postgresql/data
+    # O "Healthcheck" verifica a cada 5s se o banco responde
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./Valisys_Production
+      dockerfile: Dockerfile
+    container_name: valisys_backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=ValisysProduction;Username=postgres;Password=FKQWEjd2d1jp04hanphciowq
+      - JwtSettings__SecretKey=UmaChaveMuitoSeguraComMaisDe32CaracteresParaOJwt123
+    ports:
+      - "5019:8080"
+    depends_on:
+      db:
+        condition: service_healthy 
+
+  frontend:
+    build:
+      context: ./Valisys_Frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5019/api
+    container_name: valisys_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

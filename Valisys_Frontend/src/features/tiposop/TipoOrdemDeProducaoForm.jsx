@@ -35,14 +35,12 @@ function TipoOrdemDeProducaoForm() {
     defaultValues: { ativo: true, nome: '', codigo: '' }
   });
 
-  // Fetch data in edit mode
   const { data: tipoOrdem, isLoading: isLoadingTipoOrdem } = useQuery({
     queryKey: ['tipoOrdemDeProducao', id],
     queryFn: () => tipoOrdemDeProducaoService.getById(id),
     enabled: isEditing,
   });
 
-  // Populate form fields on data load (Edit mode)
   useEffect(() => {
     if (isEditing && tipoOrdem) {
       reset({
@@ -54,7 +52,6 @@ function TipoOrdemDeProducaoForm() {
     }
   }, [tipoOrdem, isEditing, reset]);
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: tipoOrdemDeProducaoService.create,
     onSuccess: () => {
@@ -81,7 +78,6 @@ function TipoOrdemDeProducaoForm() {
   });
 
   const onSubmit = (data) => {
-    // Mapeamento de Casing (Front-end camelCase para Back-end PascalCase)
     const mappedData = {
         Id: isEditing ? id : undefined, 
         Nome: data.nome,

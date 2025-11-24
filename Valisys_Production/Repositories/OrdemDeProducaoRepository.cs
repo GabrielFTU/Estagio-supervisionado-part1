@@ -2,10 +2,7 @@
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq; 
+using Valisys_Production.DTOs;
 
 namespace Valisys_Production.Repositories
 {
@@ -31,21 +28,54 @@ namespace Valisys_Production.Repositories
                 .AsNoTracking()
                 .Include(o => o.Lote)
                 .Include(o => o.Produto)
+                    .ThenInclude(p => p.UnidadeMedida)
                 .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
                 .Include(o => o.TipoOrdemDeProducao)
-                .Include(o => o.RoteiroProducao) 
+                .Include(o => o.RoteiroProducao)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
+        public async Task<IEnumerable<OrdemDeProducaoReadDto>> GetAllReadDtosAsync()
+        {
+            return await _context.OrdensDeProducao
+                .AsNoTracking()
+                .OrderByDescending(o => o.DataInicio)
+                .Take(80) 
+                .Select(o => new OrdemDeProducaoReadDto
+                {
+                    Id = o.Id,
+                    CodigoOrdem = o.CodigoOrdem,
+                    Quantidade = o.Quantidade,
+                    Status = o.Status,
+                    DataInicio = o.DataInicio,
+                    DataFim = o.DataFim,
+                    Observacoes = o.Observacoes,
+
+                    ProdutoId = o.ProdutoId,
+                    ProdutoNome = o.Produto.Nome,
+
+                    AlmoxarifadoId = o.AlmoxarifadoId,
+                    AlmoxarifadoNome = o.Almoxarifado.Nome,
+
+                    FaseAtualId = o.FaseAtualId,
+                    FaseAtualNome = o.FaseAtual.Nome,
+
+                    LoteId = o.LoteId,
+                    LoteNumero = o.Lote != null ? o.Lote.CodigoLote : null,
+
+                    RoteiroProducaoId = o.RoteiroProducaoId,
+                    RoteiroCodigo = o.RoteiroProducao != null ? o.RoteiroProducao.Codigo : null
+                })
+                .ToListAsync();
+        }
+
         public async Task<OrdemDeProducao?> GetByCodigoAsync(string codigo)
         {
             return await _context.OrdensDeProducao
                 .AsNoTracking()
                 .Include(o => o.Lote)
                 .Include(o => o.Produto)
-                .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
-                .Include(o => o.TipoOrdemDeProducao)
                 .Include(o => o.RoteiroProducao)
                 .FirstOrDefaultAsync(o => o.CodigoOrdem == codigo);
         }
@@ -54,57 +84,51 @@ namespace Valisys_Production.Repositories
         {
             return await _context.OrdensDeProducao
                 .AsNoTracking()
-                .Include(o => o.Lote)
                 .Include(o => o.Produto)
-                .Include(o => o.Almoxarifado)
                 .Include(o => o.FaseAtual)
-                .Include(o => o.TipoOrdemDeProducao)
-                .Include(o => o.RoteiroProducao)
+                .Include(o => o.Almoxarifado)
+                .OrderByDescending(o => o.DataInicio)
+                .Take(100)
                 .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(OrdemDeProducao ordemDeProducao)
         {
             _context.OrdensDeProducao.Update(ordemDeProducao);
-
             try
             {
-                var affectedRows = await _context.SaveChangesAsync();
-                return affectedRows > 0;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (DbUpdateConcurrencyException)
             {
                 return false;
             }
         }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
-            var ordemDeProducao = await _context.OrdensDeProducao.FindAsync(id);
+            var ordem = await _context.OrdensDeProducao.FindAsync(id);
+            if (ordem == null) return false;
 
-            if (ordemDeProducao == null)
-            {
-                return false;
-            }
-
-            var movimentacoesVinculadas = await _context.Movimentacoes
-                .Where(m => m.OrdemDeProducaoId == id)
-                .ToListAsync();
-
-            if (movimentacoesVinculadas.Any())
-            {
-                _context.Movimentacoes.RemoveRange(movimentacoesVinculadas);
-            }
-
-            _context.OrdensDeProducao.Remove(ordemDeProducao);
-
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var affectedRows = await _context.SaveChangesAsync();
-                return affectedRows > 0;
+                var movimentacoes = await _context.Movimentacoes
+                    .Where(m => m.OrdemDeProducaoId == id)
+                    .ToListAsync();
+
+                if (movimentacoes.Any())
+                    _context.Movimentacoes.RemoveRange(movimentacoes);
+
+                _context.OrdensDeProducao.Remove(ordem);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
             }
-            catch (Exception)
+            catch
             {
-                return false;
+                await transaction.RollbackAsync();
+                throw;
             }
         }
     }

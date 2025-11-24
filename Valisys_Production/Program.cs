@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -16,7 +16,7 @@ var secretKey = builder.Configuration["JwtSettings:SecretKey"];
 
 if (string.IsNullOrEmpty(secretKey) || secretKey.Length < 32)
 {
-    throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) deve ter no m�nimo 32 caracteres.");
+    throw new InvalidOperationException("A chave JWT (JwtSettings:SecretKey) deve ter no mínimo 32 caracteres.");
 }
 
 var key = Encoding.ASCII.GetBytes(secretKey);
@@ -129,6 +129,21 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        // Aplica as migrations pendentes
+        dbContext.Database.Migrate();
+        Console.WriteLine("Banco de Dados migrado com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($" Erro ao migrar banco: {ex.Message}");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -7,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import almoxarifadoService from '../../services/almoxarifadoService.js';
 import '../../features/produto/ProdutoForm.css';
 
-const MAX_STRING_LENGTH = 100; // Limite padrão para Nome/Localizacao
+const MAX_STRING_LENGTH = 100; 
 
 const baseSchema = z.object({
   id: z.string().optional(),
@@ -21,7 +21,7 @@ const baseSchema = z.object({
 });
 
 const createSchema = baseSchema.extend({
-  email: z.string().email("E-mail inválido.").max(MAX_STRING_LENGTH).optional(), // Email não é required no DTO de Create
+  email: z.string().email("E-mail inválido.").max(MAX_STRING_LENGTH).optional(),
 });
 
 const updateSchema = z.object({
@@ -37,8 +37,6 @@ function AlmoxarifadoForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
-  // Usamos o esquema de atualização ou criação, dependendo do modo
   const schema = isEditing ? updateSchema : createSchema;
 
   const { 
@@ -48,25 +46,20 @@ function AlmoxarifadoForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(schema),
-    // Define valores padrão se não estiver editando, usando baseSchema para mapeamento
     defaultValues: isEditing ? {} : { ativo: true, nome: '', descricao: '', localizacao: '', responsavel: '', contato: '', email: '' }
   });
 
-  // Fetch data in edit mode
   const { data: almoxarifado, isLoading: isLoadingAlmoxarifado } = useQuery({
     queryKey: ['almoxarifado', id],
     queryFn: () => almoxarifadoService.getById(id),
     enabled: isEditing,
   });
 
-  // Populate form fields on data load (Edit mode)
   useEffect(() => {
     if (isEditing && almoxarifado) {
-        // Mapeamos de volta para os campos do formulário
       reset({
         id: almoxarifado.id,
         nome: almoxarifado.nome,
-        // DTO de update é mais enxuto, então mapeamos apenas os campos necessários
         descricao: almoxarifado.descricao || '', 
         localizacao: almoxarifado.localizacao || '',
         responsavel: almoxarifado.responsavel || '',
@@ -77,7 +70,6 @@ function AlmoxarifadoForm() {
     }
   }, [almoxarifado, isEditing, reset]);
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: almoxarifadoService.create,
     onSuccess: () => {
@@ -104,7 +96,6 @@ function AlmoxarifadoForm() {
   });
 
   const onSubmit = (data) => {
-    // Mapeamento de casing (Front-end camelCase para Back-end PascalCase)
     const mappedData = {};
     for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
