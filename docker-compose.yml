@@ -1,37 +1,47 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16-alpine
     container_name: valisys_db
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: FKQWEjd2d1jp04hanphciowq
       POSTGRES_DB: ValisysProduction
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data_final:/var/lib/postgresql/data
-    # O "Healthcheck" verifica a cada 5s se o banco responde
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ValisysProduction"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 30s
+    networks:
+      - valisys_network
 
   backend:
     build:
       context: ./Valisys_Production
       dockerfile: Dockerfile
     container_name: valisys_backend
+    restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=ValisysProduction;Username=postgres;Password=FKQWEjd2d1jp04hanphciowq
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=ValisysProduction;Username=postgres;Password=FKQWEjd2d1jp04hanphciowq;Timeout=30;Command Timeout=30;
       - JwtSettings__SecretKey=UmaChaveMuitoSeguraComMaisDe32CaracteresParaOJwt123
     ports:
       - "5019:8080"
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
+    networks:
+      - valisys_network
+    entrypoint: /bin/sh -c "sleep 10 && dotnet Valisys_Production.dll"
 
   frontend:
     build:
@@ -40,7 +50,18 @@ services:
       args:
         - VITE_API_URL=http://localhost:5019/api
     container_name: valisys_frontend
+    restart: always
     ports:
       - "5173:80"
     depends_on:
       - backend
+    networks:
+      - valisys_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  valisys_network:
+    driver: bridge

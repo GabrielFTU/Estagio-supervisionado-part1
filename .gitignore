@@ -1,17 +1,27 @@
-
+# Build e Compilação .NET
 [Dd]ebug/
 [Rr]elease/
 bin/
 obj/
+
 .vs/
 *.suo
 *.user
+.vscode/
+
 .nuget/
 node_modules/
+
 dist/
+wwwroot/dist/
+
 appsettings.json
 appsettings.Development.json
-# Log files
+.env
+.docker-compose.override.yml
+
 *.log
 
-wwwroot/dist/
+postgres_data_final/
+postgres_data_local/
+postgres_data/
