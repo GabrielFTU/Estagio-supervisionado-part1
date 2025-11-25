@@ -21,9 +21,15 @@ namespace Valisys_Production.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProdutoReadDto>), 200)]
-        public async Task<ActionResult<IEnumerable<ProdutoReadDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ProdutoReadDto>>> GetAll([FromQuery] bool apenasAtivos = false)
         {
             var produtos = await _service.GetAllAsync();
+     
+            if (apenasAtivos)
+            {
+                produtos = produtos.Where(p => p.Ativo);
+            }
+
             var produtoDtos = _mapper.Map<IEnumerable<ProdutoReadDto>>(produtos);
             return Ok(produtoDtos);
         }

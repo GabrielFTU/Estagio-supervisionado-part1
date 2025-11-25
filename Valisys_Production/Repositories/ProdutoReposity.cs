@@ -32,6 +32,14 @@ namespace Valisys_Production.Repositories
                 .Include(p => p.UnidadeMedida)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
+        public async Task<string?> GetUltimoCodigoAsync()
+        {
+            return await _context.Produtos
+                .AsNoTracking()
+                .OrderByDescending(p => p.CodigoInternoProduto)
+                .Select(p => p.CodigoInternoProduto)
+                .FirstOrDefaultAsync();
+        }
 
         public async Task<IEnumerable<Produto>> GetAllAsync()
         {

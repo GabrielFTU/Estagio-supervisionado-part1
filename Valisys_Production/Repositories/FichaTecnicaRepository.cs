@@ -36,6 +36,15 @@ namespace Valisys_Production.Repositories
                 .FirstOrDefaultAsync(f => f.Id == id);
         }
 
+        public async Task<string?> GetUltimoCodigoAsync()
+        {
+            return await _context.FichasTecnicas
+                .AsNoTracking()
+                .OrderByDescending(f => f.CodigoFicha)
+                .Select(f => f.CodigoFicha)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IEnumerable<FichaTecnica>> GetAllAsync()
         {
             return await _context.FichasTecnicas

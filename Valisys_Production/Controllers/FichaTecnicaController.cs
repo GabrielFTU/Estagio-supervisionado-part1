@@ -17,8 +17,9 @@ namespace Valisys_Production.Controllers
         {
             _service = service;
             _mapper = mapper;
-        }
 
+        }
+       
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FichaTecnicaReadDto>>> GetAll()
         {
@@ -33,6 +34,14 @@ namespace Valisys_Production.Controllers
             if (ficha == null) return NotFound();
             return Ok(_mapper.Map<FichaTecnicaReadDto>(ficha));
         }
+
+        [HttpGet("proximo-codigo")]
+        public async Task<ActionResult<object>> GetProximoCodigo()
+        {
+            var codigo = await _service.ObterProximoCodigoAsync();
+            return Ok(new { codigo });
+        }
+
 
         [HttpPost]
         public async Task<ActionResult<FichaTecnicaReadDto>> Create(FichaTecnicaCreateDto dto)

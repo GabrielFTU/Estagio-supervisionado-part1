@@ -135,7 +135,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Aplica as migrations pendentes
         dbContext.Database.Migrate();
         Console.WriteLine("Banco de Dados migrado com sucesso!");
     }

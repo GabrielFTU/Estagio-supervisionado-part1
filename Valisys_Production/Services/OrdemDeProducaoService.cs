@@ -14,20 +14,38 @@ namespace Valisys_Production.Services
         private readonly IMovimentacaoRepository _movimentacaoRepository;
         private readonly IRoteiroProducaoRepository _roteiroRepository;
         private readonly ApplicationDbContext _context;
-        private readonly Guid AlmoxarifadoMateriaPrimaId = Guid.Parse("C0DE0000-0000-0000-0000-000000000009");
+        private readonly IAlmoxarifadoRepository _almoxarifadoRepository;
 
         public OrdemDeProducaoService(
             IOrdemDeProducaoRepository repository,
             IProdutoRepository produtoRepository,
             IMovimentacaoRepository movimentacaoRepository,
             IRoteiroProducaoRepository roteiroRepository,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IAlmoxarifadoRepository almoxarifadoRepository)
         {
             _repository = repository;
             _produtoRepository = produtoRepository;
             _movimentacaoRepository = movimentacaoRepository;
             _roteiroRepository = roteiroRepository;
             _context = context;
+            _almoxarifadoRepository = almoxarifadoRepository;
+        }
+        private async Task<Almoxarifado> GetAlmoxarifadoPrincipalAsync()
+        {
+            var almoxarifados = await _almoxarifadoRepository.GetAllAsync();
+
+            var principal = almoxarifados.FirstOrDefault(a => a.Nome.Contains("Geral") || a.Nome.Contains("Principal"));
+
+            if (principal == null)
+            {
+                principal = almoxarifados.FirstOrDefault();
+            }
+
+            if (principal == null)
+                throw new InvalidOperationException("Nenhum almoxarifado encontrado no sistema para movimentação de matéria-prima.");
+
+            return principal;
         }
 
         public async Task<OrdemDeProducao> CreateAsync(OrdemDeProducao ordem, Guid usuarioId)
@@ -41,6 +59,8 @@ namespace Valisys_Production.Services
 
             if (produto.ControlarPorLote && ordem.LoteId == null)
                 throw new ArgumentException("Produto exige controle por lote.");
+
+            var almoxarifadoMateriaPrima = await GetAlmoxarifadoPrincipalAsync();
 
             await ValidarLoteUnicoAsync(ordem.LoteId);
             await ConfigurarRoteiroInicialAsync(ordem);
@@ -58,7 +78,7 @@ namespace Valisys_Production.Services
                     ProdutoId = novaOrdem.ProdutoId,
                     Quantidade = novaOrdem.Quantidade,
                     OrdemDeProducaoId = novaOrdem.Id,
-                    AlmoxarifadoOrigemId = AlmoxarifadoMateriaPrimaId,
+                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id, 
                     AlmoxarifadoDestinoId = novaOrdem.AlmoxarifadoId,
                     UsuarioId = usuarioId,
                     DataMovimentacao = DateTime.UtcNow,
@@ -76,10 +96,6 @@ namespace Valisys_Production.Services
                 throw;
             }
         }
-        public async Task<IEnumerable<OrdemDeProducaoReadDto>> GetAllReadDtosAsync()
-        {
-            return await _repository.GetAllReadDtosAsync();
-        }
 
         public async Task FinalizarOrdemAsync(Guid ordemId, Guid usuarioId)
         {
@@ -88,6 +104,7 @@ namespace Valisys_Production.Services
 
             if (ordem.Status != StatusOrdemDeProducao.Ativa && ordem.Status != StatusOrdemDeProducao.Aguardando)
                 throw new InvalidOperationException($"Status inválido para finalização: {ordem.Status}");
+            var almoxarifadoMateriaPrima = await GetAlmoxarifadoPrincipalAsync();
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -107,7 +124,7 @@ namespace Valisys_Production.Services
                     ProdutoId = ordem.ProdutoId,
                     Quantidade = ordem.Quantidade,
                     OrdemDeProducaoId = ordem.Id,
-                    AlmoxarifadoOrigemId = AlmoxarifadoMateriaPrimaId,
+                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id, 
                     AlmoxarifadoDestinoId = ordem.AlmoxarifadoId,
                     UsuarioId = usuarioId,
                     DataMovimentacao = DateTime.UtcNow,
@@ -124,6 +141,11 @@ namespace Valisys_Production.Services
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<IEnumerable<OrdemDeProducaoReadDto>> GetAllReadDtosAsync()
+        {
+            return await _repository.GetAllReadDtosAsync();
         }
 
         public async Task<bool> MovimentarProximaFaseAsync(Guid ordemId)

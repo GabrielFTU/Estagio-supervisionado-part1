@@ -19,12 +19,11 @@ namespace Valisys_Production.DTOs
         [Required]
         public Guid ProdutoId { get; set; }
 
-        [Required]
         [MaxLength(50)]
-        public string Codigo { get; set; }
+        public string? Codigo { get; set; }
 
         [MaxLength(100)]
-        public string Versao { get; set; }
+        public string Versao { get; set; } = "1.0";
 
         [MaxLength(500)]
         public string Descricao { get; set; }

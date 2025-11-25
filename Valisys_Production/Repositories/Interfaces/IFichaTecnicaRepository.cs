@@ -13,5 +13,6 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<bool> UpdateAsync(FichaTecnica fichaTecnica);
         Task<bool> UpdateWithItemsAsync(FichaTecnica ficha, List<FichaTecnicaItem> novosItens);
         Task<bool> DeleteAsync(Guid id);
+        Task<string?> GetUltimoCodigoAsync();
     }
 }

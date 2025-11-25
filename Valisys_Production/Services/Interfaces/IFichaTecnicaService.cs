@@ -11,6 +11,7 @@ namespace Valisys_Production.Services.Interfaces
         Task<FichaTecnica?> GetByIdAsync(Guid id);
         Task<IEnumerable<FichaTecnica>> GetAllAsync();
         Task<IEnumerable<FichaTecnica>> GetByProdutoIdAsync(Guid produtoId);
+        Task<string> ObterProximoCodigoAsync();
         Task<bool> DeleteAsync(Guid id);
         Task<bool> UpdateAsync(FichaTecnicaUpdateDto dto);
     }

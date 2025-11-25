@@ -154,17 +154,6 @@ namespace Valisys_Production.Data
                 }
             );
 
-            modelBuilder.Entity<CategoriaProduto>().HasData(
-                new CategoriaProduto
-                {
-                    Id = SampleCategoryId,
-                    Nome = "Veículos Pesados",
-                    Codigo = "CAT-001",
-                    Descricao = "VP",
-                    Ativo = true
-                }
-            );
-
             modelBuilder.Entity<Almoxarifado>().HasData(
                 new Almoxarifado
                 {
@@ -210,31 +199,9 @@ namespace Valisys_Production.Data
                 new UnidadeMedida { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000071"), Nome = "Minuto", Sigla = "MIN", Grandeza = GrandezaUnidade.Tempo, FatorConversao = 0.0166667m, EhUnidadeBase = false }
             );
 
-            modelBuilder.Entity<FaseProducao>().HasData(
-                new FaseProducao { Id = Phase1Id, Nome = "MONTAGEM INICIAL", Descricao = "Início da montagem do chassi.", Ordem = 1 },
-                new FaseProducao { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000013"), Nome = "PINTURA", Descricao = "Área de preparação e pintura.", Ordem = 2 },
-                new FaseProducao { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000014"), Nome = "MONTAGEM FINAL", Descricao = "Instalação de motor e acabamentos.", Ordem = 3 },
-                new FaseProducao { Id = Guid.Parse("C0DE0000-0000-0000-0000-000000000015"), Nome = "TESTE DE QUALIDADE", Descricao = "Checagem final antes da expedição.", Ordem = 4 }
-            );
 
             modelBuilder.Entity<TipoOrdemDeProducao>().HasData(
                 new TipoOrdemDeProducao { Id = SampleTipoOrdemDeProducaoId, Nome = "Normal", Descricao = "NOR" }
-            );
-
-            modelBuilder.Entity<Produto>().HasData(
-                new Produto
-                {
-                    Id = SampleProductId,
-                    Nome = "Caminhão Alpha",
-                    Descricao = "Caminhão de teste para Lote.",
-                    CodigoInternoProduto = "CA-ALFA-001",
-                    ControlarPorLote = true,
-                    Ativo = true,
-                    UnidadeMedidaId = UnitId,
-                    CategoriaProdutoId = SampleCategoryId,
-                    Observacoes = "Produto de teste para inicio do sistema",
-                    DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                }
             );
         }
     }
