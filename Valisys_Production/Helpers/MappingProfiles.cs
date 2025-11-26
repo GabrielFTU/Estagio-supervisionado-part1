@@ -30,14 +30,16 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
 
             // Lote
-            CreateMap<FornecedorUpdateDto, Fornecedor>()
-                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
             CreateMap<Lote, LoteReadDto>()
                 .ForMember(dest => dest.NumeroLote, opt => opt.MapFrom(src => src.CodigoLote))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.statusLote.ToString()))
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto != null ? src.Produto.Nome : "N/A"))
+                .ForMember(dest => dest.AlmoxarifadoNome, opt => opt.MapFrom(src => src.Almoxarifado != null ? src.Almoxarifado.Nome : "N/A"))
                 .ForMember(dest => dest.Ativo, opt => opt.MapFrom(src =>
                     src.statusLote == StatusLote.Pendente ||
                     src.statusLote == StatusLote.EmProducao))
                 .ForMember(dest => dest.EmUso, opt => opt.MapFrom(src => src.OrdensDeProducao != null && src.OrdensDeProducao.Any()));
+
             CreateMap<LoteCreateDto, Lote>();
             CreateMap<LoteUpdateDto, Lote>()
                 .ForMember(dest => dest.CodigoLote, opt => opt.MapFrom(src => src.NumeroLote));

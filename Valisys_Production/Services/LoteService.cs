@@ -32,6 +32,7 @@ namespace Valisys_Production.Services
             };
 
             lote.statusLote = StatusLote.Pendente;
+
             return await _repository.AddAsync(lote);
         }
 
@@ -66,9 +67,20 @@ namespace Valisys_Production.Services
                 throw new KeyNotFoundException($"Lote com ID {lote.Id} não encontrado.");
             }
 
-            // Garante que campos obrigatórios no update também não fiquem nulos
+            if (existingLote.statusLote == StatusLote.Concluido)
+            {
+                throw new InvalidOperationException("Não é permitido editar um lote que já foi Concluído (Estoque gerado).");
+            }
+
+            lote.statusLote = existingLote.statusLote;
+
             lote.Observacoes ??= string.Empty;
             lote.Descricao ??= string.Empty;
+            lote.DataAbertura = existingLote.DataAbertura;
+            if (existingLote.DataConclusao.HasValue)
+            {
+                lote.DataConclusao = existingLote.DataConclusao;
+            }
 
             return await _repository.UpdateAsync(lote);
         }

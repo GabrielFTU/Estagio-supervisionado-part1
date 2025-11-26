@@ -13,6 +13,7 @@ namespace Valisys_Production.Services
         private readonly IProdutoRepository _produtoRepository;
         private readonly IMovimentacaoRepository _movimentacaoRepository;
         private readonly IRoteiroProducaoRepository _roteiroRepository;
+        private readonly ILoteRepository _loteRepository;
         private readonly ApplicationDbContext _context;
         private readonly IAlmoxarifadoRepository _almoxarifadoRepository;
 
@@ -21,6 +22,7 @@ namespace Valisys_Production.Services
             IProdutoRepository produtoRepository,
             IMovimentacaoRepository movimentacaoRepository,
             IRoteiroProducaoRepository roteiroRepository,
+            ILoteRepository loteRepository,
             ApplicationDbContext context,
             IAlmoxarifadoRepository almoxarifadoRepository)
         {
@@ -28,9 +30,11 @@ namespace Valisys_Production.Services
             _produtoRepository = produtoRepository;
             _movimentacaoRepository = movimentacaoRepository;
             _roteiroRepository = roteiroRepository;
+            _loteRepository = loteRepository;
             _context = context;
             _almoxarifadoRepository = almoxarifadoRepository;
         }
+
         private async Task<Almoxarifado> GetAlmoxarifadoPrincipalAsync()
         {
             var almoxarifados = await _almoxarifadoRepository.GetAllAsync();
@@ -73,12 +77,22 @@ namespace Valisys_Production.Services
             {
                 var novaOrdem = await _repository.AddAsync(ordem);
 
+                if (novaOrdem.LoteId.HasValue)
+                {
+                    var lote = await _loteRepository.GetByIdAsync(novaOrdem.LoteId.Value);
+                    if (lote != null)
+                    {
+                        lote.statusLote = StatusLote.EmProducao;
+                        await _loteRepository.UpdateAsync(lote);
+                    }
+                }
+
                 var mov = new Movimentacao
                 {
                     ProdutoId = novaOrdem.ProdutoId,
                     Quantidade = novaOrdem.Quantidade,
                     OrdemDeProducaoId = novaOrdem.Id,
-                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id, 
+                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id,
                     AlmoxarifadoDestinoId = novaOrdem.AlmoxarifadoId,
                     UsuarioId = usuarioId,
                     DataMovimentacao = DateTime.UtcNow,
@@ -104,6 +118,7 @@ namespace Valisys_Production.Services
 
             if (ordem.Status != StatusOrdemDeProducao.Ativa && ordem.Status != StatusOrdemDeProducao.Aguardando)
                 throw new InvalidOperationException($"Status inválido para finalização: {ordem.Status}");
+
             var almoxarifadoMateriaPrima = await GetAlmoxarifadoPrincipalAsync();
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -116,7 +131,17 @@ namespace Valisys_Production.Services
                 {
                     ordem.Lote.statusLote = StatusLote.Concluido;
                     ordem.Lote.DataConclusao = DateTime.UtcNow;
-                    _context.Entry(ordem.Lote).State = EntityState.Modified;
+                    await _loteRepository.UpdateAsync(ordem.Lote);
+                }
+                else if (ordem.LoteId.HasValue)
+                {
+                    var lote = await _loteRepository.GetByIdAsync(ordem.LoteId.Value);
+                    if (lote != null)
+                    {
+                        lote.statusLote = StatusLote.Concluido;
+                        lote.DataConclusao = DateTime.UtcNow;
+                        await _loteRepository.UpdateAsync(lote);
+                    }
                 }
 
                 var movEntrada = new Movimentacao
@@ -124,14 +149,14 @@ namespace Valisys_Production.Services
                     ProdutoId = ordem.ProdutoId,
                     Quantidade = ordem.Quantidade,
                     OrdemDeProducaoId = ordem.Id,
-                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id, 
+                    AlmoxarifadoOrigemId = almoxarifadoMateriaPrima.Id,
                     AlmoxarifadoDestinoId = ordem.AlmoxarifadoId,
                     UsuarioId = usuarioId,
                     DataMovimentacao = DateTime.UtcNow,
                     Observacoes = $"Finalização OP: {ordem.CodigoOrdem}"
                 };
-
                 await _movimentacaoRepository.AddAsync(movEntrada);
+
                 await _repository.UpdateAsync(ordem);
 
                 await transaction.CommitAsync();
