@@ -1,0 +1,115 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #1a1a1a;
+    color: #ececec;
+}
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    background-color: #2a2a2a;
+    border-bottom: 1px solid #333;
+    height: 60px;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: #646cff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #a1a1a1;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: white;
+}
+
+.btn-logout {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: #d32f2f;
+}
+
+.content {
+    flex: 1;
+    padding: 1rem;
+}
+
+:root {
+    --color-primary: #646cff;
+    --color-danger: #ff6b6b;
+    
+    --bg-dark-primary: #1a1a1a;
+    --bg-dark-secondary: #2a2a2a;
+    --bg-dark-tertiary: #353535;
+    
+    --bg-light-primary: #f4f7f9;
+    --bg-light-secondary: #ffffff;
+    --bg-light-tertiary: #e0e6eb;
+
+    --text-dark-primary: #ececec;
+    --text-dark-secondary: #a1a1a1;
+    
+    --text-light-primary: #111827;
+    --text-light-secondary: #4a5568;
+}
+
+.theme-dark {
+    --bg-primary: var(--bg-dark-primary);
+    --bg-secondary: var(--bg-dark-secondary);
+    --bg-tertiary: var(--bg-dark-tertiary);
+    --text-primary: var(--text-dark-primary);
+    --text-secondary: var(--text-dark-secondary);
+    --border-color: #333;
+}
+
+.theme-light {
+    --bg-primary: var(--bg-light-primary);
+    --bg-secondary: var(--bg-light-secondary);
+    --bg-tertiary: var(--bg-light-tertiary);
+    --text-primary: var(--text-light-primary);
+    --text-secondary: var(--text-light-secondary);
+    --border-color: #d1d5db;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.app-layout {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+}
