@@ -121,7 +121,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyAllowSpecificOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+
+        policy.WithOrigins("http://localhost:5173", "http://31.97.27.244:5173", "https://www.valisys.com.br")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

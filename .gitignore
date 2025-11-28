@@ -1,4 +1,4 @@
-# Build e Compilação .NET
+
 [Dd]ebug/
 [Rr]elease/
 bin/
@@ -19,8 +19,6 @@ appsettings.json
 appsettings.Development.json
 .env
 .docker-compose.override.yml
-
-*.log
 
 postgres_data_final/
 postgres_data_local/
