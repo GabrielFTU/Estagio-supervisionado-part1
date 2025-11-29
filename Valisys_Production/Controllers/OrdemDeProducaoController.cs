@@ -32,6 +32,7 @@ namespace Valisys_Production.Controllers
             return userId;
         }
 
+
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<OrdemDeProducaoReadDto>), 200)]
         public async Task<ActionResult<IEnumerable<OrdemDeProducaoReadDto>>> GetAll()
@@ -162,7 +163,9 @@ namespace Valisys_Production.Controllers
         {
             try
             {
-                var sucesso = await _service.MovimentarProximaFaseAsync(id);
+                var usuarioId = GetAuthenticatedUserId();
+                var sucesso = await _service.MovimentarProximaFaseAsync(id, usuarioId);
+
                 if (!sucesso) return BadRequest(new { message = "Não foi possível avançar a fase." });
 
                 return NoContent();
@@ -205,6 +208,7 @@ namespace Valisys_Production.Controllers
                 return StatusCode(500, new { message = "Erro interno.", details = ex.Message });
             }
         }
+
 
         [HttpPost("{id:guid}/finalizar")]
         [ProducesResponseType(204)]

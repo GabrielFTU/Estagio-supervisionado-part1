@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Valisys_Production.Models; 
+using Valisys_Production.Models;
 using Valisys_Production.Services;
 using Valisys_Production.Services.Interfaces;
 
@@ -15,6 +15,8 @@ namespace Valisys_Production.Controllers
         private readonly IProdutoService _produtoService;
         private readonly IAlmoxarifadoService _almoxarifadoService;
         private readonly ICategoriaProdutoService _categoriaService;
+        private readonly IFichaTecnicaService _fichaService;
+        private readonly IRoteiroProducaoService _roteiroService;
 
         public RelatoriosController(
             IPdfReportService pdfService,
@@ -22,7 +24,9 @@ namespace Valisys_Production.Controllers
             IMovimentacaoService movimentacaoService,
             IProdutoService produtoService,
             IAlmoxarifadoService almoxarifadoService,
-            ICategoriaProdutoService categoriaService)
+            ICategoriaProdutoService categoriaService,
+            IFichaTecnicaService fichaService,
+            IRoteiroProducaoService roteiroService)
         {
             _pdfService = pdfService;
             _ordemService = ordemService;
@@ -30,6 +34,8 @@ namespace Valisys_Production.Controllers
             _produtoService = produtoService;
             _almoxarifadoService = almoxarifadoService;
             _categoriaService = categoriaService;
+            _fichaService = fichaService;
+            _roteiroService = roteiroService;
         }
 
         [HttpGet("ordem-producao/{id:guid}")]
@@ -46,7 +52,30 @@ namespace Valisys_Production.Controllers
                     return NotFound(new { message = "Ordem de produção não encontrada." });
                 }
 
-                var pdfBytes = _pdfService.GerarRelatorioOrdemProducao(ordem);
+                var fichas = await _fichaService.GetByProdutoIdAsync(ordem.ProdutoId);
+                var fichaTecnica = fichas.FirstOrDefault(f => f.Ativa);
+
+                if (fichaTecnica != null)
+                {
+                    fichaTecnica = await _fichaService.GetByIdAsync(fichaTecnica.Id);
+                }
+
+                RoteiroProducao? roteiro = null;
+                if (ordem.RoteiroProducaoId.HasValue)
+                {
+                    roteiro = await _roteiroService.GetByIdAsync(ordem.RoteiroProducaoId.Value);
+                }
+                else
+                {
+                    var roteiros = await _roteiroService.GetAllAsync();
+                    var roteiroTemp = roteiros.FirstOrDefault(r => r.ProdutoId == ordem.ProdutoId && r.Ativo);
+                    if (roteiroTemp != null)
+                    {
+                        roteiro = await _roteiroService.GetByIdAsync(roteiroTemp.Id);
+                    }
+                }
+
+                var pdfBytes = _pdfService.GerarRelatorioOrdemProducao(ordem, fichaTecnica, roteiro);
 
                 return File(
                     pdfBytes,
@@ -168,16 +197,15 @@ namespace Valisys_Production.Controllers
             }
         }
 
-
         [HttpGet("producao")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
         public async Task<IActionResult> GerarRelatorioProducao(
             [FromQuery] DateTime? dataInicio,
             [FromQuery] DateTime? dataFim,
-            [FromQuery] StatusOrdemDeProducao? status) 
+            [FromQuery] StatusOrdemDeProducao? status)
         {
             try
-            { 
+            {
                 var ordens = await _ordemService.GetAllAsync();
 
                 string textoPeriodo = "Todo o período";
@@ -239,7 +267,30 @@ namespace Valisys_Production.Controllers
                     return NotFound(new { message = "Ordem de produção não encontrada." });
                 }
 
-                var pdfBytes = _pdfService.GerarRelatorioOrdemProducao(ordem);
+                var fichas = await _fichaService.GetByProdutoIdAsync(ordem.ProdutoId);
+                var fichaTecnica = fichas.FirstOrDefault(f => f.Ativa);
+
+                if (fichaTecnica != null)
+                {
+                    fichaTecnica = await _fichaService.GetByIdAsync(fichaTecnica.Id);
+                }
+
+                RoteiroProducao? roteiro = null;
+                if (ordem.RoteiroProducaoId.HasValue)
+                {
+                    roteiro = await _roteiroService.GetByIdAsync(ordem.RoteiroProducaoId.Value);
+                }
+                else
+                {
+                    var roteiros = await _roteiroService.GetAllAsync();
+                    var roteiroTemp = roteiros.FirstOrDefault(r => r.ProdutoId == ordem.ProdutoId && r.Ativo);
+                    if (roteiroTemp != null)
+                    {
+                        roteiro = await _roteiroService.GetByIdAsync(roteiroTemp.Id);
+                    }
+                }
+
+                var pdfBytes = _pdfService.GerarRelatorioOrdemProducao(ordem, fichaTecnica, roteiro);
 
                 Response.Headers.Add("Content-Disposition", "inline");
                 return File(pdfBytes, "application/pdf");

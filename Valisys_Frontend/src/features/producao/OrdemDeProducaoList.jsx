@@ -1,14 +1,22 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Edit, Trash2, PlayCircle, CheckCircle } from 'lucide-react'; 
+import { FileText, Edit, Trash2, PlayCircle, CheckCircle, XCircle } from 'lucide-react'; 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
+const STATUS_MAP = {
+    1: { label: 'Ativa', class: 'status-ativo' },
+    2: { label: 'Aguardando', class: 'status-aguardando' },
+    3: { label: 'Finalizada', class: 'status-concluida' },
+    4: { label: 'Cancelada', class: 'status-cancelada' }
+};
 function useOrdensDeProducao() {
   return useQuery({
     queryKey: ['ordensDeProducao'],
-    queryFn: ordemDeProducaoService.getAll
+    queryFn: ordemDeProducaoService.getAll,
+    staleTime: 0, 
+    refetchOnWindowFocus: true
   });
 }
 
@@ -17,39 +25,36 @@ function OrdemDeProducaoList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const invalidateList = () => {
+      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['lotes'] });
+  };
+
   const deleteMutation = useMutation({
     mutationFn: ordemDeProducaoService.delete, 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
+      invalidateList();
       alert("Ordem de Produção excluída com sucesso!");
     },
-    onError: (err) => {
-      const errorMessage = err.response?.data?.message || "Erro ao excluir.";
-      alert(errorMessage);
-    }
+    onError: (err) => alert(err.response?.data?.message || "Erro ao excluir.")
   });
 
   const avancarFaseMutation = useMutation({
     mutationFn: ordemDeProducaoService.avancarFase,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
+      invalidateList(); 
     },
-    onError: (err) => {
-      const msg = err.response?.data?.message || "Não foi possível avançar a fase.";
-      alert(msg);
-    }
+    onError: (err) => alert(err.response?.data?.message || "Erro ao avançar fase.")
   });
 
   const finalizarMutation = useMutation({
     mutationFn: ordemDeProducaoService.finalizar,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
-      alert("Ordem finalizada com sucesso! Produto enviado ao estoque.");
+      invalidateList();
+      alert("Produção finalizada! Estoque gerado.");
     },
-    onError: (err) => {
-      const msg = err.response?.data?.message || "Erro ao finalizar a ordem.";
-      alert(msg);
-    }
+    onError: (err) => alert(err.response?.data?.message || "Erro ao finalizar.")
   });
 
   const handleDelete = (id) => {
@@ -58,29 +63,23 @@ function OrdemDeProducaoList() {
     }
   };
   
-  const handleAvanacarFase = (id) => {
-      if(window.confirm("Confirmar avanço para a próxima fase do roteiro?")) {
+  const handleAvancarFase = (id) => {
+      if(window.confirm("Confirmar avanço de fase/conclusão?")) {
           avancarFaseMutation.mutate(id);
       }
   };
 
-  const handleFinalizar = (id) => {
-      if(window.confirm("Confirma a conclusão da produção? O produto entrará no estoque.")) {
+  const handleFinalizarManual = (id) => {
+      if(window.confirm("Deseja forçar a finalização desta ordem e enviar ao estoque?")) {
           finalizarMutation.mutate(id);
       }
-  };
+  }
   
   const handleViewReport = (id) => {
     const reportUrl = ordemDeProducaoService.getReportUrl(id);
     window.open(reportUrl, '_blank');
   };
 
-  const getStatusClass = (status) => {
-      if (status === 'Ativa') return 'status-ativo';
-      if (status === 'Finalizada') return 'status-inativo'; 
-      return 'status-pendente';
-  };
-  
   const basePath = '/producao/op';
 
   if (isLoading) return <div className="loading-message">Carregando...</div>;
@@ -107,47 +106,75 @@ function OrdemDeProducaoList() {
         </thead>
         <tbody>
           {ordens && ordens.length > 0 ? (
-            ordens.map((op) => (
-              <tr key={op.id}>
-                <td>{op.codigoOrdem}</td>
+            ordens.map((op) => {
+              const statusId = Number(op.status); 
+              const statusConfig = STATUS_MAP[statusId] || { label: 'Desconhecido', class: '' };
+              
+              const isFinalizada = statusId === 3;
+              const isCancelada = statusId === 4;
+              const isInactive = isFinalizada || isCancelada;
+
+              return (
+              <tr key={op.id} style={isInactive ? {backgroundColor: '#f9fafb', opacity: 0.9} : {}}>
+                <td style={{fontWeight: 'bold', color: '#374151'}}>{op.codigoOrdem}</td>
                 <td>{op.produtoNome}</td>
                 <td style={{fontWeight: 'bold'}}>{op.quantidade}</td>
+                
                 <td>
-                    {op.faseAtualNome}
-                    {op.roteiroCodigo && <span style={{fontSize: '0.7rem', color: '#666', display: 'block'}}>Rot: {op.roteiroCodigo}</span>}
+                    {isFinalizada ? (
+                        <span style={{color: '#16a34a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px'}}>
+                            <CheckCircle size={14}/> CONCLUÍDA
+                        </span>
+                    ) : (
+                        <>
+                            <span style={{fontWeight: '500'}}>{op.faseAtualNome}</span>
+                            {op.roteiroCodigo && <div style={{fontSize: '0.75rem', color: '#666', marginTop: '2px'}}>Rot: {op.roteiroCodigo}</div>}
+                        </>
+                    )}
                 </td>
+
                 <td>
-                  <span className={getStatusClass(op.status)}>
-                    {op.status}
+                  <span className={statusConfig.class}>
+                    {statusConfig.label}
                   </span>
                 </td>
+                
                 <td>{new Date(op.dataInicio).toLocaleDateString()}</td>
+                
                 <td className="acoes-cell">
                   
-                  <button 
-                    className="icon-action"
-                    title="Avançar Próxima Fase"
-                    onClick={() => handleAvanacarFase(op.id)}
-                    style={{color: '#16a34a'}}
-                    disabled={op.status === 'Finalizada' || avancarFaseMutation.isPending}
-                  >
-                    <PlayCircle size={20} />
-                  </button>
+                  {!isInactive && (
+                      <button 
+                        className="icon-action"
+                        title="Avançar Fase"
+                        onClick={() => handleAvancarFase(op.id)}
+                        style={{color: '#2563eb', border: '1px solid #bfdbfe', backgroundColor: '#eff6ff'}}
+                        disabled={avancarFaseMutation.isPending}
+                      >
+                        <PlayCircle size={18} />
+                      </button>
+                  )}
+
+                  {!isInactive && (
+                      <button 
+                        className="icon-action"
+                        title="Concluir Produção (Estoque)"
+                        onClick={() => handleFinalizarManual(op.id)}
+                        style={{color: '#16a34a', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4'}}
+                        disabled={finalizarMutation.isPending}
+                      >
+                        <CheckCircle size={18} />
+                      </button>
+                  )}
+
+                  {isFinalizada && <div style={{padding: '8px'}} title="Produção Finalizada"><CheckCircle size={20} color="#16a34a" /></div>}
+                  {isCancelada && <div style={{padding: '8px'}} title="Cancelada"><XCircle size={20} color="#991b1b" /></div>}
 
                   <button 
                     className="icon-action"
-                    title="Finalizar Produção (Gerar Estoque)"
-                    onClick={() => handleFinalizar(op.id)}
-                    style={{color: '#2563eb'}}
-                    disabled={op.status === 'Finalizada' || finalizarMutation.isPending}
-                  >
-                    <CheckCircle size={20} />
-                  </button>
-
-                  <button 
-                    className="icon-action"
-                    title="Visualizar Relatório"
+                    title="Relatório PDF"
                     onClick={() => handleViewReport(op.id)}
+                    style={{color: '#4b5563'}}
                   >
                     <FileText size={18} />
                   </button>
@@ -155,23 +182,28 @@ function OrdemDeProducaoList() {
                   <button 
                     className="btn-icon btn-edit" 
                     onClick={() => navigate(`${basePath}/editar/${op.id}`)}
-                    disabled={op.status === 'Finalizada'}
+                    disabled={isInactive}
+                    style={{opacity: isInactive ? 0.3 : 1}}
+                    title="Editar"
                   >
                     <Edit size={16} />
                   </button>
+                  
                   <button 
                     className="btn-icon btn-delete" 
                     onClick={() => handleDelete(op.id)}
-                    disabled={deleteMutation.isPending || op.status === 'Finalizada'}
+                    disabled={deleteMutation.isPending || isInactive}
+                    style={{opacity: isInactive ? 0.3 : 1}}
+                    title="Excluir"
                   >
                     <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
-            ))
+            )})
           ) : (
             <tr>
-              <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+              <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
                 Nenhuma Ordem de Produção encontrada.
               </td>
             </tr>

@@ -192,3 +192,44 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+/* Adicione ou verifique se estas classes existem no final do arquivo */
+
+.status-concluida {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  /* Mesma formatação de padding/border-radius das outras badges */
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status-cancelada {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status-aguardando {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fde047;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
