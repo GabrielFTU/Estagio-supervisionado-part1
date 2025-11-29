@@ -5,9 +5,10 @@ import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
-  ClipboardList, Package, Hash, Boxes, Calendar, Activity, 
-  MapPin, Layers, FileText, Info, Save, X, AlertCircle, Briefcase
+  ClipboardList, Package, Hash, Boxes, Activity, 
+  MapPin, FileText, Info, Save, X, AlertCircle, Briefcase, Printer
 } from 'lucide-react';
+import Barcode from 'react-barcode'; 
 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import produtoService from '../../services/produtoService.js';
@@ -127,6 +128,7 @@ function OrdemDeProducaoForm() {
       });
     }
   }, [ordem, isEditing, reset]);
+
   const createMutation = useMutation({
     mutationFn: ordemDeProducaoService.create,
     onSuccess: () => {
@@ -172,40 +174,76 @@ function OrdemDeProducaoForm() {
     else createMutation.mutate(mappedData);
   };
 
-  if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando OP...</div>;
+  const handlePrint = () => {
+      if (id) {
+        const reportUrl = ordemDeProducaoService.getReportUrl(id);
+        window.open(reportUrl, '_blank');
+      }
+  };
+
+  if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando dados da OP...</div>;
 
   const exigeLote = produtoSelecionadoObj?.controlarPorLote || produtoSelecionadoObj?.ControlarPorLote;
 
   return (
     <div className="op-container">
       <div className="op-header">
-        <h1>
-            <ClipboardList size={32} className="text-primary" />
-            {isEditing ? `Editar Ordem de Produção` : 'Nova Ordem de Produção'}
-        </h1>
+        <div>
+            <h1>
+                <ClipboardList size={32} style={{color: '#6366f1'}} />
+                {isEditing ? `Editar Ordem de Produção` : 'Nova Ordem de Produção'}
+            </h1>
+            
+            {isEditing && ordem?.codigoOrdem && (
+                <div style={{marginTop: '15px', padding: '10px', background: '#fff', display: 'inline-flex', alignItems: 'center', gap: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)'}}>
+                    <Barcode 
+                        value={ordem.codigoOrdem} 
+                        height={40} 
+                        width={1.5} 
+                        fontSize={14}
+                        margin={0}
+                        displayValue={true}
+                    />
+                    <div style={{borderLeft: '1px solid #ddd', paddingLeft: '15px', height: '40px', display: 'flex', alignItems: 'center'}}>
+                        <button 
+                            type="button" 
+                            className="btn-cancel" 
+                            onClick={handlePrint}
+                            style={{border: 'none', background: '#f1f5f9', color: '#333'}}
+                            title="Imprimir Ficha Física"
+                        >
+                            <Printer size={18} /> Imprimir
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+        
         {isEditing && <span className="op-badge">{ordem?.codigoOrdem}</span>}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         
         <div className="op-grid">
+            
             <div className="col-main">
                 <div className="op-card">
                     <div className="op-card-header">
-                        <Package size={20} /> Identificação e Planejamento
+                        <Package size={20} /> Identificação do Produto
                     </div>
                     
                     <div className="form-row">
                         <div className="input-group">
-                            <label>Código da O.P. (Automático)</label>
+                            <label>Código da O.P.</label>
                             <div className="input-wrapper">
                                 <Hash size={18} className="field-icon" />
                                 <input 
-                                    value={isEditing ? ordem?.codigoOrdem : "Gerado Automaticamente ao Salvar"}
+                                    value={isEditing ? ordem?.codigoOrdem : "Gerado Automaticamente (Automático)"}
                                     disabled
                                     className="custom-input input-readonly"
                                 />
                             </div>
+                            {!isEditing && <small style={{fontSize:'0.75rem', color:'#64748b', marginTop:'4px'}}>O sistema irá gerar o código sequencial (ex: OP-2025-0009) ao salvar.</small>}
                         </div>
 
                         <div className="input-group">
@@ -259,10 +297,9 @@ function OrdemDeProducaoForm() {
                                 <div className="info-box">
                                     <Info size={24} style={{flexShrink: 0}} />
                                     <div>
-                                        <strong>Roteiro Vinculado: {roteiroAtivo.codigo}</strong>
+                                        <strong>Roteiro Padrão: {roteiroAtivo.codigo}</strong>
                                         <p style={{margin: '4px 0 0 0', fontSize: '0.85rem', color: '#1e3a8a'}}>
-                                            O processo seguirá o roteiro padrão.
-                                            Fase Inicial: <b>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</b>
+                                            Fase Inicial Automática: <b>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</b>
                                         </p>
                                     </div>
                                 </div>
@@ -291,7 +328,7 @@ function OrdemDeProducaoForm() {
                             {...register('observacoes')} 
                             rows="3" 
                             className="custom-textarea"
-                            placeholder="Instruções especiais, prioridade, etc..."
+                            placeholder="Instruções especiais..."
                         />
                     </div>
                 </div>
@@ -303,7 +340,7 @@ function OrdemDeProducaoForm() {
                         <Briefcase size={20} /> Classificação
                     </div>
                     
-                    <div className="input-group">
+                    <div className="input-group" style={{marginBottom: '1rem'}}>
                         <label htmlFor="tipoOrdemDeProducaoId">Tipo de Ordem <span className="required-mark">*</span></label>
                         <div className="input-wrapper">
                             <FileText size={18} className="field-icon" />
@@ -342,7 +379,7 @@ function OrdemDeProducaoForm() {
                         <MapPin size={20} /> Logística
                     </div>
 
-                    <div className="input-group">
+                    <div className="input-group" style={{marginBottom: '1rem'}}>
                         <label htmlFor="almoxarifadoId">Destino (Estoque) <span className="required-mark">*</span></label>
                         <div className="input-wrapper">
                             <MapPin size={18} className="field-icon" />
@@ -363,8 +400,8 @@ function OrdemDeProducaoForm() {
 
                     <div className="input-group">
                         <label htmlFor="loteId">
-                            Lote de Destino 
-                            {exigeLote && <span style={{color: '#d97706', marginLeft: '4px'}}> (Obrigatório)</span>}
+                            Lote Destino 
+                            {exigeLote && <span style={{color: '#d97706', marginLeft: '4px'}}>*</span>}
                         </label>
                         <div className="input-wrapper">
                             <Layers size={18} className="field-icon" />

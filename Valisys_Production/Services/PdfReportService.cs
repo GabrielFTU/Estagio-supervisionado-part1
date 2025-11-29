@@ -4,6 +4,10 @@ using QuestPDF.Infrastructure;
 using Valisys_Production.Models;
 using Valisys_Production.Services.Interfaces;
 using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NetBarcode;
 
 namespace Valisys_Production.Services
 {
@@ -27,10 +31,25 @@ namespace Valisys_Production.Services
             catch { }
             return null;
         }
+        private byte[] GerarImagemCodigoBarras(string codigo)
+        {
+            if (string.IsNullOrEmpty(codigo)) return Array.Empty<byte>();
+            try
+            {
+                var barcode = new Barcode(codigo, NetBarcode.Type.Code128, false);
+                return barcode.GetByteArray();
+            }
+            catch
+            {
+                return Array.Empty<byte>();
+            }
+        }
 
         public byte[] GerarRelatorioOrdemProducao(OrdemDeProducao ordem, FichaTecnica? ficha, RoteiroProducao? roteiro)
         {
             var logoBytes = CarregarLogo();
+            var barcodeBytes = GerarImagemCodigoBarras(ordem.CodigoOrdem);
+
             var corPrincipal = Colors.Blue.Darken3;
             var corSecundaria = Colors.Grey.Lighten2;
 
@@ -57,20 +76,22 @@ namespace Valisys_Production.Services
                                 });
                             });
                         });
-
-                        row.RelativeItem(4).AlignCenter().Column(col =>
+                        row.RelativeItem(3).AlignCenter().Column(col =>
                         {
-                            col.Item().Text("ORDEM DE PRODUÇÃO").ExtraBold().FontSize(22).FontColor(Colors.Black);
+                            col.Item().Text("ORDEM DE PRODUÇÃO").ExtraBold().FontSize(20).FontColor(Colors.Black);
                             var statusColor = ordem.Status == StatusOrdemDeProducao.Ativa ? Colors.Green.Darken2 : Colors.Grey.Darken3;
                             col.Item().Text(ordem.Status.ToString().ToUpper()).Bold().FontSize(12).FontColor(statusColor);
                         });
 
-                        row.RelativeItem(2).Border(1).BorderColor(corSecundaria).Padding(5).Column(col =>
+                        row.RelativeItem(3).Border(1).BorderColor(corSecundaria).Padding(5).Column(col =>
                         {
-                            col.Item().Text("NÚMERO DA OP").FontSize(8).FontColor(Colors.Grey.Darken2);
-                            col.Item().Text(ordem.CodigoOrdem).Bold().FontSize(12);
-                            col.Item().PaddingTop(5).Text("EMISSÃO").FontSize(8).FontColor(Colors.Grey.Darken2);
-                            col.Item().Text(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(10);
+                            if (barcodeBytes.Length > 0)
+                            {
+                                col.Item().Height(35).AlignRight().Image(barcodeBytes).FitArea();
+                            }
+
+                            col.Item().PaddingTop(2).AlignRight().Text(ordem.CodigoOrdem).Bold().FontSize(12).LetterSpacing(0.1f);
+                            col.Item().AlignRight().Text($"Emissão: {DateTime.Now:dd/MM/yy HH:mm}").FontSize(8).FontColor(Colors.Grey.Darken2);
                         });
                     });
 
