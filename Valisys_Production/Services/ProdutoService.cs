@@ -31,14 +31,20 @@ namespace Valisys_Production.Services
         }
 
         private async Task<string> GerarProximoCodigoSequencialAsync()
-        {   
-            var ultimoCodigo = await _repository.GetUltimoCodigoAsync();
+        {
+            var produtos = await _repository.GetAllAsync();
+
+            var codigosNumericos = produtos
+                .Select(p => p.CodigoInternoProduto)
+                .Where(c => int.TryParse(c, out _)) 
+                .Select(c => int.Parse(c))
+                .ToList();
 
             int proximoNumero = 1;
 
-            if (!string.IsNullOrEmpty(ultimoCodigo) && int.TryParse(ultimoCodigo, out int ultimoNumero))
+            if (codigosNumericos.Any())
             {
-                proximoNumero = ultimoNumero + 1;
+                proximoNumero = codigosNumericos.Max() + 1;
             }
 
             return proximoNumero.ToString("D4");

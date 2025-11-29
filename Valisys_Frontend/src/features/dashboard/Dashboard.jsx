@@ -5,32 +5,23 @@ import {
 } from 'recharts';
 import { Activity, CheckCircle, Box, Layers, AlertCircle } from 'lucide-react';
 import dashboardService from '../../services/dashboardService';
-import '../../features/produto/ProdutoList.css'; 
+import './Dashboard.css'; 
 
 function DashboardCard({ title, value, icon: Icon, color, subText }) {
   return (
-    <div className="card" style={{ 
-      padding: '20px', 
-      backgroundColor: 'white', 
-      borderRadius: '10px', 
-      borderLeft: `5px solid ${color}`,
-      boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      minWidth: 0 
-    }}>
-      <div>
-        <span style={{ color: '#666', fontSize: '0.9rem', fontWeight: '600', textTransform: 'uppercase' }}>{title}</span>
-        <h2 style={{ margin: '5px 0', fontSize: '2rem', color: '#333' }}>{value}</h2>
-        {subText && <small style={{ color: '#999' }}>{subText}</small>}
+    <div 
+      className="stat-card" 
+      style={{ borderLeftColor: color }} 
+    >
+      <div className="stat-info">
+        <span className="stat-label">{title}</span>
+        <h2>{value}</h2>
+        {subText && <small className="stat-subtext">{subText}</small>}
       </div>
-      <div style={{ 
-        backgroundColor: `${color}20`, 
-        padding: '12px', 
-        borderRadius: '50%',
-        color: color 
-      }}>
+      <div 
+        className="stat-icon-wrapper" 
+        style={{ backgroundColor: `${color}20`, color: color }}
+      >
         <Icon size={28} />
       </div>
     </div>
@@ -45,16 +36,24 @@ function Dashboard() {
   });
 
   if (isLoading) return <div className="loading-message">Carregando dashboard...</div>;
-  if (isError || !stats) return <div className="error-message">Erro ao carregar dados do painel ou serviço indisponível.</div>;
+  
+  if (isError || !stats) return (
+    <div className="page-container">
+       <div className="error-message">
+         <AlertCircle size={24} />
+         <span>Erro ao carregar dados do painel ou serviço indisponível.</span>
+       </div>
+    </div>
+  );
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="dashboard-page">
+      <div className="dashboard-header">
         <h1>Dashboard de Produção</h1>
-        <span style={{ fontSize: '0.9rem', color: '#666' }}>Visão geral em tempo real</span>
+        <span>Visão geral em tempo real</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+      <div className="stats-grid">
         <DashboardCard 
           title="O.Ps em Produção" 
           value={stats.totalOpsAtivas} 
@@ -85,51 +84,63 @@ function Dashboard() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+      <div className="charts-grid">
         
-        <div className="card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '10px', border: '1px solid var(--border-color)', minWidth: 0 }}>
-          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333', display: 'flex', alignItems: 'center', gap: '10px' }}>
-             Gargalos de Produção <small style={{fontWeight: 'normal', fontSize: '0.8rem', color: '#666'}}>(Qtd. por Fase)</small>
+        <div className="chart-card">
+          <h3 className="chart-header">
+             Gargalos de Produção 
+             <small style={{fontWeight: 'normal', fontSize: '0.8rem', color: '#666'}}>(Qtd. por Fase)</small>
           </h3>
           
-          <div style={{ width: '100%', height: 300, position: 'relative' }}>
+          <div className="chart-wrapper">
             {stats.opsPorFase && stats.opsPorFase.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.opsPorFase} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="nome" type="category" width={120} tick={{fontSize: 12}} />
-                  <Tooltip cursor={{fill: 'transparent'}} contentStyle={{borderRadius: '8px'}} />
-                  <Bar dataKey="valor" name="Ordens" fill="#2563eb" radius={[0, 4, 4, 0]} barSize={30} />
+                <BarChart 
+                    data={stats.opsPorFase} 
+                    layout="vertical" 
+                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+                  <XAxis type="number" allowDecimals={false} stroke="#6b7280" fontSize={12} />
+                  <YAxis dataKey="nome" type="category" width={100} tick={{fontSize: 11}} stroke="#6b7280" />
+                  <Tooltip 
+                    cursor={{fill: 'rgba(0,0,0,0.05)'}} 
+                    contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}} 
+                  />
+                  <Bar dataKey="valor" name="Ordens" fill="#2563eb" radius={[0, 4, 4, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="empty-state" style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <div className="empty-chart-state">
                   Nenhuma O.P. ativa no momento.
               </div>
             )}
           </div>
         </div>
 
-        <div className="card" style={{ padding: '20px', backgroundColor: 'white', borderRadius: '10px', border: '1px solid var(--border-color)', minWidth: 0 }}>
-          <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333' }}>
-             Entregas Mensais <small style={{fontWeight: 'normal', fontSize: '0.8rem', color: '#666'}}>(Últimos 6 meses)</small>
+        <div className="chart-card">
+          <h3 className="chart-header">
+             Entregas Mensais 
+             <small style={{fontWeight: 'normal', fontSize: '0.8rem', color: '#666'}}>(Últimos 6 meses)</small>
           </h3>
           
-          <div style={{ width: '100%', height: 300, position: 'relative' }}>
+          <div className="chart-wrapper">
              {stats.opsPorMes && stats.opsPorMes.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.opsPorMes}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="nome" tick={{fontSize: 12}} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip contentStyle={{borderRadius: '8px'}} />
+                <BarChart data={stats.opsPorMes} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="nome" tick={{fontSize: 12}} stroke="#6b7280" />
+                  <YAxis allowDecimals={false} stroke="#6b7280" fontSize={12} />
+                  <Tooltip 
+                    cursor={{fill: 'rgba(0,0,0,0.05)'}} 
+                    contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}} 
+                  />
                   <Legend />
-                  <Bar dataKey="valor" name="Concluídas" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />
+                  <Bar dataKey="valor" name="Concluídas" fill="#10b981" radius={[4, 4, 0, 0]} barSize={32} />
                 </BarChart>
               </ResponsiveContainer>
              ) : (
-               <div className="empty-state" style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+               <div className="empty-chart-state">
                    Nenhuma produção finalizada no período.
                </div>
              )}

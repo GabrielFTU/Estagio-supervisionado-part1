@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Save, X } from 'lucide-react';
 
 import produtoService from '../../services/produtoService.js';
 import categoriaProdutoService from '../../services/categoriaProdutoService.js';
@@ -92,68 +93,76 @@ function ProdutoForm() {
         
         <div className="form-group">
           <label htmlFor="nome">Nome do Produto</label>
-          <input id="nome" {...register('nome')} placeholder="Ex: Parafuso Sextavado" />
+          <input id="nome" {...register('nome')} placeholder="Ex: Parafuso Sextavado" autoFocus />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="classificacao">Classificação</label>
-          <select id="classificacao" {...register('classificacao')}>
-            <option value="" disabled>Selecione a classificação</option>
-            {CLASSIFICACAO_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          {errors.classificacao && <span className="error">{errors.classificacao.message}</span>}
-        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+            <div className="form-group">
+              <label htmlFor="classificacao">Classificação</label>
+              <select id="classificacao" {...register('classificacao')}>
+                <option value="" disabled>Selecione a classificação</option>
+                {CLASSIFICACAO_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {errors.classificacao && <span className="error">{errors.classificacao.message}</span>}
+            </div>
 
-        <div className="form-group">
-          <label htmlFor="categoriaProdutoId">Categoria</label>
-          <select id="categoriaProdutoId" {...register('categoriaProdutoId')} defaultValue="">
-            <option value="" disabled>Selecione uma categoria</option>
-            {categorias?.map(cat => (
-              <option key={cat.id || cat.Id} value={cat.id || cat.Id}>
-                {cat.nome || cat.Nome}
-              </option>
-            ))}
-          </select>
-          {errors.categoriaProdutoId && <span className="error">{errors.categoriaProdutoId.message}</span>}
-        </div>
+            <div className="form-group">
+              <label htmlFor="categoriaProdutoId">Categoria</label>
+              <select id="categoriaProdutoId" {...register('categoriaProdutoId')} defaultValue="">
+                <option value="" disabled>Selecione uma categoria</option>
+                {categorias?.map(cat => (
+                  <option key={cat.id || cat.Id} value={cat.id || cat.Id}>
+                    {cat.nome || cat.Nome}
+                  </option>
+                ))}
+              </select>
+              {errors.categoriaProdutoId && <span className="error">{errors.categoriaProdutoId.message}</span>}
+            </div>
 
-        <div className="form-group">
-          <label htmlFor="unidadeMedidaId">Unidade de Medida</label>
-          <select id="unidadeMedidaId" {...register('unidadeMedidaId')} defaultValue="">
-            <option value="" disabled>Selecione uma unidade</option>
-            {unidades?.map(un => (
-              <option key={un.id || un.Id} value={un.id || un.Id}>
-                {un.nome || un.Nome} ({un.sigla || un.Sigla})
-              </option>
-            ))}
-          </select>
-          {errors.unidadeMedidaId && <span className="error">{errors.unidadeMedidaId.message}</span>}
+            <div className="form-group">
+              <label htmlFor="unidadeMedidaId">Unidade de Medida</label>
+              <select id="unidadeMedidaId" {...register('unidadeMedidaId')} defaultValue="">
+                <option value="" disabled>Selecione uma unidade</option>
+                {unidades?.map(un => (
+                  <option key={un.id || un.Id} value={un.id || un.Id}>
+                    {un.nome || un.Nome} ({un.sigla || un.Sigla})
+                  </option>
+                ))}
+              </select>
+              {errors.unidadeMedidaId && <span className="error">{errors.unidadeMedidaId.message}</span>}
+            </div>
         </div>
 
         <div className="form-group">
           <label htmlFor="descricao">Descrição</label>
-          <textarea id="descricao" {...register('descricao')} rows={3} placeholder="Detalhes técnicos..."></textarea>
+          <textarea id="descricao" {...register('descricao')} rows={3} placeholder="Detalhes técnicos do produto..."></textarea>
           {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="observacoes">Observações</label>
-          <textarea id="observacoes" {...register('observacoes')} rows={2} />
+          <label htmlFor="observacoes">Observações (Opcional)</label>
+          <textarea id="observacoes" {...register('observacoes')} rows={2} placeholder="Informações adicionais..." />
         </div>
 
-        <div className="form-group-checkbox">
-          <input type="checkbox" id="controlarPorLote" {...register('controlarPorLote')} />
-          <label htmlFor="controlarPorLote">Controlar por Lote?</label>
+        <div className="form-group-checkbox" onClick={() => document.getElementById('controlarPorLote').click()}>
+          <input 
+            type="checkbox" 
+            id="controlarPorLote" 
+            {...register('controlarPorLote')} 
+            onClick={(e) => e.stopPropagation()} 
+          />
+          <label htmlFor="controlarPorLote">Controlar este produto por Lote/Rastreabilidade?</label>
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/estoque/produtos')} className="btn-cancelar">
-            Cancelar
+            <X size={18} style={{ marginRight: '8px' }} /> Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={createProdutoMutation.isPending || isSubmitting}>
+            <Save size={18} style={{ marginRight: '8px' }} />
             {createProdutoMutation.isPending ? 'Salvando...' : 'Salvar Produto'}
           </button>
         </div>
