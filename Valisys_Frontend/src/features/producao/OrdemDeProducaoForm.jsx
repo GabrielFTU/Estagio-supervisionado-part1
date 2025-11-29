@@ -4,7 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Info } from 'lucide-react';
+import { 
+  ClipboardList, Package, Hash, Boxes, Calendar, Activity, 
+  MapPin, Layers, FileText, Info, Save, X, AlertCircle, Briefcase
+} from 'lucide-react';
 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import produtoService from '../../services/produtoService.js';
@@ -14,18 +17,16 @@ import tipoOrdemDeProducaoService from '../../services/tipoOrdemDeProducaoServic
 import loteService from '../../services/loteService.js';
 import roteiroProducaoService from '../../services/roteiroProducaoService.js';
 
-import '../../features/produto/ProdutoForm.css'; 
+import './OrdemDeProducao.css';
 
 const ordemDeProducaoSchema = z.object({
   id: z.string().optional(),
-  codigoOrdem: z.string().min(1, "O código é obrigatório.").max(50),
+  codigoOrdem: z.string().optional(), 
   quantidade: z.coerce.number().min(1, "A quantidade deve ser maior que zero."),
   observacoes: z.string().max(500).optional(),
-  
-  produtoId: z.string().optional(), 
-  almoxarifadoId: z.string().optional(),
-  tipoOrdemDeProducaoId: z.string().optional(),
-  
+  produtoId: z.string().min(1, "Selecione o Produto."),
+  almoxarifadoId: z.string().min(1, "Selecione o Almoxarifado."),
+  tipoOrdemDeProducaoId: z.string().min(1, "Selecione o Tipo de OP."),
   faseAtualId: z.string().optional(),
   loteId: z.string().nullable().optional(),
   status: z.coerce.number().optional(), 
@@ -51,7 +52,7 @@ function OrdemDeProducaoForm() {
     reset,
     watch,
     setValue, 
-    formState: { errors } 
+    formState: { errors, isSubmitting } 
   } = useForm({
     resolver: zodResolver(ordemDeProducaoSchema),
     defaultValues: { 
@@ -98,31 +99,17 @@ function OrdemDeProducaoForm() {
 
   const lotesDisponiveis = useMemo(() => {
     if (!lotes || !selectedProdutoId) return [];
-    
     return lotes.filter(l => {
         const mesmoProduto = (l.produtoId === selectedProdutoId || l.ProdutoId === selectedProdutoId);
-        
         const estaAtivo = (l.ativo === true || l.Ativo === true);
-        
         const emUso = l.emUso || l.EmUso;
-        
         const ehLoteDestaOrdem = isEditing && ordem && (l.id === ordem.loteId || l.id === ordem.LoteId);
-
         return mesmoProduto && estaAtivo && (!emUso || ehLoteDestaOrdem);
     });
-  }, [lotes, selectedProdutoId, isEditing, ordem])
+  }, [lotes, selectedProdutoId, isEditing, ordem]);
 
-  useEffect(() => {
-      if (!isEditing) {
-          setValue('loteId', ""); 
-      }
-  }, [selectedProdutoId, setValue, isEditing]);
-
-  useEffect(() => {
-      if (!isEditing && roteiroAtivo && primeiraFaseRoteiro) {
-          setValue('faseAtualId', primeiraFaseRoteiro);
-      }
-  }, [roteiroAtivo, primeiraFaseRoteiro, setValue, isEditing]);
+  useEffect(() => { if (!isEditing) setValue('loteId', ""); }, [selectedProdutoId, setValue, isEditing]);
+  useEffect(() => { if (!isEditing && roteiroAtivo && primeiraFaseRoteiro) setValue('faseAtualId', primeiraFaseRoteiro); }, [roteiroAtivo, primeiraFaseRoteiro, setValue, isEditing]);
 
   useEffect(() => {
     if (isEditing && ordem) {
@@ -140,17 +127,13 @@ function OrdemDeProducaoForm() {
       });
     }
   }, [ordem, isEditing, reset]);
-
   const createMutation = useMutation({
     mutationFn: ordemDeProducaoService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
       navigate(basePath);
     },
-    onError: (error) => {
-      console.error("Erro:", error);
-      alert(`Falha ao salvar: ${error.response?.data?.message || error.message}`);
-    }
+    onError: (error) => alert(`Falha ao salvar: ${error.response?.data?.message || error.message}`)
   });
 
   const updateMutation = useMutation({
@@ -159,10 +142,7 @@ function OrdemDeProducaoForm() {
       queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
       navigate(basePath);
     },
-    onError: (err) => {
-      console.error(err);
-      alert(`Erro ao atualizar: ${err.response?.data?.message || err.message}`);
-    }
+    onError: (err) => alert(`Erro ao atualizar: ${err.response?.data?.message || err.message}`)
   });
 
   const onSubmit = (data) => {
@@ -170,38 +150,26 @@ function OrdemDeProducaoForm() {
     const almoxarifadoFinalId = isEditing ? (ordem.almoxarifadoId || ordem.AlmoxarifadoId) : data.almoxarifadoId;
     const tipoOpFinalId = isEditing ? (ordem.tipoOrdemDeProducaoId || ordem.TipoOrdemDeProducaoId) : data.tipoOrdemDeProducaoId;
 
-    if (!produtoFinalId) { alert("Selecione um Produto."); return; }
-    if (!almoxarifadoFinalId) { alert("Selecione um Almoxarifado."); return; }
-    if (!tipoOpFinalId) { alert("Selecione um Tipo de OP."); return; }
-
     const prodCheck = produtos?.find(p => (p.id || p.Id) === produtoFinalId);
     if (prodCheck && (prodCheck.controlarPorLote || prodCheck.ControlarPorLote) && !data.loteId) {
         alert("Este produto exige um Lote. Por favor, selecione um Lote.");
         return;
     }
-    if (!isEditing && !roteiroAtivo && !data.faseAtualId) {
-        alert("Este produto não possui Roteiro. Selecione a Fase Inicial.");
-        return;
-    }
-
+    
     const mappedData = {
         Id: isEditing ? id : undefined,
-        CodigoOrdem: data.codigoOrdem,
         Quantidade: data.quantidade,
         Observacoes: data.observacoes || "",
         ProdutoId: produtoFinalId,
         AlmoxarifadoId: almoxarifadoFinalId,
         TipoOrdemDeProducaoId: tipoOpFinalId,
-        FaseAtualId: isEditing ? (ordem.faseAtualId || ordem.FaseAtualId) : (roteiroAtivo ? null : data.faseAtualId),
+        FaseAtualId: isEditing ? ordem.faseAtualId : (roteiroAtivo ? null : data.faseAtualId),
         LoteId: data.loteId || null,
+        Status: isEditing ? data.status : undefined
     };
     
-    if (isEditing) {
-        mappedData.Status = data.status; 
-        updateMutation.mutate(mappedData);
-    } else {
-        createMutation.mutate(mappedData);
-    }
+    if (isEditing) updateMutation.mutate(mappedData);
+    else createMutation.mutate(mappedData);
   };
 
   if (isEditing && isLoadingOrdem) return <div className="loading-message">Carregando OP...</div>;
@@ -209,135 +177,228 @@ function OrdemDeProducaoForm() {
   const exigeLote = produtoSelecionadoObj?.controlarPorLote || produtoSelecionadoObj?.ControlarPorLote;
 
   return (
-    <div className="form-container">
-      <h1>{isEditing ? `Editar OP: ${ordem?.codigoOrdem}` : 'Criar Nova Ordem de Produção'}</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
+    <div className="op-container">
+      <div className="op-header">
+        <h1>
+            <ClipboardList size={32} className="text-primary" />
+            {isEditing ? `Editar Ordem de Produção` : 'Nova Ordem de Produção'}
+        </h1>
+        {isEditing && <span className="op-badge">{ordem?.codigoOrdem}</span>}
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
         
-        <div className="form-group">
-          <label htmlFor="codigoOrdem">Código da OP</label>
-          <input id="codigoOrdem" {...register('codigoOrdem')} placeholder="Ex: OP-2024-001" />
-          {errors.codigoOrdem && <span className="error">{errors.codigoOrdem.message}</span>}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="produtoId">Produto</label>
-          <select id="produtoId" {...register('produtoId')} disabled={isEditing}>
-            <option value="">Selecione um produto</option>
-            {produtos?.map(p => (
-              <option key={p.id || p.Id} value={p.id || p.Id}>
-                {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
-              </option>
-            ))}
-          </select>
-          {errors.produtoId && !isEditing && <span className="error">{errors.produtoId.message}</span>}
-          {isEditing && <small style={{color: '#666'}}>O produto não pode ser alterado após a criação.</small>}
-          
-          {exigeLote && (
-              <small style={{color: '#eab308', marginTop: '4px', display: 'block'}}>⚠ Este produto requer seleção de Lote.</small>
-          )}
-        </div>
+        <div className="op-grid">
+            <div className="col-main">
+                <div className="op-card">
+                    <div className="op-card-header">
+                        <Package size={20} /> Identificação e Planejamento
+                    </div>
+                    
+                    <div className="form-row">
+                        <div className="input-group">
+                            <label>Código da O.P. (Automático)</label>
+                            <div className="input-wrapper">
+                                <Hash size={18} className="field-icon" />
+                                <input 
+                                    value={isEditing ? ordem?.codigoOrdem : "Gerado Automaticamente ao Salvar"}
+                                    disabled
+                                    className="custom-input input-readonly"
+                                />
+                            </div>
+                        </div>
 
-        <div className="form-group">
-          <label htmlFor="quantidade">Quantidade</label>
-          <input id="quantidade" type="number" step="1" {...register('quantidade', { valueAsNumber: true })} />
-          {errors.quantidade && <span className="error">{errors.quantidade.message}</span>}
-        </div>
+                        <div className="input-group">
+                            <label htmlFor="produtoId">Produto a Produzir <span className="required-mark">*</span></label>
+                            <div className="input-wrapper">
+                                <Package size={18} className="field-icon" />
+                                <select 
+                                    id="produtoId" 
+                                    {...register('produtoId')} 
+                                    disabled={isEditing}
+                                    className="custom-select"
+                                >
+                                    <option value="">Selecione um produto...</option>
+                                    {produtos?.filter(p => p.ativo).map(p => (
+                                    <option key={p.id || p.Id} value={p.id || p.Id}>
+                                        {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
+                                    </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {errors.produtoId && !isEditing && <span className="error-msg"><AlertCircle size={14}/> {errors.produtoId.message}</span>}
+                        </div>
+                    </div>
 
-        <div className="form-group">
-          <label htmlFor="loteId">Lote {exigeLote ? '*' : '(Opcional)'}</label>
-          <select 
-            id="loteId" 
-            {...register('loteId')} 
-            style={{ borderColor: exigeLote ? '#eab308' : '' }}
-            disabled={!selectedProdutoId || lotesDisponiveis.length === 0}
-          >
-            <option value="">
-                {lotesDisponiveis.length === 0 && selectedProdutoId 
-                    ? "Nenhum lote disponível" 
-                    : "Selecione um lote"}
-            </option>
-            {lotesDisponiveis.map(l => (
-              <option key={l.id || l.Id} value={l.id || l.Id}>
-                {l.numeroLote || l.NumeroLote} {l.descricao ? `- ${l.descricao}` : ''}
-              </option>
-            ))}
-          </select>
-          {errors.loteId && <span className="error">{errors.loteId.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="tipoOrdemDeProducaoId">Tipo de OP</label>
-          <select id="tipoOrdemDeProducaoId" {...register('tipoOrdemDeProducaoId')} disabled={isEditing}>
-            <option value="">Selecione o tipo</option>
-            {tiposOP?.map(t => (
-              <option key={t.id || t.Id} value={t.id || t.Id}>{t.nome || t.Nome}</option>
-            ))}
-          </select>
-          {errors.tipoOrdemDeProducaoId && !isEditing && <span className="error">{errors.tipoOrdemDeProducaoId.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="almoxarifadoId">Almoxarifado de Destino</label>
-          <select id="almoxarifadoId" {...register('almoxarifadoId')} disabled={isEditing}>
-            <option value="">Selecione o almoxarifado</option>
-            {almoxarifados?.map(a => (
-              <option key={a.id || a.Id} value={a.id || a.Id}>{a.nome || a.Nome}</option>
-            ))}
-          </select>
-          {errors.almoxarifadoId && !isEditing && <span className="error">{errors.almoxarifadoId.message}</span>}
-        </div>
-        
-        {!isEditing && (
-            <div className="form-group">
-            <label htmlFor="faseAtualId">Fase Inicial</label>
-            {roteiroAtivo ? (
-                <div style={{padding: '12px', backgroundColor: '#eff6ff', borderRadius: '6px', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'flex-start', gap: '12px'}}>
-                    <Info size={24} color="#2563eb" style={{marginTop: '2px'}} />
-                    <div>
-                        <strong style={{color: '#1e40af', display: 'block', marginBottom: '4px'}}>Roteiro Vinculado: {roteiroAtivo.codigo}</strong>
-                        <span style={{fontSize: '0.9rem', color: '#3b82f6', lineHeight: '1.4'}}>
-                            A fase inicial será definida automaticamente conforme o roteiro.
-                            <br/>
-                            Primeira etapa: <strong>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</strong>
-                        </span>
+                    <div className="form-row">
+                        <div className="input-group">
+                            <label htmlFor="quantidade">Quantidade Planejada <span className="required-mark">*</span></label>
+                            <div className="input-wrapper">
+                                <Boxes size={18} className="field-icon" />
+                                <input 
+                                    id="quantidade" 
+                                    type="number" 
+                                    step="1" 
+                                    {...register('quantidade', { valueAsNumber: true })} 
+                                    className="custom-input"
+                                />
+                            </div>
+                            {errors.quantidade && <span className="error-msg"><AlertCircle size={14}/> {errors.quantidade.message}</span>}
+                        </div>
                     </div>
                 </div>
-            ) : (
-                <>
-                    <select id="faseAtualId" {...register('faseAtualId')}>
-                        <option value="">Selecione a fase</option>
-                        {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
-                        <option key={f.id || f.Id} value={f.id || f.Id}>{f.ordem} - {f.nome || f.Nome}</option>
-                        ))}
-                    </select>
-                    <small style={{color: '#666'}}>Selecione manualmente (Produto sem Roteiro).</small>
-                </>
-            )}
-            </div>
-        )}
 
-        {isEditing && (
-            <div className="form-group">
-                <label htmlFor="status">Status</label>
-                <select id="status" {...register('status', { valueAsNumber: true })}>
-                    {statusOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                </select>
-            </div>
-        )}
+                <div className="op-card">
+                    <div className="op-card-header">
+                        <Activity size={20} /> Processo Produtivo
+                    </div>
 
-        <div className="form-group">
-          <label htmlFor="observacoes">Observações</label>
-          <textarea id="observacoes" {...register('observacoes')} rows="3" />
+                    {!isEditing && (
+                        <div style={{marginBottom: '1rem'}}>
+                            {roteiroAtivo ? (
+                                <div className="info-box">
+                                    <Info size={24} style={{flexShrink: 0}} />
+                                    <div>
+                                        <strong>Roteiro Vinculado: {roteiroAtivo.codigo}</strong>
+                                        <p style={{margin: '4px 0 0 0', fontSize: '0.85rem', color: '#1e3a8a'}}>
+                                            O processo seguirá o roteiro padrão.
+                                            Fase Inicial: <b>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</b>
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="input-group">
+                                    <label htmlFor="faseAtualId">Fase Inicial (Manual)</label>
+                                    <div className="input-wrapper">
+                                        <Activity size={18} className="field-icon" />
+                                        <select id="faseAtualId" {...register('faseAtualId')} className="custom-select">
+                                            <option value="">Selecione a fase inicial...</option>
+                                            {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
+                                                <option key={f.id || f.Id} value={f.id || f.Id}>{f.ordem} - {f.nome || f.Nome}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <small style={{color: '#d97706', marginTop: '4px'}}>⚠ Produto sem roteiro. Defina a fase manualmente.</small>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="input-group">
+                        <label htmlFor="observacoes">Observações de Produção</label>
+                        <textarea 
+                            id="observacoes" 
+                            {...register('observacoes')} 
+                            rows="3" 
+                            className="custom-textarea"
+                            placeholder="Instruções especiais, prioridade, etc..."
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="col-side">
+                <div className="op-card">
+                    <div className="op-card-header">
+                        <Briefcase size={20} /> Classificação
+                    </div>
+                    
+                    <div className="input-group">
+                        <label htmlFor="tipoOrdemDeProducaoId">Tipo de Ordem <span className="required-mark">*</span></label>
+                        <div className="input-wrapper">
+                            <FileText size={18} className="field-icon" />
+                            <select 
+                                id="tipoOrdemDeProducaoId" 
+                                {...register('tipoOrdemDeProducaoId')} 
+                                disabled={isEditing}
+                                className="custom-select"
+                            >
+                                <option value="">Selecione...</option>
+                                {tiposOP?.map(t => (
+                                <option key={t.id || t.Id} value={t.id || t.Id}>{t.nome || t.Nome}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {errors.tipoOrdemDeProducaoId && !isEditing && <span className="error-msg"><AlertCircle size={14}/> {errors.tipoOrdemDeProducaoId.message}</span>}
+                    </div>
+
+                    {isEditing && (
+                        <div className="input-group">
+                            <label htmlFor="status">Status Atual</label>
+                            <div className="input-wrapper">
+                                <Activity size={18} className="field-icon" />
+                                <select id="status" {...register('status', { valueAsNumber: true })} className="custom-select">
+                                    {statusOptions.map(option => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="op-card">
+                    <div className="op-card-header">
+                        <MapPin size={20} /> Logística
+                    </div>
+
+                    <div className="input-group">
+                        <label htmlFor="almoxarifadoId">Destino (Estoque) <span className="required-mark">*</span></label>
+                        <div className="input-wrapper">
+                            <MapPin size={18} className="field-icon" />
+                            <select 
+                                id="almoxarifadoId" 
+                                {...register('almoxarifadoId')} 
+                                disabled={isEditing}
+                                className="custom-select"
+                            >
+                                <option value="">Selecione...</option>
+                                {almoxarifados?.map(a => (
+                                <option key={a.id || a.Id} value={a.id || a.Id}>{a.nome || a.Nome}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {errors.almoxarifadoId && !isEditing && <span className="error-msg"><AlertCircle size={14}/> {errors.almoxarifadoId.message}</span>}
+                    </div>
+
+                    <div className="input-group">
+                        <label htmlFor="loteId">
+                            Lote de Destino 
+                            {exigeLote && <span style={{color: '#d97706', marginLeft: '4px'}}> (Obrigatório)</span>}
+                        </label>
+                        <div className="input-wrapper">
+                            <Layers size={18} className="field-icon" />
+                            <select 
+                                id="loteId" 
+                                {...register('loteId')} 
+                                style={exigeLote ? {borderColor: '#fcd34d'} : {}}
+                                disabled={!selectedProdutoId || lotesDisponiveis.length === 0}
+                                className="custom-select"
+                            >
+                                <option value="">
+                                    {lotesDisponiveis.length === 0 && selectedProdutoId 
+                                        ? "Sem lotes disponíveis" 
+                                        : "Selecione um lote..."}
+                                </option>
+                                {lotesDisponiveis.map(l => (
+                                <option key={l.id || l.Id} value={l.id || l.Id}>
+                                    {l.numeroLote || l.NumeroLote} {l.descricao ? `- ${l.descricao}` : ''}
+                                </option>
+                                ))}
+                            </select>
+                        </div>
+                        {errors.loteId && <span className="error-msg"><AlertCircle size={14}/> {errors.loteId.message}</span>}
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div className="form-actions">
-          <button type="button" onClick={() => navigate(basePath)} className="btn-cancelar">
-            Cancelar
+
+        <div className="form-footer">
+          <button type="button" onClick={() => navigate(basePath)} className="btn-cancel">
+            <X size={18} /> Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={createMutation.isPending || updateMutation.isPending}>
-            {(createMutation.isPending || updateMutation.isPending) ? 'Salvando...' : 'Salvar'}
+          <button type="submit" className="btn-submit" disabled={createMutation.isPending || updateMutation.isPending}>
+            {(createMutation.isPending || updateMutation.isPending) ? 'Processando...' : <><Save size={18} /> Salvar Ordem</>}
           </button>
         </div>
 

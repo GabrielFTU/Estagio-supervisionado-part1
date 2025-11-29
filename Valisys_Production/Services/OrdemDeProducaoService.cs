@@ -46,7 +46,10 @@ namespace Valisys_Production.Services
 
         public async Task<OrdemDeProducao> CreateAsync(OrdemDeProducao ordem, Guid usuarioId)
         {
-            if (string.IsNullOrEmpty(ordem.CodigoOrdem)) throw new ArgumentException("Código da ordem obrigatório.");
+            var anoAtual = DateTime.UtcNow.Year;
+            var sequencial = await _repository.ObterProximoSequencialAsync(anoAtual);
+
+            ordem.CodigoOrdem = $"OP-{anoAtual}-{sequencial:D4}";
 
             var produto = await _produtoRepository.GetByIdAsync(ordem.ProdutoId);
             if (produto == null) throw new KeyNotFoundException("Produto não encontrado.");
@@ -115,7 +118,6 @@ namespace Valisys_Production.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-
                 ordem.Status = StatusOrdemDeProducao.Finalizada;
                 ordem.DataFim = DateTime.UtcNow;
 
@@ -142,7 +144,7 @@ namespace Valisys_Production.Services
                     Observacoes = $"Finalização OP: {ordem.CodigoOrdem}"
                 };
                 await _movimentacaoRepository.AddAsync(movEntrada);
-     
+
                 ordem.Lote = null;
                 ordem.FaseAtual = null;
                 ordem.Produto = null;
@@ -174,11 +176,12 @@ namespace Valisys_Production.Services
             var etapaAtual = etapas.FirstOrDefault(e => e.FaseProducaoId == ordem.FaseAtualId);
 
             ordem.FaseAtual = null;
+            ordem.Lote = null;
+            ordem.Produto = null;
 
             if (etapaAtual == null)
             {
                 ordem.FaseAtualId = etapas.First().FaseProducaoId;
-                ordem.Lote = null; ordem.Produto = null;
                 return await _repository.UpdateAsync(ordem);
             }
             else
@@ -190,8 +193,8 @@ namespace Valisys_Production.Services
                     await FinalizarOrdemAsync(ordemId, usuarioId);
                     return true;
                 }
+
                 ordem.FaseAtualId = etapas[index + 1].FaseProducaoId;
-                ordem.Lote = null; ordem.Produto = null;
                 return await _repository.UpdateAsync(ordem);
             }
         }
@@ -202,8 +205,10 @@ namespace Valisys_Production.Services
             if (ordem == null) throw new KeyNotFoundException("Ordem não encontrada.");
 
             ordem.FaseAtualId = novaFaseId;
-            ordem.FaseAtual = null; 
-            ordem.Lote = null; 
+
+            ordem.FaseAtual = null;
+            ordem.Lote = null;
+            ordem.Produto = null;
 
             await _repository.UpdateAsync(ordem);
         }
@@ -259,7 +264,7 @@ namespace Valisys_Production.Services
             }
             else if (ordem.FaseAtualId == Guid.Empty)
             {
-                throw new InvalidOperationException("Produto sem roteiro. Selecione a fase inicial.");
+                throw new InvalidOperationException("Produto sem roteiro. Selecione a fase inicial manualmente.");
             }
         }
     }

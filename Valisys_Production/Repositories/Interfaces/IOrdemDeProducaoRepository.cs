@@ -15,5 +15,6 @@ namespace Valisys_Production.Repositories.Interfaces
         Task<IEnumerable<OrdemDeProducao>> GetAllAsync();
         Task<bool> UpdateAsync(OrdemDeProducao ordemDeProducao);
         Task<bool> DeleteAsync(Guid id);
+        Task<int> ObterProximoSequencialAsync(int ano);
     }
 }

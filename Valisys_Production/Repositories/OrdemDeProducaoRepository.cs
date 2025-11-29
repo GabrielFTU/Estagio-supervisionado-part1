@@ -35,12 +35,13 @@ namespace Valisys_Production.Repositories
                 .Include(o => o.RoteiroProducao)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
+
         public async Task<IEnumerable<OrdemDeProducaoReadDto>> GetAllReadDtosAsync()
         {
             return await _context.OrdensDeProducao
                 .AsNoTracking()
                 .OrderByDescending(o => o.DataInicio)
-                .Take(80) 
+                .Take(80)
                 .Select(o => new OrdemDeProducaoReadDto
                 {
                     Id = o.Id,
@@ -50,19 +51,14 @@ namespace Valisys_Production.Repositories
                     DataInicio = o.DataInicio,
                     DataFim = o.DataFim,
                     Observacoes = o.Observacoes,
-
                     ProdutoId = o.ProdutoId,
                     ProdutoNome = o.Produto.Nome,
-
                     AlmoxarifadoId = o.AlmoxarifadoId,
                     AlmoxarifadoNome = o.Almoxarifado.Nome,
-
                     FaseAtualId = o.FaseAtualId,
                     FaseAtualNome = o.FaseAtual.Nome,
-
                     LoteId = o.LoteId,
                     LoteNumero = o.Lote != null ? o.Lote.CodigoLote : null,
-
                     RoteiroProducaoId = o.RoteiroProducaoId,
                     RoteiroCodigo = o.RoteiroProducao != null ? o.RoteiroProducao.Codigo : null
                 })
@@ -130,6 +126,32 @@ namespace Valisys_Production.Repositories
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<int> ObterProximoSequencialAsync(int ano)
+        {
+            var prefixo = $"OP-{ano}-";
+            var tamanhoPrefixo = prefixo.Length;
+
+            var ultimoCodigo = await _context.OrdensDeProducao
+                .AsNoTracking()
+                .Where(o => o.CodigoOrdem.StartsWith(prefixo))
+                .OrderByDescending(o => o.CodigoOrdem)
+                .Select(o => o.CodigoOrdem)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(ultimoCodigo))
+            {
+                return 1;
+            }
+
+            if (ultimoCodigo.Length > tamanhoPrefixo &&
+                int.TryParse(ultimoCodigo.Substring(tamanhoPrefixo), out int sequencialAtual))
+            {
+                return sequencialAtual + 1;
+            }
+
+            return 1;
         }
     }
 }
