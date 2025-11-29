@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Home, Settings, LogOut, ChevronDown, ChevronUp, ArrowLeft, ArrowRight,
   Factory, Box, Layers, Key, ClipboardList, DraftingCompass, ChartBar, ShieldAlert,
@@ -10,7 +10,23 @@ import useAuthStore from '../stores/useAuthStore.js';
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const [openMenu, setOpenMenu] = useState(null); 
   const [openSettingsGroup, setOpenSettingsGroup] = useState(null);
+  const [openPopover, setOpenPopover] = useState(null);
+  const sidebarRef = useRef(null);
   const logout = useAuthStore((state) => state.logout);
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+        setOpenPopover(null);
+      }
+    };
+
+    if (isCollapsed && openPopover) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isCollapsed, openPopover]);
 
   const toggleMenu = (menuName) => {
     if (openMenu === 'settings' && menuName === 'settings') {
@@ -19,8 +35,21 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
     setOpenMenu(openMenu === menuName ? null : menuName);
   };
 
+  const handleCollapsedMenuClick = (menuName, e) => {
+    e.stopPropagation();
+    setOpenPopover(openPopover === menuName ? null : menuName);
+  };
+
   const toggleSettingsGroup = (groupName) => {
     setOpenSettingsGroup(openSettingsGroup === groupName ? null : groupName);
+  };
+
+  const isSubMenuActive = (subMenu) => {
+    return subMenu.some(item => location.pathname === item.link);
+  };
+
+  const isSettingsGroupActive = (subMenu) => {
+    return subMenu.some(item => location.pathname === item.link);
   };
 
   const menus = [
@@ -98,9 +127,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
     };
 
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`}>
+    <div className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'}`} ref={sidebarRef}>
       <div className="sidebar-header">
-        <img src="/Logo_V.png" alt="Valisys V3 Logo" className="valisys-logo" />
+        <div className="brand-logo">
+          <img src="/Logo_V.png" alt="Valisys V3 Logo" className="valisys-logo" />
+          {!isCollapsed && (
+            <span className="brand-name">ALISYS</span>
+          )}
+        </div>
         <button onClick={toggleSidebar} className="toggle-btn-fixed">
           {isCollapsed ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
         </button>
@@ -112,8 +146,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                 {menu.subMenu ? (
                     <>
                         <div 
-                            className={`menu-item has-submenu ${openMenu === menu.menuName ? 'open' : ''}`}
-                            onClick={() => toggleMenu(menu.menuName)}
+                            className={`menu-item has-submenu ${openMenu === menu.menuName ? 'open' : ''} ${isSubMenuActive(menu.subMenu) ? 'active' : ''} ${isCollapsed && openPopover === menu.menuName ? 'popover-open' : ''}`}
+                            onClick={(e) => {
+                              if (isCollapsed) {
+                                handleCollapsedMenuClick(menu.menuName, e);
+                              } else {
+                                toggleMenu(menu.menuName);
+                              }
+                            }}
                         >
                             <menu.icon size={20} className="menu-icon" />
                             {!isCollapsed && (
@@ -132,6 +172,22 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                                         key={item.link}
                                         to={item.link}
                                         className={({ isActive }) => `submenu-item ${isActive ? 'active' : ''}`}
+                                        onClick={() => setOpenPopover(null)}
+                                    >
+                                        <span>{item.name}</span>
+                                    </NavLink>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {isCollapsed && openPopover === menu.menuName && (
+                            <div className="popover-menu">
+                                {menu.subMenu.map((item) => (
+                                    <NavLink
+                                        key={item.link}
+                                        to={item.link}
+                                        className={({ isActive }) => `popover-item ${isActive ? 'active' : ''}`}
+                                        onClick={() => setOpenPopover(null)}
                                     >
                                         <span>{item.name}</span>
                                     </NavLink>
@@ -156,8 +212,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       
       <div className="sidebar-footer">
           <div 
-            className={`menu-item has-submenu settings-toggle ${openMenu === settingsMenu.menuName ? 'open' : ''}`}
-            onClick={() => toggleMenu(settingsMenu.menuName)}
+            className={`menu-item has-submenu settings-toggle ${openMenu === settingsMenu.menuName ? 'open' : ''} ${settingsMenu.groups && settingsMenu.groups.some(g => isSettingsGroupActive(g.subMenu)) ? 'active' : ''} ${isCollapsed && openPopover === settingsMenu.menuName ? 'popover-open' : ''}`}
+            onClick={(e) => {
+              if (isCollapsed) {
+                handleCollapsedMenuClick(settingsMenu.menuName, e);
+              } else {
+                toggleMenu(settingsMenu.menuName);
+              }
+            }}
           >
               <Settings size={20} className="menu-icon" />
               {!isCollapsed && (
@@ -196,6 +258,29 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                                 ))}
                             </div>
                           )}
+                      </div>
+                  ))}
+              </div>
+          )}
+
+          {isCollapsed && openPopover === settingsMenu.menuName && (
+              <div className="popover-menu settings-popover">
+                  {settingsMenu.groups.map(group => (
+                      <div key={group.name}>
+                          <div className="popover-group-title">
+                              <group.icon size={14} className="group-icon" />
+                              <span>{group.name}</span>
+                          </div>
+                          {group.subMenu.map((item) => (
+                              <NavLink
+                                  key={item.link}
+                                  to={item.link}
+                                  className={({ isActive }) => `popover-item ${isActive ? 'active' : ''}`}
+                                  onClick={() => setOpenPopover(null)}
+                              >
+                                  <span>{item.name}</span>
+                              </NavLink>
+                          ))}
                       </div>
                   ))}
               </div>
