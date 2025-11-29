@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ClipboardList, Package, Hash, Boxes, Activity, 
-  MapPin, FileText, Info, Save, X, AlertCircle, Briefcase, Printer
+  MapPin, FileText, Info, Save, X, AlertCircle, Briefcase, Printer, Layers 
 } from 'lucide-react';
 import Barcode from 'react-barcode'; 
 
