@@ -3,23 +3,25 @@
   max-width: 900px; 
   margin: 2rem auto;
   padding: 2.5rem;
-  background-color: #ffffff; 
+  background-color: var(--bg-secondary);
   border-radius: 12px; 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); 
-  border: 1px solid #e5e7eb; 
+  border: 1px solid var(--border-color);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .form-container h1 {
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1.5rem;
   margin-top: 0;
   margin-bottom: 2rem;
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937; 
+  color: var(--text-primary);
   letter-spacing: -0.025em;
+  transition: color 0.3s;
 }
 
 .produto-form {
@@ -37,7 +39,8 @@
 .form-group label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151; 
+  color: var(--text-primary);
+  transition: color 0.3s;
 }
 
 .form-group input,
@@ -46,9 +49,9 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #d1d5db; 
-  background-color: #f9fafb;
-  color: #1f2937;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 0.95rem;
   line-height: 1.5;
   transition: all 0.2s ease;
@@ -59,14 +62,14 @@
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  border-color: #6366f1; 
-  background-color: #ffffff;
+  border-color: var(--color-primary);
+  background-color: var(--bg-secondary);
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .form-group textarea {
@@ -80,35 +83,35 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background-color: #f3f4f6;
+  background-color: var(--bg-tertiary);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   margin-top: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .form-group-checkbox:hover {
-  background-color: #e5e7eb;
+  background-color: var(--bg-secondary);
 }
 
 .form-group-checkbox input {
   width: 1.25rem;
   height: 1.25rem;
   cursor: pointer;
-  accent-color: #6366f1; 
+  accent-color: var(--color-primary);
 }
 
 .form-group-checkbox label {
   font-weight: 500;
   font-size: 0.95rem;
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
   margin: 0; 
 }
 
 .error {
-  color: #ef4444; 
+  color: var(--color-danger);
   font-size: 0.85rem;
   margin-top: 0.25rem;
   font-weight: 500;
@@ -128,7 +131,7 @@
   gap: 1rem;
   margin-top: 2.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 .form-actions button {
@@ -144,19 +147,18 @@
 }
 
 .btn-cancelar {
-  background-color: #ffffff;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-}
-
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
 .btn-cancelar:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-  color: #1f2937;
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .btn-salvar {
-  background-color: #6366f1; 
+  background-color: var(--color-primary);
   color: #ffffff;
   border: 1px solid transparent;
   box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
@@ -183,7 +185,7 @@
   justify-content: center;
   align-items: center;
   height: 200px;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 1.1rem;
   font-weight: 500;
 }

@@ -38,7 +38,7 @@
     height: 64px;
     border-bottom: 1px solid var(--border-color);
     position: relative;
-    padding: 0 20px;
+    padding: 0 15px;
     transition: padding 0.3s ease;
 }
 
@@ -48,18 +48,40 @@
 }
 
 .valisys-logo {
-    height: 32px;
+    height: 40px;
     width: auto;
     object-fit: contain;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar.collapsed .valisys-logo {
-    height: 24px;
-    opacity: 0.9;
+    height: 40px;
+    opacity: 0.95;
+    transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
 }
 
-.logo-container, .brand-name, .brand-logo {
+.logo-container {
+    display: none;
+}
+
+/* Brand logo + text (appears when sidebar is expanded) */
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.brand-name {
+    font-family: 'Findon', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #5A9EEC;
+    line-height: 1;
+    margin-left: -6px; /* tuck text slightly next to the V so together they form 'Valisys' */
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.sidebar.collapsed .brand-name {
     display: none;
 }
 
@@ -70,12 +92,14 @@
     color: var(--text-secondary);
     cursor: pointer;
     padding: 4px;
-    transition: all 0.2s ease;
+    transition: right 0.2s ease, transform 0.2s ease, color 0.2s;
     display: flex;
     justify-content: center;
     align-items: center;
     position: absolute;
+    /* default: keep toggle on the right */
     right: -12px;
+    left: auto;
     top: 32px;
     width: 24px;
     height: 24px;
@@ -89,9 +113,11 @@
 }
 
 .sidebar.collapsed .toggle-btn-fixed {
+    /* when collapsed keep it on the right; no CSS rotation needed — icon handles direction */
     right: -12px;
+    left: auto;
     top: 32px;
-    transform: rotate(180deg);
+    transform: none;
 }
 
 .sidebar-nav {
@@ -401,6 +427,86 @@
     margin-top: 8px;
     border-top: none;
     padding-top: 12px;
+}
+
+/* Popover Menu Styles */
+.popover-menu {
+    position: fixed;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    top: 90px;
+    left: 88px;
+    z-index: 1000;
+    animation: popoverSlideIn 0.2s ease;
+}
+
+@keyframes popoverSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.popover-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin: 2px 4px;
+}
+
+.popover-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.popover-item.active {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.popover-item.active span::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+}
+
+.settings-popover {
+    padding: 8px 0;
+}
+
+.popover-group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-color);
+    margin-top: 8px;
+}
+
+.popover-group-title:first-child {
+    margin-top: 0;
 }
 
 @media (max-width: 768px) {
