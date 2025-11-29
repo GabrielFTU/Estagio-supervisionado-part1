@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import fornecedorService from '../../services/fornecedorService.js';
 import '../produto/ProdutoList.css'; 
-import { Search } from 'lucide-react';
+import { Search, X, Filter } from 'lucide-react';
 
 function useFornecedores() {
   return useQuery({
@@ -69,6 +69,8 @@ function FornecedorList() {
   if (isLoading) return <div className="loading-message">Carregando...</div>;
   if (isError) return <div className="error-message">Erro ao carregar fornecedores: {error.message}</div>;
 
+  const basePath = '/settings/cadastros/fornecedores';
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -76,38 +78,28 @@ function FornecedorList() {
         <Link to="/settings/cadastros/fornecedores/novo" className="btn-new">+ Novo Fornecedor</Link>
       </div>
 
-      <div className="filter-area" style={{ marginBottom: '20px', padding: '15px', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', gap: '15px', alignItems: 'flex-end', backgroundColor: 'var(--bg-secondary)' }}>
-        
-        <div style={{ flexGrow: 1, position: 'relative' }}>
+      <div className="toolbar-container">
+        <div className="search-box">
+          <Search size={20} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar por Nome, CNPJ ou E-mail..."
+            placeholder="Buscar por nome..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', padding: '10px 10px 10px 40px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
-          />
-          <Search size={20} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+            onChange={(e) => setSearchTerm(e.target.value)} />
+          {searchTerm && (
+            <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+              <X size={16} />
+            </button>
+          )}
         </div>
 
-        <div>
-          <select 
-            value={filterType} 
-            onChange={(e) => setFilterType(Number(e.target.value))}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
-          >
-            <option value={0}>Todos Tipos</option>
-            <option value={1}>Pessoa Física</option>
-            <option value={2}>Pessoa Jurídica</option>
-          </select>
-        </div>
-
-        <div>
-          <select 
-            value={filterStatus} 
+        <div className="filter-box">
+          <Filter size={20} className="filter-icon" />
+          <select
+            value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
           >
-            <option value="all">Todos Status</option>
+            <option value="all">Todos os Status</option>
             <option value="active">Ativo</option>
             <option value="inactive">Inativo</option>
           </select>
@@ -127,44 +119,36 @@ function FornecedorList() {
           </tr>
         </thead>
         <tbody>
-          {filteredFornecedores.length > 0 ? (
-            filteredFornecedores.map((fornecedor) => {
-              const tipoDocumento = fornecedor.tipoDocumento || (fornecedor.cnpj || fornecedor.documento || '').length > 11 ? 2 : 1;
-              const tipoNome = tipoDocumento === 1 ? 'PF' : 'PJ';
-
-              const nomeFantasia = fornecedor.nomeFantasia || fornecedor.nome || 'N/A';
-              const razaoSocial = fornecedor.razaoSocial || fornecedor.nome || 'N/A';
-              const documentoExibido = fornecedor.cnpj || fornecedor.documento || 'N/A';
-
-              return (
-              <tr key={fornecedor.id}>
-                <td>{nomeFantasia}</td> 
-                <td>{razaoSocial}</td>
-                <td>{documentoExibido}</td>
-                <td>{tipoNome}</td> 
-                <td>{fornecedor.email}</td>
+          {filteredFornecedores && filteredFornecedores.length > 0 ? (
+            filteredFornecedores.map((f) => (
+              <tr key={f.id}>
+                <td>{f.nomeFantasia || '-'}</td>
+                <td>{f.razaoSocial || '-'}</td>
+                <td>{f.cnpj || f.documento || '-'}</td>
+                <td>{(f.tipoDocumento || (String(f.cnpj || f.documento || '').length > 11)) ? 'PJ' : 'PF'}</td>
+                <td>{f.email || '-'}</td>
                 <td>
-                  <span className={fornecedor.ativo ? 'status-ativo' : 'status-inativo'}>
-                    {fornecedor.ativo ? 'Ativo' : 'Inativo'}
+                  <span className={f.ativo ? 'status-ativo' : 'status-inativo'}>
+                    {f.ativo ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
                 <td className="acoes-cell">
-                  <button 
-                    className="btn-editar" 
-                    onClick={() => navigate(`/settings/cadastros/fornecedores/editar/${fornecedor.id}`)}
+                  <button
+                    className="btn-editar"
+                    onClick={() => navigate(`${basePath}/editar/${f.id}`)}
                   >
                     Editar
                   </button>
-                  <button 
-                    className="btn-deletar" 
-                    onClick={() => handleDelete(fornecedor.id)}
+                  <button
+                    className="btn-deletar"
+                    onClick={() => handleDelete(f.id)}
                     disabled={deleteMutation.isPending}
                   >
                     Excluir
                   </button>
                 </td>
               </tr>
-            )})
+            ))
           ) : (
             <tr>
               <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>

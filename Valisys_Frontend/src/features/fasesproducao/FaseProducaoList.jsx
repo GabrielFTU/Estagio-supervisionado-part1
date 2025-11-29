@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import faseProducaoService from '../../services/faseProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
+import SharedToolbar from '../../components/SharedToolbar';
 
 function useFasesProducao() {
   return useQuery({
@@ -15,6 +16,8 @@ function FaseProducaoList() {
   const { data: fases, isLoading, isError, error } = useFasesProducao();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const deleteMutation = useMutation({
     mutationFn: faseProducaoService.delete, 
@@ -40,7 +43,16 @@ function FaseProducaoList() {
 
   const basePath = '/settings/cadastros/fases';
 
-  const orderedFases = fases ? [...fases].sort((a, b) => a.ordem - b.ordem) : [];
+  const orderedFases = useMemo(() => {
+    if (!fases) return [];
+    const q = (searchTerm || '').toLowerCase();
+    return (fases || []).filter(f => {
+      const text = `${f.nome || ''} ${f.descricao || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesStatus = filterStatus === 'all' ? true : (filterStatus === 'active' ? f.ativo : !f.ativo);
+      return matchesSearch && matchesStatus;
+    }).sort((a, b) => a.ordem - b.ordem);
+  }, [fases, searchTerm, filterStatus]);
 
   return (
     <div className="page-container">
@@ -48,6 +60,15 @@ function FaseProducaoList() {
         <h1>Gerenciamento de Fases de Produção</h1>
         <Link to={`${basePath}/novo`} className="btn-new">+ Nova Fase</Link>
       </div>
+
+      <SharedToolbar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Buscar por nome..."
+        filterValue={filterStatus}
+        onFilterChange={setFilterStatus}
+        filterOptions={[{value: 'all', label: 'Todos os status'}, {value: 'active', label: 'Ativo'}, {value: 'inactive', label: 'Inativo'}]}
+      />
 
       <table className="data-table">
         <thead>

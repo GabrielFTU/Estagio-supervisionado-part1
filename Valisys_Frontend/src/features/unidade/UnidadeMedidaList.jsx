@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Ruler, Plus } from 'lucide-react';
 import unidadeMedidaService from '../../services/unidadeMedidaService.js';
 import '../../features/produto/ProdutoList.css'; 
+import SharedToolbar from '../../components/SharedToolbar';
 
 const GRANDEZAS_LABEL = {
   0: 'Unidade', 1: 'Massa', 2: 'Comprimento', 3: 'Volume', 4: 'Tempo', 5: 'Área'
@@ -20,6 +21,8 @@ function UnidadeMedidaList() {
   const { data: unidades, isLoading, isError, error } = useUnidadesMedida();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const deleteMutation = useMutation({
     mutationFn: unidadeMedidaService.delete, 
@@ -42,6 +45,17 @@ function UnidadeMedidaList() {
   if (isLoading) return <div className="loading-message">Carregando...</div>;
   if (isError) return <div className="error-message">Erro: {error.message}</div>;
 
+  const filteredUnidades = useMemo(() => {
+    if (!unidades) return [];
+    const q = (searchTerm || '').toLowerCase();
+    return (unidades || []).filter(u => {
+      const text = `${u.sigla || ''} ${u.nome || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesStatus = filterStatus === 'all' ? true : (filterStatus === 'active' ? u.ativo : !u.ativo);
+      return matchesSearch && matchesStatus;
+    });
+  }, [unidades, searchTerm, filterStatus]);
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -52,6 +66,15 @@ function UnidadeMedidaList() {
             <Plus size={18} /> Nova Unidade
         </Link>
       </div>
+
+      <SharedToolbar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Buscar por sigla ou nome..."
+        filterValue={filterStatus}
+        onFilterChange={setFilterStatus}
+        filterOptions={[{value: 'all', label: 'Todos os status'}, {value: 'active', label: 'Ativo'}, {value: 'inactive', label: 'Inativo'}]}
+      />
 
       <table className="data-table">
         <thead>
@@ -64,8 +87,8 @@ function UnidadeMedidaList() {
           </tr>
         </thead>
         <tbody>
-          {unidades && unidades.length > 0 ? (
-            unidades.map((unidade) => (
+          {filteredUnidades && filteredUnidades.length > 0 ? (
+            filteredUnidades.map((unidade) => (
               <tr key={unidade.id}>
                 <td style={{fontWeight: 'bold'}}>{unidade.sigla}</td>
                 <td>{unidade.nome}</td>

@@ -15,8 +15,9 @@
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
     border-right: 1px solid var(--border-color);
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     height: 100vh;
     z-index: 50;
     white-space: nowrap;
@@ -304,6 +305,11 @@
     width: 100%;
     max-width: 100%;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 260px;
+}
+
+.app-layout.collapsed-mode .main-container {
+    margin-left: 72px;
 }
 
 .app-header {

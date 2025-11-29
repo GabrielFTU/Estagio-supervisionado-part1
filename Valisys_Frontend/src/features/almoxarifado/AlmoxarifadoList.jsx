@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Edit, Trash2, Search, X, Filter, Plus } from 'lucide-react'; 
 import almoxarifadoService from '../../services/almoxarifadoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -12,6 +13,8 @@ function useAlmoxarifados() {
 }
 
 function AlmoxarifadoList() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { data: almoxarifados, isLoading, isError, error } = useAlmoxarifados();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -47,6 +50,35 @@ function AlmoxarifadoList() {
         <Link to={`${basePath}/novo`} className="btn-new">+ Novo Almoxarifado</Link>
       </div>
 
+      <div className="toolbar-container">
+        <div className="search-box">
+          <Search size={20} className="search-icon" />
+          <input 
+            type="text" 
+            placeholder="Buscar por nome..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="filter-box">
+          <Filter size={20} className="filter-icon" />
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">Todos os Status</option>
+            <option value="ativo">Apenas Ativos</option>
+            <option value="inativos">Apenas Inativos</option>
+          </select>
+        </div>
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
@@ -58,7 +90,12 @@ function AlmoxarifadoList() {
         </thead>
         <tbody>
           {almoxarifados && almoxarifados.length > 0 ? (
-            almoxarifados.map((almoxarifado) => (
+            (almoxarifados || []).filter(almoxarifado => {
+              const q = (searchTerm || '').toLowerCase();
+              const matchesSearch = !q || String(almoxarifado.nome).toLowerCase().includes(q) || String(almoxarifado.localizacao || '').toLowerCase().includes(q);
+              const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'ativo' ? almoxarifado.ativo : !almoxarifado.ativo);
+              return matchesSearch && matchesStatus;
+            }).map((almoxarifado) => (
               <tr key={almoxarifado.id}>
                 <td>{almoxarifado.nome}</td>
                 <td>{almoxarifado.localizacao}</td>

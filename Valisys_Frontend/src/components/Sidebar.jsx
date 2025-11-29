@@ -74,7 +74,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       subMenu: [
         { name: 'Quadro Kanban', link: '/fabrica/kanban' }, 
         { name: 'Consulta e Ação', link: '/fabrica/consultar-op' }, 
-        { name: 'Apontamentos', link: '/fabrica/movimentacoes' },
+        //{ name: 'Apontamentos', link: '/fabrica/movimentacoes' }, em desenvolvimento
       ]
     },
     { 
@@ -82,7 +82,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       subMenu: [
         { name: 'Estoque Produtos', link: '/estoque/acabados' }, 
         { name: 'Produto', link: '/estoque/produtos' },
-        { name: 'Movimentações', link: '/estoque/movimentacoes' },
+        //{ name: 'Movimentações', link: '/estoque/movimentacoes' }, em desenvolvimento
       ]
     },
     {

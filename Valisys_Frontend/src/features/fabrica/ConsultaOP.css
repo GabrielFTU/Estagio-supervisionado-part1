@@ -43,6 +43,11 @@
     transition: all 0.2s ease;
 }
 
+:root[data-theme="dark"] .search-bar-wrapper {
+    background: #000000;
+    border-color: #334155;
+}
+
 .search-bar-wrapper:focus-within {
     border-color: #3b82f6;
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
@@ -79,6 +84,14 @@
     font-weight: 400;
 }
 
+:root[data-theme="dark"] .search-input-modern {
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .search-input-modern::placeholder {
+    color: #ffffff;
+}
+
 .btn-icon-clear {
     background: transparent;
     border: none;
@@ -95,6 +108,15 @@
 .btn-icon-clear:hover {
     background-color: #f1f5f9;
     color: #64748b;
+}
+
+:root[data-theme="dark"] .btn-icon-clear {
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .btn-icon-clear:hover {
+    background-color: transparent;
+    color: #ffffff;
 }
 
 .btn-search-modern {

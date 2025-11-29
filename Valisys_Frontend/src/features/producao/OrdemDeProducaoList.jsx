@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { FileText, Edit, Trash2, PlayCircle, CheckCircle, XCircle } from 'lucide-react'; 
+import { FileText, Edit, Trash2, PlayCircle, CheckCircle, XCircle, Search, X, Filter } from 'lucide-react'; 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -24,6 +24,8 @@ function OrdemDeProducaoList() {
   const { data: ordens, isLoading, isError, error } = useOrdensDeProducao();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const invalidateList = () => {
       queryClient.invalidateQueries({ queryKey: ['ordensDeProducao'] });
@@ -92,6 +94,35 @@ function OrdemDeProducaoList() {
         <Link to={`${basePath}/novo`} className="btn-new">+ Nova Ordem</Link>
       </div>
 
+      <div className="toolbar-container">
+        <div className="search-box">
+            <Search size={20} className="search-icon" />
+            <input 
+                type="text" 
+                placeholder="Buscar por código ou produto..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+                <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+                    <X size={16} />
+                </button>
+            )}
+        </div>
+
+        <div className="filter-box">
+            <Filter size={20} className="filter-icon" />
+            <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+            >
+                <option value="all">Todos os Status</option>
+                <option value="ativo">Apenas Ativos</option>
+                <option value="inativos">Apenas Inativos</option>
+            </select>
+        </div>
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
@@ -106,7 +137,13 @@ function OrdemDeProducaoList() {
         </thead>
         <tbody>
           {ordens && ordens.length > 0 ? (
-            ordens.map((op) => {
+            (ordens || []).filter(op => {
+              const q = (searchTerm || '').toLowerCase();
+              const matchesSearch = !q || String(op.codigoOrdem).toLowerCase().includes(q) || String(op.produtoNome || '').toLowerCase().includes(q);
+              const statusId = Number(op.status);
+              const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'ativo' ? statusId === 1 : statusId !== 1);
+              return matchesSearch && matchesStatus;
+            }).map((op) => {
               const statusId = Number(op.status); 
               const statusConfig = STATUS_MAP[statusId] || { label: 'Desconhecido', class: '' };
               

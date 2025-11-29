@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Search, X, Filter, Plus } from 'lucide-react'; 
 import loteService from '../../services/loteService.js';
 import '../../features/produto/ProdutoList.css';
 
@@ -16,6 +16,8 @@ function LoteList() {
   const { data: lotes, isLoading, isError, error } = useLotes();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const deleteMutation = useMutation({
     mutationFn: loteService.delete,
@@ -67,6 +69,35 @@ function LoteList() {
         </Link>
       </div>
 
+      <div className="toolbar-container">
+        <div className="search-box">
+            <Search size={20} className="search-icon" />
+            <input 
+                type="text" 
+                placeholder="Buscar por código ou produto..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+                <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+                    <X size={16} />
+                </button>
+            )}
+        </div>
+
+        <div className="filter-box">
+            <Filter size={20} className="filter-icon" />
+            <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+            >
+                <option value="all">Todos os Status</option>
+                <option value="ativo">Apenas Ativos</option>
+                <option value="inativos">Apenas Inativos</option>
+            </select>
+        </div>
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
@@ -80,7 +111,12 @@ function LoteList() {
         </thead>
         <tbody>
           {lotes && lotes.length > 0 ? (
-            lotes.map((lote) => {
+            (lotes || []).filter(lote => {
+              const q = (searchTerm || '').toLowerCase();
+              const matchesSearch = !q || String(lote.numeroLote).toLowerCase().includes(q) || String(lote.produtoNome || '').toLowerCase().includes(q);
+              const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'ativo' ? (lote.status !== 'Concluido' && lote.status !== 'Cancelado') : (lote.status === 'Concluido' || lote.status === 'Cancelado'));
+              return matchesSearch && matchesStatus;
+            }).map((lote) => {
               const isConcluido = lote.status === 'Concluido';
 
               return (

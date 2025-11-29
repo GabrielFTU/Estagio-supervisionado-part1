@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import tipoOrdemDeProducaoService from '../../services/tipoOrdemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
+import SharedToolbar from '../../components/SharedToolbar';
 
 function useTiposOP() {
   return useQuery({
@@ -15,6 +16,8 @@ function TipoOrdemDeProducaoList() {
   const { data: tipos, isLoading, isError, error } = useTiposOP();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const deleteMutation = useMutation({
     mutationFn: tipoOrdemDeProducaoService.delete, 
@@ -40,12 +43,32 @@ function TipoOrdemDeProducaoList() {
 
   const basePath = '/settings/cadastros/tiposop';
 
+  const filteredTipos = useMemo(() => {
+    if (!tipos) return [];
+    const q = (searchTerm || '').toLowerCase();
+    return (tipos || []).filter(t => {
+      const text = `${t.nome || ''} ${t.codigo || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesStatus = filterStatus === 'all' ? true : (filterStatus === 'active' ? t.ativo : !t.ativo);
+      return matchesSearch && matchesStatus;
+    });
+  }, [tipos, searchTerm, filterStatus]);
+
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Gerenciamento de Tipos de Ordem de Produção</h1>
         <Link to={`${basePath}/novo`} className="btn-new">+ Novo Tipo de OP</Link>
       </div>
+
+      <SharedToolbar
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Buscar por nome ou código..."
+        filterValue={filterStatus}
+        onFilterChange={setFilterStatus}
+        filterOptions={[{value: 'all', label: 'Todos os status'}, {value: 'active', label: 'Ativo'}, {value: 'inactive', label: 'Inativo'}]}
+      />
 
       <table className="data-table">
         <thead>
@@ -57,8 +80,8 @@ function TipoOrdemDeProducaoList() {
           </tr>
         </thead>
         <tbody>
-          {tipos && tipos.length > 0 ? (
-            tipos.map((tipo) => (
+          {filteredTipos && filteredTipos.length > 0 ? (
+            filteredTipos.map((tipo) => (
               <tr key={tipo.id}>
                 <td>{tipo.nome}</td>
                 <td>{tipo.codigo}</td>

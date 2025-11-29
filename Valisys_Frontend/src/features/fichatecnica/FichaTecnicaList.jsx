@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Eye, Edit } from 'lucide-react';
+import { Plus, Trash2, Eye, Edit, Search, X, Filter } from 'lucide-react';
 import fichaTecnicaService from '../../services/fichaTecnicaService.js';
 import '../../features/produto/ProdutoList.css';
 
 function FichaTecnicaList() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { data: fichas, isLoading, isError, error } = useQuery({
     queryKey: ['fichasTecnicas'],
     queryFn: fichaTecnicaService.getAll
@@ -47,6 +49,35 @@ function FichaTecnicaList() {
         </Link>
       </div>
 
+      <div className="toolbar-container">
+        <div className="search-box">
+            <Search size={20} className="search-icon" />
+            <input 
+                type="text" 
+                placeholder="Buscar por número da ficha..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+                <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+                    <X size={16} />
+                </button>
+            )}
+        </div>
+
+        <div className="filter-box">
+            <Filter size={20} className="filter-icon" />
+            <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+            >
+                <option value="all">Todos os Status</option>
+                <option value="ativo">Apenas Ativos</option>
+                <option value="inativos">Apenas Inativos</option>
+            </select>
+        </div>
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
@@ -59,7 +90,11 @@ function FichaTecnicaList() {
         </thead>
         <tbody>
           {fichas && fichas.length > 0 ? (
-            fichas.map((ft) => (
+            (fichas || []).filter(ft => {
+              const matchesSearch = !searchTerm || String(ft.codigo).toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'ativo' ? ft.ativa : !ft.ativa);
+              return matchesSearch && matchesStatus;
+            }).map((ft) => (
               <tr key={ft.id}>
                 <td><strong>{ft.codigo}</strong></td>
                 <td>{ft.produtoNome}</td>
