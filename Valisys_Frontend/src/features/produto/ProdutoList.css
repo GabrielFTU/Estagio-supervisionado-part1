@@ -212,13 +212,11 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-/* Adicione ou verifique se estas classes existem no final do arquivo */
 
 .status-concluida {
   background-color: #dcfce7;
   color: #166534;
   border: 1px solid #bbf7d0;
-  /* Mesma formatação de padding/border-radius das outras badges */
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -252,4 +250,20 @@
   text-align: center;
   display: inline-block;
   min-width: 80px;
+}
+
+.select-standard {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.select-standard option {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }

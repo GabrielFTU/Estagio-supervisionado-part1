@@ -31,7 +31,7 @@ function UnidadeMedidaForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const basePath = '/settings/cadastros/unidades';
+  const basePath = '/src/features/unidade';
   
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     resolver: zodResolver(unidadeMedidaSchema),

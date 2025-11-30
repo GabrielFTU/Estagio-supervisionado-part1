@@ -29,7 +29,10 @@ export default function SharedToolbar({
       {filterOptions.length > 0 && (
         <div className="filter-box">
           <Filter size={20} className="filter-icon" />
-          <select value={filterValue} onChange={(e) => onFilterChange(e.target.value)}>
+          <select 
+          className="select-standard"
+          value={filterValue} 
+          onChange={(e) => onFilterChange(e.target.value)}>
             {filterOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}

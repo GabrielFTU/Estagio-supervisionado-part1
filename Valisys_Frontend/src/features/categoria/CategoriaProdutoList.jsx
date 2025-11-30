@@ -109,7 +109,10 @@ function CategoriaProdutoList() {
 
         <div className="filter-box">
             <Filter size={20} className="filter-icon" />
-            <select value={statusFilter} onChange={handleFilterChange}>
+            <select 
+            className="select-standard"
+            value={statusFilter} 
+            onChange={handleFilterChange}>
                 <option value="todos">Todos os Status</option>
                 <option value="ativos">Apenas Ativos</option>
                 <option value="inativos">Apenas Inativos</option>

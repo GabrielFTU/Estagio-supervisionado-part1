@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Search, Filter, Layers, Plus } from 'lucide-react';
 import faseProducaoService from '../../services/faseProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
-import SharedToolbar from '../../components/SharedToolbar';
 
 function useFasesProducao() {
   return useQuery({
@@ -17,7 +17,9 @@ function FaseProducaoList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('todos'); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const deleteMutation = useMutation({
     mutationFn: faseProducaoService.delete, 
@@ -26,7 +28,6 @@ function FaseProducaoList() {
       alert("Fase de Produção excluída com sucesso!");
     },
     onError: (err) => {
-      console.error(err);
       const errorMessage = err.response?.data?.message || "Erro ao excluir. A fase pode estar em uso.";
       alert(errorMessage);
     }
@@ -38,37 +39,88 @@ function FaseProducaoList() {
     }
   };
 
-  if (isLoading) return <div className="loading-message">Carregando...</div>;
-  if (isError) return <div className="error-message">Erro ao carregar Fases de Produção: {error.message}</div>;
-
-  const basePath = '/settings/cadastros/fases';
-
-  const orderedFases = useMemo(() => {
+  const filteredFases = useMemo(() => {
     if (!fases) return [];
-    const q = (searchTerm || '').toLowerCase();
-    return (fases || []).filter(f => {
-      const text = `${f.nome || ''} ${f.descricao || ''}`.toLowerCase();
-      const matchesSearch = !q || text.includes(q);
-      const matchesStatus = filterStatus === 'all' ? true : (filterStatus === 'active' ? f.ativo : !f.ativo);
+    const searchLower = searchTerm.toLowerCase();
+
+    return fases.filter(fase => {
+      const matchesSearch =
+        fase.nome.toLowerCase().includes(searchLower) ||
+        String(fase.codigo || '').toLowerCase().includes(searchLower);
+
+      let matchesStatus = true;
+      if (statusFilter === 'ativos') matchesStatus = fase.ativo === true;
+      if (statusFilter === 'inativos') matchesStatus = fase.ativo === false;
+
       return matchesSearch && matchesStatus;
-    }).sort((a, b) => a.ordem - b.ordem);
-  }, [fases, searchTerm, filterStatus]);
+    });
+  }, [fases, searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredFases.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentData = filteredFases.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const basePath = "/settings/cadastros/fasesproducao";
+
+  if (isLoading) return <div className="loading-message">Carregando...</div>;
+  if (isError) return <div className="error-message">Erro: {error.message}</div>;
 
   return (
     <div className="page-container">
+
       <div className="page-header">
-        <h1>Gerenciamento de Fases de Produção</h1>
-        <Link to={`${basePath}/novo`} className="btn-new">+ Nova Fase</Link>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Layers size={28} className="text-primary" />
+          Gerenciamento de Fases
+        </h1>
+
+        <Link to={`${basePath}/novo`} className="btn-new">
+          <Plus size={18} />
+          Nova Fase
+        </Link>
       </div>
 
-      <SharedToolbar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder="Buscar por nome..."
-        filterValue={filterStatus}
-        onFilterChange={setFilterStatus}
-        filterOptions={[{value: 'all', label: 'Todos os status'}, {value: 'active', label: 'Ativo'}, {value: 'inactive', label: 'Inativo'}]}
-      />
+      {/* TOOLBAR MANUAL */}
+      <div className="toolbar-container">
+        <div className="search-box">
+          <Search size={20} className="search-icon" />
+          <input 
+            type="text"
+            placeholder="Buscar por nome ou código..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+        </div>
+
+        <div className="filter-box">
+          <Filter size={20} className="filter-icon" />
+          <select 
+            className="select-standard"
+            value={statusFilter}
+            onChange={handleFilterChange}
+          >
+            <option value="todos">Todos os Status</option>
+            <option value="ativos">Apenas Ativos</option>
+            <option value="inativos">Apenas Inativos</option>
+          </select>
+        </div>
+      </div>
 
       <table className="data-table">
         <thead>
@@ -80,13 +132,14 @@ function FaseProducaoList() {
             <th>Ações</th>
           </tr>
         </thead>
+
         <tbody>
-          {orderedFases.length > 0 ? (
-            orderedFases.map((fase) => (
+          {currentData.length > 0 ? (
+            currentData.map(fase => (
               <tr key={fase.id}>
                 <td>{fase.ordem}</td>
                 <td>{fase.nome}</td>
-                <td>{fase.tempoPadraoDias} dias</td> 
+                <td>{fase.tempoPadraoDias} dias</td>
                 <td>
                   <span className={fase.ativo ? 'status-ativo' : 'status-inativo'}>
                     {fase.ativo ? 'Ativo' : 'Inativo'}
@@ -94,13 +147,13 @@ function FaseProducaoList() {
                 </td>
                 <td className="acoes-cell">
                   <button 
-                    className="btn-editar" 
+                    className="btn-editar"
                     onClick={() => navigate(`${basePath}/editar/${fase.id}`)}
                   >
                     Editar
                   </button>
                   <button 
-                    className="btn-deletar" 
+                    className="btn-deletar"
                     onClick={() => handleDelete(fase.id)}
                     disabled={deleteMutation.isPending}
                   >
@@ -112,12 +165,13 @@ function FaseProducaoList() {
           ) : (
             <tr>
               <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                Nenhuma Fase de Produção encontrada.
+                Nenhuma Fase encontrada.
               </td>
             </tr>
           )}
         </tbody>
       </table>
+
     </div>
   );
 }

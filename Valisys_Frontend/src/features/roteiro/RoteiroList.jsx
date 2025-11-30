@@ -80,6 +80,7 @@ function RoteiroList() {
         <div className="filter-box">
             <Filter size={20} className="filter-icon" />
             <select 
+                className="select-standard"
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
             >

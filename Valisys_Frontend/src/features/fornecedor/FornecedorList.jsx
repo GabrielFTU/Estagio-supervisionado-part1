@@ -96,6 +96,7 @@ function FornecedorList() {
         <div className="filter-box">
           <Filter size={20} className="filter-icon" />
           <select
+            className="select-standard"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
