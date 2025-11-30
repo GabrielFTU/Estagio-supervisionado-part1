@@ -40,6 +40,8 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+builder.Services.AddHttpContextAccessor(); 
+
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
@@ -78,7 +80,6 @@ builder.Services.AddSwaggerGen(c =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
-
 builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
 builder.Services.AddScoped<IAlmoxarifadoRepository, AlmoxarifadoRepository>();
@@ -116,12 +117,10 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ILogSistemaRepository, LogSistemaRepository>();
 builder.Services.AddScoped<ILogSistemaService, LogSistemaService>();
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyAllowSpecificOrigins", policy =>
     {
-
         policy.WithOrigins("http://localhost:5173", "http://31.97.27.244:5173", "https://www.valisys.com.br")
               .AllowAnyHeader()
               .AllowAnyMethod()

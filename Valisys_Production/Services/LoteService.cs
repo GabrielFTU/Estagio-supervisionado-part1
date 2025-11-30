@@ -2,24 +2,27 @@
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
 using Valisys_Production.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Valisys_Production.Services
 {
     public class LoteService : ILoteService
     {
         private readonly ILoteRepository _repository;
+        private readonly ILogSistemaService _logService;
 
-        public LoteService(ILoteRepository repository)
+        public LoteService(ILoteRepository repository, ILogSistemaService logService)
         {
             _repository = repository;
+            _logService = logService;
         }
 
         public async Task<Lote> CreateAsync(LoteCreateDto dto)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto), "O DTO do lote não pode ser nulo.");
             if (string.IsNullOrEmpty(dto.CodigoLote))
-                throw new ArgumentException("O número do lote é obrigatório.");
+                throw new ArgumentException("Código do lote obrigatório.");
 
             var lote = new Lote
             {
@@ -28,82 +31,51 @@ namespace Valisys_Production.Services
                 Observacoes = dto.Observacoes ?? string.Empty,
                 ProdutoId = dto.ProdutoId,
                 AlmoxarifadoId = dto.AlmoxarifadoId,
-                DataAbertura = DateTime.UtcNow
+                DataAbertura = DateTime.UtcNow,
+                statusLote = StatusLote.Pendente
             };
 
-            lote.statusLote = StatusLote.Pendente;
+            var created = await _repository.AddAsync(lote);
 
-            return await _repository.AddAsync(lote);
+            await _logService.RegistrarAsync("Criação", "Lotes", $"Registrou novo Lote: {created.CodigoLote}");
+
+            return created;
         }
 
-        public async Task<Lote?> GetByIdAsync(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Lote inválido.");
-            }
-            return await _repository.GetByIdAsync(id);
-        }
-
-        public async Task<IEnumerable<Lote>> GetAllAsync()
-        {
-            return await _repository.GetAllAsync();
-        }
+        public async Task<Lote?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
+        public async Task<IEnumerable<Lote>> GetAllAsync() => await _repository.GetAllAsync();
 
         public async Task<bool> UpdateAsync(Lote lote)
         {
-            if (lote.Id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Lote ausente para atualização.");
-            }
-            if (string.IsNullOrEmpty(lote.CodigoLote))
-            {
-                throw new ArgumentException("O número do lote não pode ser vazio.");
-            }
+            var existing = await _repository.GetByIdAsync(lote.Id);
+            if (existing == null) throw new KeyNotFoundException("Lote não encontrado.");
 
-            var existingLote = await _repository.GetByIdAsync(lote.Id);
-            if (existingLote == null)
-            {
-                throw new KeyNotFoundException($"Lote com ID {lote.Id} não encontrado.");
-            }
+            // Mantém dados sensíveis originais
+            lote.statusLote = existing.statusLote;
+            lote.DataAbertura = existing.DataAbertura;
+            lote.DataConclusao = existing.DataConclusao;
 
-            if (existingLote.statusLote == StatusLote.Concluido)
+            var result = await _repository.UpdateAsync(lote);
+
+            if (result)
             {
-                throw new InvalidOperationException("Não é permitido editar um lote que já foi Concluído (Estoque gerado).");
+                await _logService.RegistrarAsync("Edição", "Lotes", $"Atualizou dados do Lote: {lote.CodigoLote}");
             }
 
-            lote.statusLote = existingLote.statusLote;
-
-            lote.Observacoes ??= string.Empty;
-            lote.Descricao ??= string.Empty;
-            lote.DataAbertura = existingLote.DataAbertura;
-            if (existingLote.DataConclusao.HasValue)
-            {
-                lote.DataConclusao = existingLote.DataConclusao;
-            }
-
-            return await _repository.UpdateAsync(lote);
+            return result;
         }
 
         public async Task<bool> DeleteAsync(Guid id)
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentException("ID do Lote inválido para exclusão.");
-            }
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null) return false;
 
-            var existingLote = await _repository.GetByIdAsync(id);
-            if (existingLote == null)
+            var result = await _repository.DeleteAsync(id);
+            if (result)
             {
-                return false;
+                await _logService.RegistrarAsync("Exclusão", "Lotes", $"Excluiu o Lote: {existing.CodigoLote}");
             }
-
-            if (existingLote.statusLote != StatusLote.Pendente && existingLote.statusLote != StatusLote.Cancelado)
-            {
-                throw new InvalidOperationException($"Lote com status '{existingLote.statusLote}' não pode ser excluído.");
-            }
-
-            return await _repository.DeleteAsync(id);
+            return result;
         }
     }
 }

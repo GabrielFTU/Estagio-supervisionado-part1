@@ -2,7 +2,6 @@
 using Valisys_Production.Services.Interfaces;
 using Valisys_Production.Repositories.Interfaces;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -11,10 +10,12 @@ namespace Valisys_Production.Services
     public class ProdutoService : IProdutoService
     {
         private readonly IProdutoRepository _repository;
+        private readonly ILogSistemaService _logService; 
 
-        public ProdutoService(IProdutoRepository repository)
+        public ProdutoService(IProdutoRepository repository, ILogSistemaService logService)
         {
             _repository = repository;
+            _logService = logService;
         }
 
         public async Task<Produto> CreateAsync(Produto produto)
@@ -25,9 +26,17 @@ namespace Valisys_Production.Services
             }
 
             produto.CodigoInternoProduto = await GerarProximoCodigoSequencialAsync();
-
             produto.DataCadastro = DateTime.UtcNow;
-            return await _repository.AddAsync(produto);
+            
+            var novoProduto = await _repository.AddAsync(produto);
+
+            await _logService.RegistrarAsync(
+                "Criação", 
+                "Produtos", 
+                $"Criou o produto '{novoProduto.Nome}' (Cód: {novoProduto.CodigoInternoProduto})"
+            );
+
+            return novoProduto;
         }
 
         private async Task<string> GerarProximoCodigoSequencialAsync()
@@ -71,14 +80,37 @@ namespace Valisys_Production.Services
             produto.CodigoInternoProduto = existingProduto.CodigoInternoProduto;
             produto.DataCadastro = existingProduto.DataCadastro;
 
-            return await _repository.UpdateAsync(produto);
+            var updated = await _repository.UpdateAsync(produto);
+
+            if (updated)
+            {
+                await _logService.RegistrarAsync(
+                    "Edição", 
+                    "Produtos", 
+                    $"Editou o produto '{produto.Nome}' (ID: {produto.Id})"
+                );
+            }
+
+            return updated;
         }
 
         public async Task<bool> DeleteAsync(Guid id)
         {
             var existingProduto = await _repository.GetByIdAsync(id);
             if (existingProduto == null) return false;
-            return await _repository.DeleteAsync(id);
+            
+            var deleted = await _repository.DeleteAsync(id);
+
+            if (deleted)
+            {
+                await _logService.RegistrarAsync(
+                    "Exclusão", 
+                    "Produtos", 
+                    $"Inativou/Excluiu o produto '{existingProduto.Nome}'"
+                );
+            }
+
+            return deleted;
         }
     }
 }
