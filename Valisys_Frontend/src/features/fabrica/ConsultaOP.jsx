@@ -114,7 +114,7 @@ function ConsultaOP() {
       
       <div className="consulta-header">
         <h1>
-            <ScanBarcode size={32} className="text-primary" /> 
+            <ScanBarcode size={32} className="texto-principal" /> 
             Consulta de Chão de Fábrica
         </h1>
         <p className="subtitle">Bipe o código da Ordem de Produção para visualizar detalhes e realizar apontamentos.</p>
@@ -126,7 +126,7 @@ function ConsultaOP() {
                 {loading ? (
                     <Loader2 size={20} className="animate-spin text-primary" />
                 ) : (
-                    <Search size={20} className="text-gray" />
+                    <Search size={20} className="texto" />
                 )}
             </div>
             

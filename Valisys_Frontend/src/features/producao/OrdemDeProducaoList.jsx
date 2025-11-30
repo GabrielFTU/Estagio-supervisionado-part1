@@ -154,7 +154,7 @@ function OrdemDeProducaoList() {
 
               return (
               <tr key={op.id} style={isInactive ? {backgroundColor: '#f9fafb', opacity: 0.9} : {}}>
-                <td style={{fontWeight: 'bold', color: '#374151'}}>{op.codigoOrdem}</td>
+                <td style={{fontWeight: 'bold', color: 'var(--bg--secondary)'}}>{op.codigoOrdem}</td>
                 <td>{op.produtoNome}</td>
                 <td style={{fontWeight: 'bold'}}>{op.quantidade}</td>
                 

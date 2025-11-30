@@ -85,7 +85,7 @@ function TipoOrdemDeProducaoList() {
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
           >
-            <option value="all">Todos os status</option>
+            <option value="all">Todos os Status</option>
             <option value="active">Ativo</option>
             <option value="inactive">Inativo</option>
           </select>

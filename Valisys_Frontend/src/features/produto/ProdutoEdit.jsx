@@ -111,18 +111,6 @@ function ProdutoEdit() {
     <div className="form-container">
       <h1>Editar Produto</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
-
-        <div className="form-group">
-          <label htmlFor="codigo">Referencia do produto</label>
-          <input 
-            id="codigo" 
-            {...register('codigo')} 
-            disabled 
-            style={{ backgroundColor: '#e0e0e0', cursor: 'not-allowed' }} 
-          />
-          {errors.codigo && <span className="error">{errors.codigo.message}</span>}
-        </div>
-
         <div className="form-group">
           <label htmlFor="nome">Nome</label>
           <input id="nome" {...register('nome')} />

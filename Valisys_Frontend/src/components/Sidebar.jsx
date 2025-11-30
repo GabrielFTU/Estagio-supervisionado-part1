@@ -120,7 +120,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               name: 'Sistema', icon: ShieldAlert, menuName: 'settings-sistema',
               subMenu: [
                   { name: 'Logs de Atividades', link: '/settings/sistema/logs' },
-                  { name: 'Auditoria', link: '/settings/sistema/auditoria' },
+                  //{ name: 'Auditoria', link: '/settings/sistema/auditoria' },
               ]
           },
       ]
