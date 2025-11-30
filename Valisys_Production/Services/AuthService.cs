@@ -10,7 +10,6 @@ using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
 
-
 namespace Valisys_Production.Services
 {
     public class AuthService : IAuthService
@@ -27,13 +26,15 @@ namespace Valisys_Production.Services
         public async Task<(string Token, Usuario User)> LoginAsync(LoginDto loginDto)
         {
             var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);
-
            
             if (usuario == null || !BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.SenhaHash.Trim()))
-
-            if (usuario == null) 
             {
-                throw new UnauthorizedAccessException("Usuário não encontrado.");
+                throw new UnauthorizedAccessException("Usuário não encontrado ou senha incorreta.");
+            }
+
+            if (!usuario.Ativo)
+            {
+                throw new UnauthorizedAccessException("Usuário inativo.");
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -55,7 +56,7 @@ namespace Valisys_Production.Services
                     new Claim(ClaimTypes.Email, usuario.Email),
                     new Claim("PerfilId", usuario.PerfilId.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddHours(8),
+                Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

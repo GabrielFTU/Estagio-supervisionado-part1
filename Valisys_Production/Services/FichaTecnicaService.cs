@@ -15,11 +15,16 @@ namespace Valisys_Production.Services
     {
         private readonly IFichaTecnicaRepository _repository;
         private readonly IProdutoRepository _produtoRepository;
+        private readonly ILogSistemaService _logService;
 
-        public FichaTecnicaService(IFichaTecnicaRepository repository, IProdutoRepository produtoRepository)
+        public FichaTecnicaService(
+            IFichaTecnicaRepository repository, 
+            IProdutoRepository produtoRepository,
+            ILogSistemaService logService)
         {
             _repository = repository;
             _produtoRepository = produtoRepository;
+            _logService = logService;
         }
 
         private async Task<string> GerarProximoCodigoAsync()
@@ -29,7 +34,6 @@ namespace Valisys_Production.Services
 
             if (!string.IsNullOrEmpty(ultimoCodigo))
             {
-
                 var partes = ultimoCodigo.Split('-');
                 if (partes.Length > 1 && int.TryParse(partes[1], out int ultimoNumero))
                 {
@@ -38,23 +42,11 @@ namespace Valisys_Production.Services
             }
 
             return $"FT-{proximoNumero:D4}"; 
-
         }
+
         public async Task<string> ObterProximoCodigoAsync()
         {
-            var ultimoCodigo = await _repository.GetUltimoCodigoAsync();
-            int proximoNumero = 1;
-
-            if (!string.IsNullOrEmpty(ultimoCodigo))
-            {
-                var partes = ultimoCodigo.Split('-');
-                if (partes.Length > 1 && int.TryParse(partes[1], out int ultimoNumero))
-                {
-                    proximoNumero = ultimoNumero + 1;
-                }
-            }
-
-            return $"FT-{proximoNumero:D4}";
+            return await GerarProximoCodigoAsync();
         }
 
         public async Task<FichaTecnica> CreateAsync(FichaTecnica ficha)
@@ -66,12 +58,7 @@ namespace Valisys_Production.Services
             if (produtoPai.Classificacao == ClassificacaoProduto.MateriaPrima ||
                 produtoPai.Classificacao == ClassificacaoProduto.MaterialConsumo)
             {
-                throw new InvalidOperationException($"Não é possível criar ficha técnica para um produto classificado como {produtoPai.Classificacao}.");
-            }
-
-            if (string.IsNullOrEmpty(ficha.CodigoFicha))
-            {
-                ficha.CodigoFicha = await ObterProximoCodigoAsync();
+                throw new InvalidOperationException($"Não é possível criar ficha técnica para produto classificado como {produtoPai.Classificacao}.");
             }
 
             if (string.IsNullOrEmpty(ficha.CodigoFicha))
@@ -88,16 +75,22 @@ namespace Valisys_Production.Services
                         throw new KeyNotFoundException($"Componente {item.ProdutoComponenteId} não encontrado.");
 
                     if (!componente.Ativo)
-                    {
-                        throw new InvalidOperationException($"O produto '{componente.Nome}' está INATIVO e não pode ser adicionado à ficha técnica.");
-                    }
+                        throw new InvalidOperationException($"Produto '{componente.Nome}' está INATIVO.");
 
                     if (item.ProdutoComponenteId == ficha.ProdutoId)
-                        throw new InvalidOperationException("Um produto não pode ser componente dele mesmo (referência circular).");
+                        throw new InvalidOperationException("Referência circular detectada.");
                 }
             }
 
-            return await _repository.AddAsync(ficha);
+            var created = await _repository.AddAsync(ficha);
+
+            await _logService.RegistrarAsync(
+                "Criação", 
+                "Engenharia", 
+                $"Criou Ficha Técnica {created.CodigoFicha} para o produto '{produtoPai.Nome}'"
+            );
+
+            return created;
         }
 
         public async Task<FichaTecnica?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
@@ -128,14 +121,10 @@ namespace Valisys_Production.Services
                         throw new KeyNotFoundException($"Componente {itemDto.ProdutoComponenteId} não encontrado.");
 
                     if (!componente.Ativo)
-                    {
-                        throw new InvalidOperationException($"O produto '{componente.Nome}' está INATIVO e não pode ser usado.");
-                    }
+                        throw new InvalidOperationException($"Produto '{componente.Nome}' está INATIVO.");
 
                     if (itemDto.ProdutoComponenteId == fichaOriginal.ProdutoId)
-                    {
-                        throw new InvalidOperationException("Referência circular detectada: O produto pai não pode ser um componente.");
-                    }
+                        throw new InvalidOperationException("Referência circular detectada.");
 
                     novosItens.Add(new FichaTecnicaItem
                     {
@@ -152,12 +141,41 @@ namespace Valisys_Production.Services
                 CodigoFicha = dto.Codigo,
                 Versao = dto.Versao,
                 Descricao = dto.Descricao,
-                Ativa = dto.Ativa
+                Ativa = dto.Ativa,
+                ProdutoId = fichaOriginal.ProdutoId
             };
 
-            return await _repository.UpdateWithItemsAsync(fichaParaAtualizar, novosItens);
+            var updated = await _repository.UpdateWithItemsAsync(fichaParaAtualizar, novosItens);
+
+            if (updated)
+            {
+                await _logService.RegistrarAsync(
+                    "Edição", 
+                    "Engenharia", 
+                    $"Editou Ficha Técnica {fichaParaAtualizar.CodigoFicha}"
+                );
+            }
+
+            return updated;
         }
 
-        public async Task<bool> DeleteAsync(Guid id) => await _repository.DeleteAsync(id);
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            var deleted = await _repository.DeleteAsync(id);
+            
+            if (deleted)
+            {
+                await _logService.RegistrarAsync(
+                    "Exclusão", 
+                    "Engenharia", 
+                    $"Inativou/Excluiu Ficha Técnica {existing.CodigoFicha}"
+                );
+            }
+
+            return deleted;
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Valisys_Production.DTOs;
 using Valisys_Production.Models;
-using Valisys_Production.Repositories;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Services.Interfaces;
 using System;
@@ -14,15 +13,18 @@ namespace Valisys_Production.Services
         private readonly IRoteiroProducaoRepository _repository;
         private readonly IProdutoRepository _produtoRepository;
         private readonly IFaseProducaoRepository _faseRepository;
+        private readonly ILogSistemaService _logService;
 
         public RoteiroProducaoService(
             IRoteiroProducaoRepository repository,
             IProdutoRepository produtoRepository,
-            IFaseProducaoRepository faseRepository)
+            IFaseProducaoRepository faseRepository,
+            ILogSistemaService logService)
         {
             _repository = repository;
             _produtoRepository = produtoRepository;
             _faseRepository = faseRepository;
+            _logService = logService;
         }
 
         public async Task<RoteiroProducao> CreateAsync(RoteiroProducaoCreateDto dto)
@@ -63,14 +65,23 @@ namespace Valisys_Production.Services
                 }
             }
 
-            return await _repository.AddAsync(roteiro);
+            var created = await _repository.AddAsync(roteiro);
+
+            await _logService.RegistrarAsync(
+                "Criação", 
+                "Engenharia", 
+                $"Criou Roteiro de Produção {created.Codigo} para '{produto.Nome}'"
+            );
+
+            return created;
         }
 
         public async Task<bool> UpdateAsync(RoteiroProducaoUpdateDto dto)
         {
             if (dto.Id == Guid.Empty) throw new ArgumentException("ID inválido.");
+            
             var existingRoteiro = await _repository.GetByIdAsync(dto.Id);
-            if (existingRoteiro == null) throw new KeyNotFoundException("Roteiro de Produção não encontrado.");
+            if (existingRoteiro == null) throw new KeyNotFoundException("Roteiro não encontrado.");
 
             var novasEtapas = new List<RoteiroProducaoEtapa>();
             if (dto.Etapas != null)
@@ -100,11 +111,40 @@ namespace Valisys_Production.Services
                 ProdutoId = existingRoteiro.ProdutoId 
             };
 
-            return await _repository.UpdateWithEtapasAsync(roteiroAtualizado, novasEtapas);
+            var updated = await _repository.UpdateWithEtapasAsync(roteiroAtualizado, novasEtapas);
+
+            if (updated)
+            {
+                await _logService.RegistrarAsync(
+                    "Edição", 
+                    "Engenharia", 
+                    $"Atualizou Roteiro de Produção {roteiroAtualizado.Codigo}"
+                );
+            }
+
+            return updated;
         }
 
         public async Task<RoteiroProducao?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
         public async Task<IEnumerable<RoteiroProducao>> GetAllAsync() => await _repository.GetAllAsync();
-        public async Task<bool> DeleteAsync(Guid id) => await _repository.DeleteAsync(id);
+        
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var existing = await _repository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            var deleted = await _repository.DeleteAsync(id);
+
+            if (deleted)
+            {
+                await _logService.RegistrarAsync(
+                    "Exclusão", 
+                    "Engenharia", 
+                    $"Inativou Roteiro de Produção {existing.Codigo}"
+                );
+            }
+
+            return deleted;
+        }
     }
 }
