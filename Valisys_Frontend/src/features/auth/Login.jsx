@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, LayoutDashboard, AlertCircle } from 'lucide-react';
 import authService from '../../services/authService';
 import useAuthStore from '../../stores/useAuthStore';
 import './login.css';
@@ -41,12 +41,10 @@ function Login() {
 
   return (
     <div className="login-wrapper">
-      {/* Background animado */}
       <div className="login-bg"></div>
 
       <div className="login-content">
         <div className="brand-header">
-            {/* Se não tiver a logo carregando, usa um ícone padrão */}
             <div className="logo-container">
                  <img src="/Logo_V.png" alt="Valisys" onError={(e) => e.target.style.display='none'} className="brand-img" />
                  <LayoutDashboard size={40} className="brand-fallback-icon" />

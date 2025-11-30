@@ -111,16 +111,6 @@ namespace Valisys_Production.Migrations
                         .IsUnique();
 
                     b.ToTable("CategoriasProduto");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000006"),
-                            Ativo = true,
-                            Codigo = "CAT-001",
-                            Descricao = "VP",
-                            Nome = "Veículos Pesados"
-                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.FaseProducao", b =>
@@ -150,44 +140,6 @@ namespace Valisys_Production.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FasesProducao");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000004"),
-                            Ativo = true,
-                            Descricao = "Início da montagem do chassi.",
-                            Nome = "MONTAGEM INICIAL",
-                            Ordem = 1,
-                            TempoPadraoDias = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000013"),
-                            Ativo = true,
-                            Descricao = "Área de preparação e pintura.",
-                            Nome = "PINTURA",
-                            Ordem = 2,
-                            TempoPadraoDias = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000014"),
-                            Ativo = true,
-                            Descricao = "Instalação de motor e acabamentos.",
-                            Nome = "MONTAGEM FINAL",
-                            Ordem = 3,
-                            TempoPadraoDias = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000015"),
-                            Ativo = true,
-                            Descricao = "Checagem final antes da expedição.",
-                            Nome = "TESTE DE QUALIDADE",
-                            Ordem = 4,
-                            TempoPadraoDias = 0
-                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.FichaTecnica", b =>
@@ -578,22 +530,6 @@ namespace Valisys_Production.Migrations
                     b.HasIndex("UnidadeMedidaId");
 
                     b.ToTable("Produtos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c0de0000-0000-0000-0000-000000000005"),
-                            Ativo = true,
-                            CategoriaProdutoId = new Guid("c0de0000-0000-0000-0000-000000000006"),
-                            Classificacao = 0,
-                            CodigoInternoProduto = "CA-ALFA-001",
-                            ControlarPorLote = true,
-                            DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Descricao = "Caminhão de teste para Lote.",
-                            Nome = "Caminhão Alpha",
-                            Observacoes = "Produto de teste para inicio do sistema",
-                            UnidadeMedidaId = new Guid("c0de0000-0000-0000-0000-000000000002")
-                        });
                 });
 
             modelBuilder.Entity("Valisys_Production.Models.RoteiroProducao", b =>
@@ -1031,7 +967,7 @@ namespace Valisys_Production.Migrations
                             Email = "admin@valisys.com",
                             Nome = "Administrador Master",
                             PerfilId = new Guid("c0de0000-0000-0000-0000-000000000001"),
-                            SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u"
+                            SenhaHash = "$2a$12$ceV2TtMQV.UXqYGXoyMt.eV9s2YcTh0SVykcjMPxxDxjci9hoYzeG"
                         });
                 });
 

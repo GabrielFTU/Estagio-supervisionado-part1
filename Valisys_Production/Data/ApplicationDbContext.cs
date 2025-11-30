@@ -147,7 +147,7 @@ namespace Valisys_Production.Data
                     Id = AdminUserId,
                     Nome = "Administrador Master",
                     Email = "admin@valisys.com",
-                    SenhaHash = "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u",
+                    SenhaHash = "$2a$12$ceV2TtMQV.UXqYGXoyMt.eV9s2YcTh0SVykcjMPxxDxjci9hoYzeG",
                     Ativo = true,
                     PerfilId = AdminProfileId,
                     DataCadastro = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Valisys_Production.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -521,22 +521,6 @@ namespace Valisys_Production.Migrations
                 values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000009"), true, "(67) 99999-9999", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Almoxarifado principal", "almoxarifado@empresa.com", "Galpão 1", "Almoxarifado Geral", "Sistema" });
 
             migrationBuilder.InsertData(
-                table: "CategoriasProduto",
-                columns: new[] { "Id", "Ativo", "Codigo", "Descricao", "Nome" },
-                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000006"), true, "CAT-001", "VP", "Veículos Pesados" });
-
-            migrationBuilder.InsertData(
-                table: "FasesProducao",
-                columns: new[] { "Id", "Ativo", "Descricao", "Nome", "Ordem", "TempoPadraoDias" },
-                values: new object[,]
-                {
-                    { new Guid("c0de0000-0000-0000-0000-000000000004"), true, "Início da montagem do chassi.", "MONTAGEM INICIAL", 1, 0 },
-                    { new Guid("c0de0000-0000-0000-0000-000000000013"), true, "Área de preparação e pintura.", "PINTURA", 2, 0 },
-                    { new Guid("c0de0000-0000-0000-0000-000000000014"), true, "Instalação de motor e acabamentos.", "MONTAGEM FINAL", 3, 0 },
-                    { new Guid("c0de0000-0000-0000-0000-000000000015"), true, "Checagem final antes da expedição.", "TESTE DE QUALIDADE", 4, 0 }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Perfis",
                 columns: new[] { "Id", "Ativo", "Nome" },
                 values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000001"), true, "Administrador" });
@@ -575,14 +559,9 @@ namespace Valisys_Production.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Produtos",
-                columns: new[] { "Id", "Ativo", "CategoriaProdutoId", "Classificacao", "CodigoInternoProduto", "ControlarPorLote", "DataCadastro", "Descricao", "Nome", "Observacoes", "UnidadeMedidaId" },
-                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000005"), true, new Guid("c0de0000-0000-0000-0000-000000000006"), 0, "CA-ALFA-001", true, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Caminhão de teste para Lote.", "Caminhão Alpha", "Produto de teste para inicio do sistema", new Guid("c0de0000-0000-0000-0000-000000000002") });
-
-            migrationBuilder.InsertData(
                 table: "Usuarios",
                 columns: new[] { "Id", "Ativo", "DataCadastro", "Email", "Nome", "PerfilId", "SenhaHash" },
-                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000000"), true, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@valisys.com", "Administrador Master", new Guid("c0de0000-0000-0000-0000-000000000001"), "$2a$11$E8W15S33x7n568N46W9k6O66a0y.r9mO32y/R8k7V4t8s04D8C8u" });
+                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000000"), true, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@valisys.com", "Administrador Master", new Guid("c0de0000-0000-0000-0000-000000000001"), "$2a$12$ceV2TtMQV.UXqYGXoyMt.eV9s2YcTh0SVykcjMPxxDxjci9hoYzeG" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoriasProduto_Codigo",
