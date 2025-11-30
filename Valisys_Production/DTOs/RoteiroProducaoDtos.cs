@@ -39,13 +39,11 @@ namespace Valisys_Production.DTOs
         [Required]
         [MaxLength(50)]
         public string Codigo { get; set; }
-
+        
         [MaxLength(20)]
         public string Versao { get; set; }
-
         public string? Descricao { get; set; }
         public bool Ativo { get; set; }
-
         public List<RoteiroEtapaDto> Etapas { get; set; }
     }
 
@@ -68,6 +66,7 @@ namespace Valisys_Production.DTOs
         public Guid ProdutoId { get; set; }
         public string ProdutoNome { get; set; }
         public bool Ativo { get; set; }
+        public int TempoTotal { get; set; }
         public List<RoteiroEtapaReadDto> Etapas { get; set; }
     }
 }

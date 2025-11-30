@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Eye, Edit, Search, X, Filter } from 'lucide-react';
+import { Plus, Trash2, Eye, Edit, Search, X, Filter, Ban } from 'lucide-react';
 import fichaTecnicaService from '../../services/fichaTecnicaService.js';
 import '../../features/produto/ProdutoList.css';
 
 function FichaTecnicaList() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('ativo');
   const { data: fichas, isLoading, isError, error } = useQuery({
     queryKey: ['fichasTecnicas'],
     queryFn: fichaTecnicaService.getAll
@@ -16,21 +16,21 @@ function FichaTecnicaList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const deleteMutation = useMutation({
-    mutationFn: fichaTecnicaService.delete,
+  const inativarMutation = useMutation({
+    mutationFn: fichaTecnicaService.delete, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fichasTecnicas'] });
-      alert("Ficha Técnica removida com sucesso.");
+      alert("Ficha Técnica inativada com sucesso.");
     },
     onError: (err) => {
       console.error(err);
-      alert(`Não foi possível excluir a ficha: ${err.response?.data?.message || err.message}`);
+      alert(`Não foi possível inativar a ficha: ${err.response?.data?.message || err.message}`);
     }
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Atenção: Tem certeza que deseja remover esta Ficha Técnica? Esta ação não pode ser desfeita.")) {
-      deleteMutation.mutate(id);
+  const handleInativar = (id) => {
+    if (window.confirm("Atenção: Deseja realmente inativar esta Ficha Técnica? Ela não poderá ser usada em novas Ordens de Produção.")) {
+      inativarMutation.mutate(id);
     }
   };
 
@@ -54,7 +54,7 @@ function FichaTecnicaList() {
             <Search size={20} className="search-icon" />
             <input 
                 type="text" 
-                placeholder="Buscar por número da ficha..." 
+                placeholder="Buscar por código ou produto..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -92,11 +92,14 @@ function FichaTecnicaList() {
         <tbody>
           {fichas && fichas.length > 0 ? (
             (fichas || []).filter(ft => {
-              const matchesSearch = !searchTerm || String(ft.codigo).toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesSearch = !searchTerm || 
+                (ft.codigo && String(ft.codigo).toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (ft.produtoNome && String(ft.produtoNome).toLowerCase().includes(searchTerm.toLowerCase()));
+              
               const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'ativo' ? ft.ativa : !ft.ativa);
               return matchesSearch && matchesStatus;
             }).map((ft) => (
-              <tr key={ft.id}>
+              <tr key={ft.id} className={!ft.ativa ? 'row-inactive' : ''}>
                 <td><strong>{ft.codigo}</strong></td>
                 <td>{ft.produtoNome}</td>
                 <td>{ft.versao}</td>
@@ -113,21 +116,27 @@ function FichaTecnicaList() {
                   >
                     <Eye size={18} />
                   </button>
+                  
                   <button 
                     className="btn-icon btn-edit"
                     onClick={() => navigate(`/engenharia/fichas-tecnicas/editar/${ft.id}`)}
                     title="Editar Ficha"
+                    disabled={!ft.ativa}
+                    style={{ opacity: !ft.ativa ? 0.5 : 1 }}
                   >
                     <Edit size={18} />
                   </button>
-                  <button 
-                    className="btn-icon btn-delete"
-                    onClick={() => handleDelete(ft.id)}
-                    disabled={deleteMutation.isPending}
-                    title="Excluir Ficha"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+
+                  {ft.ativa && (
+                    <button 
+                        className="btn-icon btn-delete"
+                        onClick={() => handleInativar(ft.id)}
+                        disabled={inativarMutation.isPending}
+                        title="Inativar Ficha"
+                    >
+                        <Ban size={18} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Edit, Search, Filter, X } from 'lucide-react';
+import { Trash2, Plus, Edit, Search, Filter, X, Clock } from 'lucide-react';
 import roteiroProducaoService from '../../services/roteiroProducaoService.js';
 import '../../features/produto/ProdutoList.css';
 
@@ -15,7 +15,7 @@ function RoteiroList() {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); 
+  const [statusFilter, setStatusFilter] = useState('ativo'); 
   const deleteMutation = useMutation({
     mutationFn: roteiroProducaoService.delete,
     onSuccess: () => {
@@ -97,7 +97,7 @@ function RoteiroList() {
             <tr>
                 <th>Código</th>
                 <th>Produto</th>
-                <th>Versão</th>
+                <th style={{textAlign: 'center'}}>Tempo Total</th>
                 <th style={{textAlign: 'center'}}>Etapas</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -109,7 +109,12 @@ function RoteiroList() {
                 <tr key={r.id}>
                     <td>{r.codigo}</td>
                     <td>{r.produtoNome}</td>
-                    <td>{r.versao}</td>
+                    <td style={{textAlign: 'center', fontWeight: 'bold', color: '#4b5563'}}>
+                        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px'}}>
+                            <Clock size={14} />
+                            {r.tempoTotal} dias
+                        </div>
+                    </td>
                     <td style={{textAlign: 'center'}}>{r.etapas ? r.etapas.length : 0}</td>
                     <td>
                     <span className={r.ativo ? 'status-ativo' : 'status-inativo'}>

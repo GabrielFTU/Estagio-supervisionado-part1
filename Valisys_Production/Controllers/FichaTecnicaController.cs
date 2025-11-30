@@ -17,7 +17,6 @@ namespace Valisys_Production.Controllers
         {
             _service = service;
             _mapper = mapper;
-
         }
        
         [HttpGet]
@@ -76,6 +75,7 @@ namespace Valisys_Production.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, FichaTecnicaUpdateDto dto)
         {
@@ -92,6 +92,16 @@ namespace Valisys_Production.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var sucesso = await _service.DeleteAsync(id);
+            if (!sucesso) return NotFound();
+            return NoContent();
         }
     }
 }

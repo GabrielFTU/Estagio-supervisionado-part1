@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Valisys_Production.DTOs;
 using Valisys_Production.Models;
+using System.Linq;
 
 namespace Valisys_Production.Helpers
 {
@@ -69,7 +70,7 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.SolicitacaoProducaoId, opt => opt.Ignore())
                 .ForMember(dest => dest.Produto, opt => opt.Ignore())
                 .ForMember(dest => dest.Almoxarifado, opt => opt.Ignore())
-                .ForMember(dest => dest.FaseAtualId, opt => opt.MapFrom(src => src.FaseAtualId ?? Guid.Empty))
+                .ForMember(dest => dest.FaseAtualId, opt => opt.MapFrom(src => src.FaseAtualId == Guid.Empty ? Guid.Empty : src.FaseAtualId))
                 .ForMember(dest => dest.FaseAtual, opt => opt.Ignore())
                 .ForMember(dest => dest.Lote, opt => opt.Ignore())
                 .ForMember(dest => dest.TipoOrdemDeProducao, opt => opt.Ignore())
@@ -168,7 +169,8 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Perfil, opt => opt.Ignore());
 
             CreateMap<FichaTecnica, FichaTecnicaReadDto>()
-                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome))
+                .ForMember(dest => dest.Codigo, opt => opt.MapFrom(src => src.CodigoFicha));
 
             CreateMap<FichaTecnicaItem, FichaTecnicaItemReadDto>()
                 .ForMember(dest => dest.ProdutoComponenteNome, opt => opt.MapFrom(src => src.ProdutoComponente.Nome))
@@ -178,25 +180,14 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Itens, opt => opt.Ignore());
 
             CreateMap<RoteiroProducao, RoteiroProducaoReadDto>()
-                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
+                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome))
+                .ForMember(dest => dest.TempoTotal, opt => opt.MapFrom(src => src.Etapas != null ? src.Etapas.Sum(e => e.TempoDias) : 0));
 
             CreateMap<RoteiroProducaoEtapa, RoteiroEtapaReadDto>()
                 .ForMember(dest => dest.FaseProducaoNome, opt => opt.MapFrom(src => src.FaseProducao.Nome));
 
             CreateMap<RoteiroProducaoCreateDto, RoteiroProducao>()
                 .ForMember(dest => dest.Etapas, opt => opt.Ignore()); 
-
-            CreateMap<RoteiroProducaoUpdateDto, RoteiroProducao>()
-                .ForMember(dest => dest.Etapas, opt => opt.Ignore());
-
-            CreateMap<RoteiroProducao, RoteiroProducaoReadDto>()
-                .ForMember(dest => dest.ProdutoNome, opt => opt.MapFrom(src => src.Produto.Nome));
-
-            CreateMap<RoteiroProducaoEtapa, RoteiroEtapaReadDto>()
-                .ForMember(dest => dest.FaseProducaoNome, opt => opt.MapFrom(src => src.FaseProducao.Nome));
-
-            CreateMap<RoteiroProducaoCreateDto, RoteiroProducao>()
-                .ForMember(dest => dest.Etapas, opt => opt.Ignore());
 
             CreateMap<RoteiroProducaoUpdateDto, RoteiroProducao>()
                 .ForMember(dest => dest.Etapas, opt => opt.Ignore());
