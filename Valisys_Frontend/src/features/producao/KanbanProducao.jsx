@@ -223,7 +223,7 @@ function KanbanProducao() {
       <div className="kanban-toolbar">
         <div className="header-section">
             <div className="header-title">
-                <h1>Quadro de Produção</h1>
+                <h1 style={{ color: 'var(--text-primary)' }}>Quadro de Produção</h1>
                 <span className="live-badge">Ao Vivo</span>
             </div>
             
@@ -328,7 +328,7 @@ function KanbanProducao() {
                                         </div>
                                         <div className="card-main">
                                             <div className="product-info">
-                                                <Package size={16} className="text-primary"/> 
+                                                <Package size={16} color='#5A9EEC'/> 
                                                 <span>{ordem.produtoNome}</span>
                                             </div>
                                             <div className="card-metrics">
