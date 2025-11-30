@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-    Loader2, Calendar, Package, Hash, AlertCircle, Filter, Search, X, 
-    Settings, Eye, EyeOff, ArrowUp, ArrowDown, Route as RouteIcon 
+    Loader2, Calendar, Package, Hash, Filter, Search, X, 
+    Settings, Eye, EyeOff, ArrowUp, ArrowDown, Route as RouteIcon, Layers
 } from 'lucide-react';
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import faseProducaoService from '../../services/faseProducaoService.js';
@@ -30,7 +30,7 @@ function KanbanProducao() {
   const { data: ordensRaw, isLoading: loadingOrdens } = useQuery({ 
     queryKey: ['ordensDeProducao'], 
     queryFn: ordemDeProducaoService.getAll,
-    refetchInterval: 10000 
+    refetchInterval: 5000 
   });
 
   const { data: fasesRaw, isLoading: loadingFases } = useQuery({ 
@@ -62,20 +62,6 @@ function KanbanProducao() {
                   visible: true
               }));
           setColumnConfig(initialConfig);
-      } else if (fasesRaw && columnConfig.length > 0) {
-          const localIds = columnConfig.map(c => c.id);
-          const newPhases = fasesRaw
-              .filter(f => f.ativo && !localIds.includes((f.id || f.Id).toLowerCase()))
-              .map(f => ({
-                  id: (f.id || f.Id).toLowerCase(),
-                  nome: f.nome || f.Nome,
-                  descricao: f.descricao,
-                  visible: true
-              }));
-          
-          if (newPhases.length > 0) {
-              setColumnConfig(prev => [...prev, ...newPhases]);
-          }
       }
   }, [fasesRaw, columnConfig.length]);
 
@@ -86,11 +72,11 @@ function KanbanProducao() {
           const roteiro = roteiros.find(r => (r.produtoId === selectedProduct || r.ProdutoId === selectedProduct) && r.ativo);
           
           if (roteiro && roteiro.etapas) {
-              const fasesDoRoteiro = roteiro.etapas.map(e => (e.faseProducaoId || e.FaseProducaoId).toLowerCase());
+              const fasesDoRoteiroIds = roteiro.etapas.map(e => (e.faseProducaoId || e.FaseProducaoId).toLowerCase());
               
               setColumnConfig(prevConfig => prevConfig.map(col => ({
                   ...col,
-                  visible: fasesDoRoteiro.includes(col.id)
+                  visible: fasesDoRoteiroIds.includes(col.id)
               })));
           } else {
               setColumnConfig(prevConfig => prevConfig.map(col => ({ ...col, visible: true })));
@@ -99,6 +85,7 @@ function KanbanProducao() {
           setColumnConfig(prevConfig => prevConfig.map(col => ({ ...col, visible: true })));
       }
   }, [selectedProduct, roteiros]); 
+
   useEffect(() => {
       const handleClickOutside = (event) => {
           if (configMenuRef.current && !configMenuRef.current.contains(event.target)) {
@@ -121,22 +108,17 @@ function KanbanProducao() {
   useEffect(() => {
     if (ordensRaw && columnConfig.length > 0) {
       const grouped = {};
-      
-      columnConfig.forEach(col => {
-        grouped[col.id] = [];
-      });
+      columnConfig.forEach(col => { grouped[col.id] = []; });
 
       ordensRaw.forEach(o => {
           const rawStatus = o.status !== undefined ? o.status : o.Status;
           const status = normalizarStatus(rawStatus);
           const faseIdRaw = o.faseAtualId || o.FaseAtualId;
-          
           if (!faseIdRaw) return;
-
           const faseId = faseIdRaw.toLowerCase();
 
+          // Filtros
           if (selectedProduct && (o.produtoId || o.ProdutoId) !== selectedProduct) return;
-          
           if (searchTerm) {
               const term = searchTerm.toLowerCase();
               const match = (o.codigoOrdem?.toLowerCase().includes(term)) ||
@@ -162,14 +144,12 @@ function KanbanProducao() {
               }
           }
       });
-      
       setBoardData(grouped);
     }
   }, [ordensRaw, columnConfig, selectedProduct, searchTerm]);
 
   const onDragEnd = (result) => {
     const { source, destination, draggableId } = result;
-
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
@@ -192,7 +172,6 @@ function KanbanProducao() {
             [sourceColId]: sourceItems,
             [destColId]: destItems
         }));
-        
         moveCardMutation.mutate({ ordemId: draggableId, novaFaseId: destColId });
     }
   };
@@ -214,6 +193,11 @@ function KanbanProducao() {
       setColumnConfig(newConfig);
   };
 
+  const roteiroAtivoInfo = useMemo(() => {
+      if (!selectedProduct || !roteiros) return null;
+      return roteiros.find(r => (r.produtoId === selectedProduct || r.ProdutoId === selectedProduct) && r.ativo);
+  }, [selectedProduct, roteiros]);
+
   if (loadingOrdens || loadingFases) return <div className="loading-center"><Loader2 className="animate-spin" /> Carregando Kanban...</div>;
 
   const visibleColumns = columnConfig.filter(c => c.visible);
@@ -231,7 +215,7 @@ function KanbanProducao() {
                 <button 
                     className={`btn-config ${showConfigMenu ? 'active' : ''}`} 
                     onClick={() => setShowConfigMenu(!showConfigMenu)}
-                    title="Configurar Colunas"
+                    title="Configurar Colunas Manualmente"
                 >
                     <Settings size={20} />
                 </button>
@@ -259,23 +243,12 @@ function KanbanProducao() {
         </div>
 
         <div className="filters-area">
-            {selectedProduct && (
-                <div className="smart-filter-badge">
-                    <RouteIcon size={14} /> Filtro Inteligente: Roteiro Ativo
+            {selectedProduct && roteiroAtivoInfo && (
+                <div className="smart-filter-badge" title={`Roteiro: ${roteiroAtivoInfo.codigo}`}>
+                    <RouteIcon size={14} /> Roteiro Ativo
                 </div>
             )}
             
-            <div className="search-filter">
-                <Search size={18} className="search-icon" />
-                <input 
-                    type="text" 
-                    placeholder="Buscar OP..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {searchTerm && <X size={16} className="clear-icon" onClick={() => setSearchTerm('')} />}
-            </div>
-
             <div className="product-filter">
                 <Filter size={18} className="filter-icon" />
                 <select 
@@ -287,6 +260,17 @@ function KanbanProducao() {
                         <option key={p.id} value={p.id}>{p.nome}</option>
                     ))}
                 </select>
+            </div>
+
+            <div className="search-filter">
+                <Search size={18} className="search-icon" />
+                <input 
+                    type="text" 
+                    placeholder="Filtrar OP, Lote..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && <X size={16} className="clear-icon" onClick={() => setSearchTerm('')} />}
             </div>
         </div>
       </div>
@@ -301,7 +285,7 @@ function KanbanProducao() {
                         <div className="column-header">
                             <div className="column-title">
                                 <h3>{col.nome}</h3>
-                                {col.descricao && <small>{col.descricao}</small>}
+                                {col.descricao && <small title={col.descricao}>{col.descricao.length > 30 ? col.descricao.substring(0,30)+'...' : col.descricao}</small>}
                             </div>
                             <span className="count-badge">{cards.length}</span>
                         </div>
@@ -324,11 +308,16 @@ function KanbanProducao() {
                                     >
                                         <div className="card-top">
                                             <span className="op-code"><Hash size={12}/> {ordem.codigoOrdem}</span>
-                                            {ordem.loteNumero && <span className="lote-tag">{ordem.loteNumero}</span>}
+                                            {ordem.loteNumero && (
+                                                <span className="lote-tag" title={`Lote: ${ordem.loteNumero}`}>
+                                                    <Layers size={10} style={{marginRight:2}}/>
+                                                    {ordem.loteNumero}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="card-main">
                                             <div className="product-info">
-                                                <Package size={16} color='#5A9EEC'/> 
+                                                <Package size={16} color='var(--color-primary)'/> 
                                                 <span>{ordem.produtoNome}</span>
                                             </div>
                                             <div className="card-metrics">
@@ -345,7 +334,7 @@ function KanbanProducao() {
                                                 </div>
                                             </div>
                                         </div>
-                                        {ordem.status === 'Aguardando' && <div className="card-status-strip warning">Pausado</div>}
+                                        {ordem.status === 'Aguardando' && <div className="card-status-strip warning">PAUSADO</div>}
                                     </div>
                                     )}
                                 </Draggable>

@@ -36,6 +36,7 @@ const ROUTE_TITLES = {
     
     '/fabrica/consultar-op': 'Chão de Fábrica - Consultar O.P.',
     '/fabrica/movimentacoes': 'Chão de Fábrica - Apontamentos',
+    '/fabrica/kanban': 'Quadro de Produção (Kanban)',
     
     '/relatorios/movimentacoes': 'Relatório de Movimentações',
     '/relatorios/estoque': 'Relatório de Posição de Estoque',
@@ -76,7 +77,6 @@ function Layout() {
     document.body.className = `theme-${theme}`; 
   }, [theme]);
 
-
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
@@ -86,6 +86,8 @@ function Layout() {
          navigate(`/settings/usuarios/editar/${user.id}`);
       }
   };
+
+  const isFullScreenPage = location.pathname === '/fabrica/kanban';
 
   return (
     <div className={`app-layout theme-${theme} ${isCollapsed ? 'collapsed-mode' : 'expanded-mode'}`}> 
@@ -97,15 +99,12 @@ function Layout() {
         <header className="app-header">
             <h2 className="page-title">{getPageTitle(location.pathname)}</h2> 
             <div className="header-actions">
-                
                 <button className="icon-action" onClick={toggleTheme} title={`Mudar para Tema ${theme === 'dark' ? 'Claro' : 'Escuro'}`}>
                     {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />} 
                 </button>
-                
                 <button className="icon-action">
                     <Bell size={20} />
                 </button>
-
                 <div className="user-profile" onClick={handleProfileClick} role="button" tabIndex={0}>
                     <User size={20} className="profile-icon" />
                     <span className="user-name">{displayUserName}</span>
@@ -114,7 +113,7 @@ function Layout() {
             </div>
         </header>
         
-        <main className="content-area">
+        <main className={`content-area ${isFullScreenPage ? 'full-screen-mode' : ''}`}>
           <Outlet />
         </main>
       </div>

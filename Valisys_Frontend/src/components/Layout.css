@@ -388,7 +388,12 @@
     padding: 24px;
     overflow-y: auto;
 }
-
+.content-area.full-screen-mode {
+    padding: 0;
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+}
 .settings-groups-container {
     padding: 4px 0;
     margin: 4px 0 8px 12px;

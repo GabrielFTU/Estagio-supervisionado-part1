@@ -83,7 +83,7 @@ function FichaTecnicaList() {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Produto (Pai)</th>
+            <th>Produto</th>
             <th>Versão</th>
             <th>Status</th>
             <th>Ações</th>

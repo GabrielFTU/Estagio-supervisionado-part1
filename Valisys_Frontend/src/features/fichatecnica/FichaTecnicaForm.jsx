@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 import fichaTecnicaService from '../../services/fichaTecnicaService.js';
 import produtoService from '../../services/produtoService.js';
@@ -38,7 +38,7 @@ function FichaTecnicaForm() {
     watch,
     reset,
     setValue,
-    formState: { errors, isSubmitting } 
+    formState: { errors } 
   } = useForm({
     resolver: zodResolver(fichaTecnicaSchema),
     defaultValues: {
@@ -136,16 +136,20 @@ function FichaTecnicaForm() {
 
   return (
     <div className="form-container" style={{maxWidth: '1000px'}}>
-      <h1>{isEditing ? 'Editar Ficha Técnica' : 'Nova Ficha Técnica'}</h1>
+      <h1>{isEditing ? 'Editar Ficha Técnica' : 'NOVA FICHA TÉCNICA'}</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-section">
-            <h3 style={{marginTop: 0, color: 'var(--color-primary)'}}>Dados Gerais</h3>
+            <h3 style={{marginTop: 0, color: 'var(--color-primary)'}}>DADOS GERAIS</h3>
             
             <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
                 <div className="form-group" style={{flex: 2, minWidth: '300px'}}>
-                    <label>Produto (Pai)</label>
-                    <select {...register('produtoId')} disabled={isEditing} style={isEditing ? {backgroundColor: '#f0f0f0', cursor: 'not-allowed'} : {}}>
+                    <label>PRODUTO <span style={{color: 'var(--color-danger)'}}>*</span> </label>
+                    <select 
+                        {...register('produtoId')} 
+                        disabled={isEditing} 
+                        style={isEditing ? {backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-secondary)'} : {}}
+                    >
                         <option value="">Selecione...</option>
                         {produtosPais.map(p => (
                             <option key={p.id} value={p.id}>{p.nome} ({p.codigo})</option>
@@ -155,33 +159,32 @@ function FichaTecnicaForm() {
                 </div>
 
                 <div className="form-group" style={{flex: 1}}>
-                    <label>Código</label>
+                    <label>CÓDIGO</label>
                     <input 
                         {...register('codigo')} 
                         disabled 
-                        style={{backgroundColor: '#e9ecef', color: '#495057', fontWeight: 'bold'}}
+                        style={{backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)', fontWeight: 'bold', opacity: 0.8}}
                         placeholder="Carregando..."
                     />
                     {errors.codigo && <span className="error">{errors.codigo.message}</span>}
                 </div>
 
                 <div className="form-group" style={{flex: 1}}>
-                    <label>Versão</label>
+                    <label>VERSÃO <span style={{color: 'var(--color-danger)'}}>*</span></label>
                     <input {...register('versao')} placeholder="1.0" />
                     {errors.versao && <span className="error">{errors.versao.message}</span>}
                 </div>
             </div>
 
             <div className="form-group">
-                <label>Descrição</label>
+                <label>DESCRIÇÃO</label>
                 <textarea {...register('descricao')} rows={2} />
             </div>
 
-            {
-            isEditing && (
-                <div className="form-group-checkbox" style={{marginTop: '15px', padding: '10px', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffeeba'}}>
+            {isEditing && (
+                <div className="form-group-checkbox" style={{marginTop: '15px', padding: '10px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', border: '1px solid var(--border-color)'}}>
                     <input type="checkbox" id="ativa" {...register('ativa')} />
-                    <label htmlFor="ativa" style={{color: '#856404'}}>
+                    <label htmlFor="ativa" style={{color: 'var(--text-primary)'}}>
                         Ficha Técnica Ativa? (Desmarque para inativar)
                     </label>
                 </div>
@@ -190,7 +193,7 @@ function FichaTecnicaForm() {
 
         <div className="form-section">
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-                <h3 style={{margin: 0, color: 'var(--color-primary)'}}>Componentes</h3>
+                <h3 style={{margin: 0, color: 'var(--color-primary)'}}>COMPONENTES</h3>
                 <button 
                     type="button" 
                     className="btn-new" 
@@ -200,15 +203,15 @@ function FichaTecnicaForm() {
                 </button>
             </div>
 
-            {errors.itens && <div className="error" style={{marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px'}}>{errors.itens.message}</div>}
+            {errors.itens && <div className="error" style={{marginBottom: '10px', padding: '10px', backgroundColor: 'rgba(220, 53, 69, 0.1)', borderRadius: '4px'}}>{errors.itens.message}</div>}
 
             <div className="table-responsive">
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th style={{width: '50%'}}>Componente / Matéria-Prima</th>
-                            <th style={{width: '20%'}}>Qtd</th>
-                            <th style={{width: '20%'}}>Perda (%)</th>
+                            <th style={{width: '50%'}}>COMPONENTES <span style={{color: 'var(--color-danger)'}}>*</span></th>
+                            <th style={{width: '20%'}}>QTD</th>
+                            <th style={{width: '20%'}}>PERDA (%)</th>
                             <th style={{width: '10%'}}></th>
                         </tr>
                     </thead>
@@ -216,28 +219,43 @@ function FichaTecnicaForm() {
                         {fields.map((item, index) => (
                             <tr key={item.id}>
                                 <td>
-                                    <select {...register(`itens.${index}.produtoComponenteId`)} style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}}>
-                                        <option value="">Selecione o componente...</option>
+                                    <select 
+                                        {...register(`itens.${index}.produtoComponenteId`)} 
+                                        style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)'}}
+                                    >
+                                        <option value="">SELECIONE O COMPONENTE...</option>
                                         {produtosComponentes.filter(p => p.id !== produtoPaiSelecionado).map(p => (
                                             <option key={p.id} value={p.id}>{p.nome} ({p.unidadeMedidaSigla})</option>
                                         ))}
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" step="0.0001" {...register(`itens.${index}.quantidade`)} style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}} />
+                                    <input 
+                                        type="number" 
+                                        step="0.0001" 
+                                        {...register(`itens.${index}.quantidade`)} 
+                                        style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)'}} 
+                                    />
                                 </td>
                                 <td>
-                                    <input type="number" step="0.1" {...register(`itens.${index}.perdaPercentual`)} style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}} />
+                                    <input 
+                                        type="number" 
+                                        step="0.1" 
+                                        {...register(`itens.${index}.perdaPercentual`)} 
+                                        style={{width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)'}} 
+                                    />
                                 </td>
                                 <td style={{textAlign: 'center'}}>
-                                    <button type="button" className="btn-icon btn-delete" onClick={() => remove(index)} title="Remover componente"><Trash2 size={18} /></button>
+                                    <button type="button" className="btn-icon btn-delete" onClick={() => remove(index)} title="Remover componente">
+                                        <Trash2 size={18} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 {fields.length === 0 && (
-                    <div style={{textAlign: 'center', padding: '20px', color: '#666', fontStyle: 'italic'}}>
+                    <div style={{textAlign: 'center', padding: '20px', color: 'var(--text-secondary)', fontStyle: 'italic'}}>
                         Nenhum componente inserido na ficha. Clique em "Adicionar Componente" para iniciar.
                     </div>
                 )}
