@@ -146,6 +146,9 @@ function App() {
           <Route path="/fabrica/kanban" element={<KanbanProducao />} />
           <Route path="/fabrica/consultar-op" element={<ConsultaOP />} />
 
+          <Route path="/settings/cadastros/fases" element={<FaseProducaoList />} />
+          <Route path="/settings/cadastros/fases/novo" element={<FaseProducaoForm />} />
+
         </Route>
       </Route>
       

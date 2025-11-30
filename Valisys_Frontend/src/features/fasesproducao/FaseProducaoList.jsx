@@ -76,7 +76,7 @@ function FaseProducaoList() {
     setCurrentPage(1);
   };
 
-  const basePath = "/settings/cadastros/fasesproducao";
+  const basePath = "/settings/cadastros/fases";
 
   if (isLoading) return <div className="loading-message">Carregando...</div>;
   if (isError) return <div className="error-message">Erro: {error.message}</div>;
@@ -96,7 +96,6 @@ function FaseProducaoList() {
         </Link>
       </div>
 
-      {/* TOOLBAR MANUAL */}
       <div className="toolbar-container">
         <div className="search-box">
           <Search size={20} className="search-icon" />
