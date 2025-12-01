@@ -186,6 +186,7 @@ function OrdemDeProducaoForm() {
   const exigeLote = produtoSelecionadoObj?.controlarPorLote || produtoSelecionadoObj?.ControlarPorLote;
 
   return (
+<<<<<<< HEAD
     <div className="op-container">
       <div className="op-header">
         <div>
@@ -436,6 +437,82 @@ function OrdemDeProducaoForm() {
           </button>
           <button type="submit" className="btn-submit" disabled={createMutation.isPending || updateMutation.isPending}>
             {(createMutation.isPending || updateMutation.isPending) ? 'Processando...' : <><Save size={18} /> Salvar Ordem</>}
+=======
+    <div className="form-container">
+      <h1>Nova ordem de produção</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
+        <div className="form-group">
+          <label htmlFor="nome">Nome<span style={{color: 'var(--color-danger)'}}>*</span></label>
+          <input id="nome" {...register('nome')} />
+          {errors.nome && <span className="error">{errors.nome.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="descricao">Descrição<span style={{color: 'var(--color-danger)'}}>*</span></label>
+          <input id="descricao" {...register('descricao')} />
+          {errors.descricao && <span className="error">{errors.descricao.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="categoriaProdutoId">Categoria<span style={{color: 'var(--color-danger)'}}>*</span></label>
+          <select id="categoriaProdutoId" {...register('categoriaProdutoId')}>
+            <option value="" disabled>Selecione<span style={{color: 'var(--color-danger)'}}>*</span></option>
+            {categorias?.map(c => (
+                <option key={c.id || c.Id} value={c.id || c.Id}>{c.nome || c.Nome}</option>
+            ))}
+          </select>
+          {errors.categoriaProdutoId && <span className="error">{errors.categoriaProdutoId.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="unidadeMedidaId">Unidade<span style={{color: 'var(--color-danger)'}}>*</span></label>
+          <select id="unidadeMedidaId" {...register('unidadeMedidaId')}>
+            <option value="" disabled>Selecione</option>
+            {unidades?.map(u => (
+                <option key={u.id || u.Id} value={u.id || u.Id}>{u.nome || u.Nome} ({u.sigla || u.Sigla})</option>
+            ))}
+          </select>
+          {errors.unidadeMedidaId && <span className="error">{errors.unidadeMedidaId.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="classificacao">Classificação</label>
+          <select id="classificacao" {...register('classificacao')}>
+            {CLASSIFICACAO_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {errors.classificacao && <span className="error">{errors.classificacao.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="estoqueMinimo">Estoque Mínimo</label>
+          <input id="estoqueMinimo" type="number" step="0.01" {...register('estoqueMinimo')} />
+          {errors.estoqueMinimo && <span className="error">{errors.estoqueMinimo.message}</span>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="observacoes">Observações</label>
+          <textarea id="observacoes" {...register('observacoes')} rows="3" />
+        </div>
+
+        <div className="form-group-checkbox">
+          <input type="checkbox" id="controlarPorLote" {...register('controlarPorLote')} />
+          <label htmlFor="controlarPorLote">Controlar por Lote?</label>
+        </div>
+
+        <div className="form-group-checkbox">
+          <input type="checkbox" id="ativo" {...register('ativo')} />
+          <label htmlFor="ativo">Produto Ativo?</label>
+        </div>
+
+        <div className="form-actions">
+          <button type="button" onClick={() => navigate('/estoque/produtos')} className="btn-cancelar">
+            Cancelar
+          </button>
+          <button type="submit" className="btn-salvar" disabled={isSubmitting || updateMutation.isPending}>
+            {updateMutation.isPending ? 'Salvando...' : 'Salvar Ordem de Produção'}
+>>>>>>> refs/remotes/origin/main
           </button>
         </div>
 

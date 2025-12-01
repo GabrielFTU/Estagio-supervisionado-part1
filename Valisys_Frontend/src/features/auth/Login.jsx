@@ -61,10 +61,9 @@ function Login() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="login-form">
             <div className="form-group">
-              <label htmlFor="email">E-mail</label>
+              <label htmlFor="email" style={{color:'white'}}>E-mail</label>
               <div className={`input-group ${errors.email ? 'error' : ''}`}>
-                <Mail size={20} className="input-icon" />
-                <input 
+                <input style={{color:'white'}}
                   id="email" 
                   type="email" 
                   placeholder="usuario@empresa.com"
@@ -75,10 +74,9 @@ function Login() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="senha">Senha</label>
+              <label htmlFor="senha" style={{color:'white'}}>Senha</label>
               <div className={`input-group ${errors.senha ? 'error' : ''}`}>
-                <Lock size={20} className="input-icon" />
-                <input 
+                <input style={{color:'white'}}
                   id="senha" 
                   type="password" 
                   placeholder="••••••••"
