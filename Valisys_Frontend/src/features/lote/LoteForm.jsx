@@ -111,7 +111,6 @@ function LoteForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
-<<<<<<< HEAD
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
             <div className="form-group">
               <label htmlFor="codigoLote" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -166,44 +165,6 @@ function LoteForm() {
                 <label htmlFor="dataFabricacao" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                    <Calendar size={16} /> FABRICAÇÃO
                 </label>
-=======
-        <div className="form-group">
-          <label htmlFor="codigoLote">Código/Número do Lote<span style={{color: 'var(--color-danger)'}}>*</span></label>
-          <input id="codigoLote" {...register('codigoLote')} placeholder="Ex: LT-2024-AB" />
-          {errors.codigoLote && <span className="error">{errors.codigoLote.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="produtoId">Produto<span style={{color: 'var(--color-danger)'}}>*</span></label>
-          <select id="produtoId" {...register('produtoId')} disabled={isEditing && lote}>
-            <option value="" disabled>Selecione o produto...</option>
-            {produtos?.filter(p => p.controlarPorLote || p.ControlarPorLote).map(p => (
-              <option key={p.id || p.Id} value={p.id || p.Id}>
-                {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
-              </option>
-            ))}
-          </select>
-          <small style={{color: '#666'}}>Apenas produtos controlados por lote são exibidos.</small>
-          {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="almoxarifadoId">Almoxarifado (Localização)<span style={{color: 'var(--color-danger)'}}>*</span></label>
-          <select id="almoxarifadoId" {...register('almoxarifadoId')}>
-            <option value="" disabled>Selecione o almoxarifado...</option>
-            {almoxarifados?.map(a => (
-              <option key={a.id || a.Id} value={a.id || a.Id}>
-                {a.nome || a.Nome}
-              </option>
-            ))}
-          </select>
-          {errors.almoxarifadoId && <span className="error">{errors.almoxarifadoId.message}</span>}
-        </div>
-
-        <div style={{display: 'flex', gap: '20px'}}>
-            <div className="form-group" style={{flex: 1}}>
-                <label htmlFor="dataFabricacao">Data de Fabricação/Abertura</label>
->>>>>>> refs/remotes/origin/main
                 <input type="date" id="dataFabricacao" {...register('dataFabricacao')} />
             </div>
             
