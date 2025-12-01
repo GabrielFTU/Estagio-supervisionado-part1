@@ -11,7 +11,7 @@ namespace Valisys_Production.Models
         [MaxLength(255)]
         public string Nome { get; set; }
 
-        [Required]
+        [Required] // Descrição continua obrigatória
         public string Descricao { get; set; }
 
         [Required]
@@ -23,14 +23,13 @@ namespace Valisys_Production.Models
         public string Responsavel { get; set; }
 
         [MaxLength(20)]
-        public string Contato { get; set; }
+        public string? Contato { get; set; }
 
         [MaxLength(100)]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; } 
+
         public bool Ativo { get; set; } = true;
         public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     }
-
 }
-

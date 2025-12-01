@@ -122,7 +122,7 @@ function TipoOrdemDeProducaoForm() {
             
             <div className="form-group">
                 <label htmlFor="codigo" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Hash size={16} /> CODIGO(SIGLA) <span style={{color: 'var(--color-danger)'}}>*</span></label>
+                    <Hash size={16} /> CODIGO (SIGLA) <span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <input 
                     id="codigo" 
                     {...register('codigo')} 

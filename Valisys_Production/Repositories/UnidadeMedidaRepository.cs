@@ -19,8 +19,8 @@ namespace Valisys_Production.Repositories
 
         public async Task<UnidadeMedida> AddAsync(UnidadeMedida unidadeMedida)
         {
-
             _context.UnidadesMedida.Add(unidadeMedida);
+            await _context.SaveChangesAsync();
             return unidadeMedida;
         }
 
@@ -38,13 +38,21 @@ namespace Valisys_Production.Repositories
 
         public async Task<bool> UpdateAsync(UnidadeMedida unidadeMedida)
         {
-  
-            _context.Entry(unidadeMedida).State = EntityState.Modified;
+            var existing = await _context.UnidadesMedida.FindAsync(unidadeMedida.Id);
+            if (existing == null) return false;
+
+            existing.Nome = unidadeMedida.Nome;
+            existing.Sigla = unidadeMedida.Sigla;
+            existing.Grandeza = unidadeMedida.Grandeza;
+            existing.FatorConversao = unidadeMedida.FatorConversao;
+            existing.EhUnidadeBase = unidadeMedida.EhUnidadeBase;
+            existing.Ativo = unidadeMedida.Ativo; 
+
+            _context.Entry(existing).State = EntityState.Modified;
 
             try
             {
-         
-                return true;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -58,9 +66,10 @@ namespace Valisys_Production.Repositories
 
             if (unidadeMedida != null)
             {
-                _context.UnidadesMedida.Remove(unidadeMedida);
+                unidadeMedida.Ativo = false;
+                _context.Entry(unidadeMedida).State = EntityState.Modified;
           
-                return true;
+                return await _context.SaveChangesAsync() > 0;
             }
 
             return false;

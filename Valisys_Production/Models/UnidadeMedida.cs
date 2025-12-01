@@ -25,9 +25,15 @@ namespace Valisys_Production.Models
         [Required]
         [MaxLength(10)]
         public string Sigla { get; set; } 
+        
         public GrandezaUnidade Grandeza { get; set; }
+        
         public decimal FatorConversao { get; set; } = 1;
+        
         public bool EhUnidadeBase { get; set; } = false;
+        
+        public bool Ativo { get; set; } = true;
+
         public ICollection<Produto> Produtos { get; set; }
     }
 }

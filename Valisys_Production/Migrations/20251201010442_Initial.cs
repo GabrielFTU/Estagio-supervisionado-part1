@@ -23,8 +23,8 @@ namespace Valisys_Production.Migrations
                     Descricao = table.Column<string>(type: "text", nullable: false),
                     Localizacao = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Responsavel = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Contato = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Contato = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Ativo = table.Column<bool>(type: "boolean", nullable: false),
                     DataCadastro = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -122,7 +122,8 @@ namespace Valisys_Production.Migrations
                     Sigla = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Grandeza = table.Column<int>(type: "integer", nullable: false),
                     FatorConversao = table.Column<decimal>(type: "numeric", nullable: false),
-                    EhUnidadeBase = table.Column<bool>(type: "boolean", nullable: false)
+                    EhUnidadeBase = table.Column<bool>(type: "boolean", nullable: false),
+                    Ativo = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -531,30 +532,30 @@ namespace Valisys_Production.Migrations
 
             migrationBuilder.InsertData(
                 table: "UnidadesMedida",
-                columns: new[] { "Id", "EhUnidadeBase", "FatorConversao", "Grandeza", "Nome", "Sigla" },
+                columns: new[] { "Id", "Ativo", "EhUnidadeBase", "FatorConversao", "Grandeza", "Nome", "Sigla" },
                 values: new object[,]
                 {
-                    { new Guid("c0de0000-0000-0000-0000-000000000002"), true, 1m, 0, "Unidade", "UN" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000003"), true, 1m, 1, "Kilograma", "KG" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000012"), true, 1m, 2, "Metro", "M" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000020"), false, 1m, 0, "Peça", "PC" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000021"), false, 1m, 0, "Caixa", "CX" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000022"), false, 1m, 0, "Kit", "KIT" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000023"), false, 12m, 0, "Dúzia", "DZ" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000024"), false, 1000m, 0, "Milheiro", "MIL" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000031"), false, 0.000001m, 1, "Miligrama", "MG" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000032"), false, 1000m, 1, "Tonelada", "TON" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000040"), false, 0.01m, 2, "Centímetro", "CM" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000041"), false, 0.001m, 2, "Milímetro", "MM" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000042"), false, 1000m, 2, "Quilômetro", "KM" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000050"), true, 1m, 3, "Litro", "L" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000051"), false, 0.001m, 3, "Mililitro", "ML" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000052"), false, 1000m, 3, "Metro Cúbico", "M3" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000060"), true, 1m, 5, "Metro Quadrado", "M2" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000061"), false, 0.0001m, 5, "Centímetro Quadrado", "CM2" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000070"), true, 1m, 4, "Hora", "H" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000071"), false, 0.0166667m, 4, "Minuto", "MIN" },
-                    { new Guid("c0de0000-0000-0000-0000-000000000099"), false, 0.001m, 1, "Grama", "G" }
+                    { new Guid("c0de0000-0000-0000-0000-000000000002"), true, true, 1m, 0, "Unidade", "UN" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000003"), true, true, 1m, 1, "Kilograma", "KG" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000012"), true, true, 1m, 2, "Metro", "M" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000020"), true, false, 1m, 0, "Peça", "PC" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000021"), true, false, 1m, 0, "Caixa", "CX" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000022"), true, false, 1m, 0, "Kit", "KIT" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000023"), true, false, 12m, 0, "Dúzia", "DZ" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000024"), true, false, 1000m, 0, "Milheiro", "MIL" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000031"), true, false, 0.000001m, 1, "Miligrama", "MG" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000032"), true, false, 1000m, 1, "Tonelada", "TON" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000040"), true, false, 0.01m, 2, "Centímetro", "CM" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000041"), true, false, 0.001m, 2, "Milímetro", "MM" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000042"), true, false, 1000m, 2, "Quilômetro", "KM" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000050"), true, true, 1m, 3, "Litro", "L" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000051"), true, false, 0.001m, 3, "Mililitro", "ML" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000052"), true, false, 1000m, 3, "Metro Cúbico", "M3" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000060"), true, true, 1m, 5, "Metro Quadrado", "M2" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000061"), true, false, 0.0001m, 5, "Centímetro Quadrado", "CM2" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000070"), true, true, 1m, 4, "Hora", "H" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000071"), true, false, 0.0166667m, 4, "Minuto", "MIN" },
+                    { new Guid("c0de0000-0000-0000-0000-000000000099"), true, false, 0.001m, 1, "Grama", "G" }
                 });
 
             migrationBuilder.InsertData(

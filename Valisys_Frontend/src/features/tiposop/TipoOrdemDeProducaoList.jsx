@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, Layers, Plus } from 'lucide-react';
+import { Search, Filter, Layers, Plus, Edit, Ban } from 'lucide-react'; 
 import tipoOrdemDeProducaoService from '../../services/tipoOrdemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -23,13 +23,16 @@ function TipoOrdemDeProducaoList() {
     mutationFn: tipoOrdemDeProducaoService.delete, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tiposOrdemDeProducao'] });
-      alert("Tipo OP excluído com sucesso!");
+      alert("Status do Tipo de OP alterado com sucesso!");
     },
-    onError: () => alert("Erro ao excluir.")
+    onError: (err) => alert(`Erro ao alterar status: ${err.response?.data?.message || err.message}`)
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza?")) deleteMutation.mutate(id);
+  const handleInativar = (id, ativo) => {
+    const acao = ativo ? "inativar" : "ativar";
+    if (window.confirm(`Tem certeza que deseja ${acao} este Tipo de Ordem de Produção?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const basePath = '/settings/cadastros/tiposop';
@@ -60,13 +63,18 @@ function TipoOrdemDeProducaoList() {
     <div className="page-container">
 
       <div className="page-header">
-        <h1>Gerenciamento de Tipos de Ordem de Produção</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Layers size={28} className="text-primary" />
+            Gerenciamento de Tipos de O.P.
+        </h1>
         <Link to={`${basePath}/novo`} className="btn-new">
-          + Novo Tipo de OP
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Plus size={18} />
+            <span>Novo Tipo</span>
+          </div>
         </Link>
       </div>
 
-      {/* TOOLBAR MANUAL */}
       <div className="toolbar-container">
         <div className="search-box">
           <Search size={20} className="search-icon" />
@@ -105,9 +113,9 @@ function TipoOrdemDeProducaoList() {
         <tbody>
           {filteredTipos.length > 0 ? (
             filteredTipos.map(tipo => (
-              <tr key={tipo.id}>
+              <tr key={tipo.id} className={!tipo.ativo ? 'row-inactive' : ''}>
                 <td>{tipo.nome}</td>
-                <td>{tipo.codigo}</td>
+                <td><strong>{tipo.codigo}</strong></td>
                 <td>
                   <span className={tipo.ativo ? 'status-ativo' : 'status-inativo'}>
                     {tipo.ativo ? 'Ativo' : 'Inativo'}
@@ -115,17 +123,20 @@ function TipoOrdemDeProducaoList() {
                 </td>
                 <td className="acoes-cell">
                   <button
-                    className="btn-editar"
+                    className="btn-icon btn-edit"
                     onClick={() => navigate(`${basePath}/editar/${tipo.id}`)}
+                    title="Editar"
                   >
-                    Editar
+                    <Edit size={18} />
                   </button>
 
                   <button
-                    className="btn-deletar"
-                    onClick={() => handleDelete(tipo.id)}
+                    className="btn-icon btn-delete"
+                    onClick={() => handleInativar(tipo.id, tipo.ativo)}
+                    disabled={deleteMutation.isPending}
+                    title={tipo.ativo ? "Inativar Tipo" : "Ativar Tipo"}
                   >
-                    Excluir
+                    <Ban size={18} />
                   </button>
                 </td>
               </tr>

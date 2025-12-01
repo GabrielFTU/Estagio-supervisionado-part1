@@ -33,7 +33,6 @@ namespace Valisys_Production.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Contato")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
@@ -45,7 +44,6 @@ namespace Valisys_Production.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -713,6 +711,9 @@ namespace Valisys_Production.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("EhUnidadeBase")
                         .HasColumnType("boolean");
 
@@ -740,6 +741,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000002"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 0,
@@ -749,6 +751,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000020"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1m,
                             Grandeza = 0,
@@ -758,6 +761,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000021"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1m,
                             Grandeza = 0,
@@ -767,6 +771,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000022"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1m,
                             Grandeza = 0,
@@ -776,6 +781,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000023"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 12m,
                             Grandeza = 0,
@@ -785,6 +791,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000024"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1000m,
                             Grandeza = 0,
@@ -794,6 +801,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000003"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 1,
@@ -803,6 +811,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000099"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.001m,
                             Grandeza = 1,
@@ -812,6 +821,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000031"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.000001m,
                             Grandeza = 1,
@@ -821,6 +831,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000032"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1000m,
                             Grandeza = 1,
@@ -830,6 +841,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000012"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 2,
@@ -839,6 +851,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000040"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.01m,
                             Grandeza = 2,
@@ -848,6 +861,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000041"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.001m,
                             Grandeza = 2,
@@ -857,6 +871,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000042"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1000m,
                             Grandeza = 2,
@@ -866,6 +881,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000050"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 3,
@@ -875,6 +891,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000051"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.001m,
                             Grandeza = 3,
@@ -884,6 +901,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000052"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 1000m,
                             Grandeza = 3,
@@ -893,6 +911,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000060"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 5,
@@ -902,6 +921,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000061"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.0001m,
                             Grandeza = 5,
@@ -911,6 +931,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000070"),
+                            Ativo = true,
                             EhUnidadeBase = true,
                             FatorConversao = 1m,
                             Grandeza = 4,
@@ -920,6 +941,7 @@ namespace Valisys_Production.Migrations
                         new
                         {
                             Id = new Guid("c0de0000-0000-0000-0000-000000000071"),
+                            Ativo = true,
                             EhUnidadeBase = false,
                             FatorConversao = 0.0166667m,
                             Grandeza = 4,

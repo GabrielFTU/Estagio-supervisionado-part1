@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, Ruler, Edit, Trash2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Filter, Ruler, Edit, Ban } from 'lucide-react';
 import unidadeMedidaService from '../../services/unidadeMedidaService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -27,19 +27,22 @@ function UnidadeMedidaList() {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all'); 
 
-  const deleteMutation = useMutation({
+  const statusMutation = useMutation({
     mutationFn: unidadeMedidaService.delete, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unidadesMedida'] });
-      alert("Unidade excluída!");
+      alert("Status da unidade alterado com sucesso!");
     },
-    onError: () => alert("Erro ao excluir.")
+    onError: (err) => alert(`Erro ao alterar status: ${err.response?.data?.message || err.message}`)
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Excluir unidade?")) deleteMutation.mutate(id);
+  const handleStatusChange = (id, ativo) => {
+    const acao = ativo ? "inativar" : "ativar";
+    if (window.confirm(`Deseja realmente ${acao} esta unidade de medida?`)) {
+      statusMutation.mutate(id);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -50,18 +53,16 @@ function UnidadeMedidaList() {
     return unidades.filter(u => {
       const text = `${u.sigla} ${u.nome}`.toLowerCase();
       const matchesSearch = text.includes(q);
-      const matchesStatus =
-        filterStatus === 'all'
-          ? true
-          : filterStatus === 'active'
-          ? u.ativo
-          : !u.ativo;
+      
+      let matchesStatus = true;
+      if (filterStatus === 'active') matchesStatus = u.ativo === true;
+      if (filterStatus === 'inactive') matchesStatus = u.ativo === false;
 
       return matchesSearch && matchesStatus;
     });
   }, [unidades, searchTerm, filterStatus]);
 
-  if (isLoading) return <div className="loading-message">Carregando...</div>;
+  if (isLoading) return <div className="loading-message">Carregando unidades...</div>;
   if (isError) return <div className="error-message">Erro: {error.message}</div>;
 
   const basePath = "/settings/cadastros/unidades";
@@ -74,14 +75,8 @@ function UnidadeMedidaList() {
           <Ruler size={28} className="text-primary" />
           Unidades de Medida
         </h1>
-
-        <Link to={`${basePath}/novo`} className="btn-new">
-          <Plus size={18} />
-          Nova Unidade
-        </Link>
       </div>
 
-      {/* TOOLBAR MANUAL */}
       <div className="toolbar-container">
         <div className="search-box">
           <Search size={20} className="search-icon" />
@@ -101,8 +96,8 @@ function UnidadeMedidaList() {
             onChange={e => setFilterStatus(e.target.value)}
           >
             <option value="all">Todos os Status</option>
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
+            <option value="active">Apenas Ativas</option>
+            <option value="inactive">Apenas Inativas</option>
           </select>
         </div>
       </div>
@@ -110,42 +105,58 @@ function UnidadeMedidaList() {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Sigla</th>
+            <th style={{width: '80px'}}>Sigla</th>
             <th>Nome</th>
-            <th>Grandeza</th>
+            <th>Tipo</th>
             <th>Fator</th>
-            <th>Ações</th>
+            <th>Status</th>
+            <th style={{width: '100px'}}>Ações</th>
           </tr>
         </thead>
 
         <tbody>
           {filtered.length > 0 ? (
             filtered.map(u => (
-              <tr key={u.id}>
-                <td><strong>{u.sigla}</strong></td>
+              <tr key={u.id} className={!u.ativo ? 'row-inactive' : ''}>
+                <td><strong style={{color: 'var(--text-primary)'}}>{u.sigla}</strong></td>
                 <td>{u.nome}</td>
                 <td>{GRANDEZAS_LABEL[u.grandeza]}</td>
-                <td>{u.ehUnidadeBase ? "BASE (1.0)" : u.fatorConversao}</td>
+                <td>
+                    {u.ehUnidadeBase ? (
+                        <span style={{color: '#16a34a', fontWeight: 'bold', fontSize: '0.85rem'}}>PADRÃO (1.0)</span>
+                    ) : (
+                        u.fatorConversao
+                    )}
+                </td>
+                
+                <td>
+                  <span className={u.ativo ? 'status-ativo' : 'status-inativo'}>
+                    {u.ativo ? 'Ativa' : 'Inativa'}
+                  </span>
+                </td>
 
                 <td className="acoes-cell">
                   <button 
-                    className="btn-editar"
+                    className="btn-icon btn-edit"
                     onClick={() => navigate(`${basePath}/editar/${u.id}`)}
+                    title="Editar"
                   >
                     <Edit size={18} />
                   </button>
 
                   <button
-                    className="btn-deletar"
-                    onClick={() => handleDelete(u.id)}
+                    className="btn-icon btn-delete"
+                    onClick={() => handleStatusChange(u.id, u.ativo)}
+                    disabled={statusMutation.isPending}
+                    title={u.ativo ? "Inativar Unidade" : "Ativar Unidade"}
                   >
-                    <Trash2 size={18} />
+                    <Ban size={18} />
                   </button>
                 </td>
               </tr>
             ))
           ) : (
-            <tr><td colSpan="5" className="empty-state">Nenhuma Unidade encontrada.</td></tr>
+            <tr><td colSpan="6" className="empty-state">Nenhuma Unidade encontrada.</td></tr>
           )}
         </tbody>
       </table>

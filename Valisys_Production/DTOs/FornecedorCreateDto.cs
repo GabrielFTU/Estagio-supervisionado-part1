@@ -17,7 +17,7 @@ namespace Valisys_Production.DTOs
         public TipoDocumento TipoDocumento { get; set; }
 
         [MaxLength(255)]
-        public string Endereco { get; set; }
+        public string? Endereco { get; set; }
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
         [EmailAddress(ErrorMessage = "E-mail inválido.")]
@@ -28,9 +28,9 @@ namespace Valisys_Production.DTOs
         [MaxLength(20)]
         public string Telefone { get; set; }
 
-        public bool Ativo { get; set; } = true;
-
         [MaxLength(500)]
         public string? Observacoes { get; set; }
+
+        public bool Ativo { get; set; } = true;
     }
 }

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Edit, Trash2, UserPlus, AlertCircle, Search, Filter } from 'lucide-react';
+import { Edit, Ban, UserPlus, AlertCircle, Search, Filter } from 'lucide-react'; 
 import perfilService from '../../services/perfilService.js';
 import '../../features/produto/ProdutoList.css';
 
@@ -26,22 +26,21 @@ function PerfilList() {
     mutationFn: perfilService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perfis'] });
-      alert("Perfil excluído com sucesso!");
+      alert("Status do perfil alterado com sucesso!");
     },
     onError: (err) => {
       const errorMessage = err.response?.data?.message || 
-        "Erro ao excluir. Verifique se há usuários vinculados.";
+        "Erro ao alterar status. Verifique se há usuários vinculados.";
       alert(errorMessage);
     }
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este perfil?")) {
+  const handleInativar = (id) => {
+    if (window.confirm("Deseja alterar o status (Ativar/Inativar) deste perfil?")) {
       deleteMutation.mutate(id);
     }
   };
 
-  // 🔎 FILTRAGEM
   const perfisFiltrados = useMemo(() => {
     if (!perfis) return [];
 
@@ -83,7 +82,6 @@ function PerfilList() {
         </Link>
       </div>
 
-      {/* ███ TOOLBAR ███ */}
       <div className="toolbar-container">
         <div className="search-box">
           <Search size={20} className="search-icon" />
@@ -108,7 +106,6 @@ function PerfilList() {
           </select>
         </div>
       </div>
-      {/* ███ FIM TOOLBAR ███ */}
 
       <table className="data-table">
         <thead>
@@ -121,7 +118,7 @@ function PerfilList() {
         <tbody>
           {perfisFiltrados.length > 0 ? (
             perfisFiltrados.map((perfil) => (
-              <tr key={perfil.id}>
+              <tr key={perfil.id} className={!perfil.ativo ? 'row-inactive' : ''}>
                 <td>{perfil.nome || 'Sem Nome'}</td>
                 <td>
                   <span className={perfil.ativo ? 'status-ativo' : 'status-inativo'}>
@@ -139,11 +136,11 @@ function PerfilList() {
 
                   <button
                     className="btn-deletar"
-                    onClick={() => handleDelete(perfil.id)}
+                    onClick={() => handleInativar(perfil.id)}
                     disabled={deleteMutation.isPending}
-                    title="Excluir Perfil"
+                    title={perfil.ativo ? "Inativar Perfil" : "Ativar Perfil"}
                   >
-                    <Trash2 size={16} />
+                    <Ban size={16} />
                   </button>
                 </td>
               </tr>

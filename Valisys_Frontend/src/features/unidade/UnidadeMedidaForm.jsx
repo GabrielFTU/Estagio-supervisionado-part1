@@ -18,12 +18,12 @@ const unidadeMedidaSchema = z.object({
 });
 
 const GRANDEZAS = [
-  { value: 0, label: 'Unidade (Contagem)' },
-  { value: 1, label: 'Massa (Peso)' },
-  { value: 2, label: 'Comprimento' },
-  { value: 3, label: 'Volume' },
-  { value: 4, label: 'Tempo' },
-  { value: 5, label: 'Área' },
+  { value: 0, label: 'UNIDADE (CONTAGEM)' },
+  { value: 1, label: 'MASSA (PESO)' },
+  { value: 2, label: 'COMPRIMENTO' },
+  { value: 3, label: 'VOLUME' },
+  { value: 4, label: 'TEMPO' },
+  { value: 5, label: 'ÁREA' },
 ];
 
 function UnidadeMedidaForm() {
@@ -89,13 +89,13 @@ function UnidadeMedidaForm() {
         
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
             <div className="form-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Ruler size={16}/> Nome</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Ruler size={16}/>NOME <span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <input {...register('nome')} placeholder="Ex: Grama" />
                 {errors.nome && <span className="error">{errors.nome.message}</span>}
             </div>
             
             <div className="form-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>Sigla</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>SIGLA <span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <input {...register('sigla')} placeholder="Ex: G" style={{textAlign: 'center', fontWeight: 'bold'}}/>
                 {errors.sigla && <span className="error">{errors.sigla.message}</span>}
             </div>

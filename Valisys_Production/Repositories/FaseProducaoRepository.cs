@@ -33,17 +33,25 @@ namespace Valisys_Production.Repositories
 
         public async Task<IEnumerable<FaseProducao>> GetAllAsync()
         {
-            return await _context.FasesProducao.AsNoTracking().ToListAsync();
+            return await _context.FasesProducao.AsNoTracking().OrderBy(f => f.Ordem).ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(FaseProducao faseProducao)
         {
-            _context.Entry(faseProducao).State = EntityState.Modified;
+            var existing = await _context.FasesProducao.FindAsync(faseProducao.Id);
+            if (existing == null) return false;
+
+            existing.Nome = faseProducao.Nome;
+            existing.Descricao = faseProducao.Descricao;
+            existing.Ordem = faseProducao.Ordem;
+            existing.TempoPadraoDias = faseProducao.TempoPadraoDias;
+            existing.Ativo = faseProducao.Ativo;
+
+            _context.Entry(existing).State = EntityState.Modified;
 
             try
             {
-                var affectedRows = await _context.SaveChangesAsync();
-                return affectedRows > 0;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -57,7 +65,9 @@ namespace Valisys_Production.Repositories
 
             if (faseProducao != null)
             {
-                _context.FasesProducao.Remove(faseProducao);
+                faseProducao.Ativo = false;
+                _context.Entry(faseProducao).State = EntityState.Modified;
+                
                 var affectedRows = await _context.SaveChangesAsync();
                 return affectedRows > 0;
             }

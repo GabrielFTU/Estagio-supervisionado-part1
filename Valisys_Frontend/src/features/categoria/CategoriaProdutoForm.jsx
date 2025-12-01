@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, X, Layers, Hash, FileText, Type, Lock } from 'lucide-react'; 
+import { Save, X, Layers, Hash, FileText, Type, Lock, AlertCircle } from 'lucide-react'; 
 
 import categoriaProdutoService from '../../services/categoriaProdutoService.js';
 import '../../features/produto/ProdutoForm.css';
@@ -16,6 +16,7 @@ const schema = z.object({
   nome: z.string().min(1, "O nome da categoria é obrigatório.").max(MAX_STRING_LENGTH),
   codigo: z.string().optional(),
   descricao: z.string().optional(),
+  ativo: z.boolean().default(true), 
 });
 
 function CategoriaProdutoForm() {
@@ -32,7 +33,7 @@ function CategoriaProdutoForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', codigo: '', descricao: '' }
+    defaultValues: { nome: '', codigo: '', descricao: '', ativo: true }
   });
 
   const { data: categoria, isLoading: isLoadingCategoria } = useQuery({
@@ -47,7 +48,8 @@ function CategoriaProdutoForm() {
         id: categoria.id,
         nome: categoria.nome,
         codigo: categoria.codigo,
-        descricao: categoria.descricao || '', 
+        descricao: categoria.descricao || '',
+        ativo: categoria.ativo 
       });
     }
   }, [categoria, isEditing, reset]);
@@ -78,12 +80,14 @@ function CategoriaProdutoForm() {
   });
 
   const onSubmit = (data) => {
+    const statusFinal = (isEditing && categoria && !categoria.ativo) ? data.ativo : true;
+
     const mappedData = {
         Id: isEditing ? id : undefined, 
         Nome: data.nome,
         Codigo: isEditing ? data.codigo : undefined,
         Descricao: data.descricao,
-        Ativo: isEditing ? (categoria?.ativo ?? true) : true,
+        Ativo: statusFinal,
     };
     
     if (isEditing) {
@@ -114,7 +118,7 @@ function CategoriaProdutoForm() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
             <div className="form-group">
                 <label htmlFor="codigo" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    {isEditing ? <Hash size={16} /> : <Lock size={16} />} Código
+                    {isEditing ? <Hash size={16} /> : <Lock size={16} />} CÓDIGO
                 </label>
                 <input 
                     id="codigo" 
@@ -134,7 +138,7 @@ function CategoriaProdutoForm() {
 
             <div className="form-group">
                 <label htmlFor="nome" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Type size={16} /> Nome da Categoria
+                    <Type size={16} /> NOME DA CATEGORIA <span style={{color: 'var(--color-danger)'}}>*</span>
                 </label>
                 <input 
                     id="nome" 
@@ -148,7 +152,7 @@ function CategoriaProdutoForm() {
 
         <div className="form-group">
             <label htmlFor="descricao" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <FileText size={16} /> Descrição
+                <FileText size={16} /> DESCRIÇÃO
             </label>
             <textarea 
                 id="descricao" 
@@ -158,6 +162,32 @@ function CategoriaProdutoForm() {
             />
             {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
+
+        {isEditing && categoria && !categoria.ativo && (
+            <div className="form-group-checkbox" style={{
+                marginTop: '15px', 
+                padding: '12px', 
+                backgroundColor: 'rgba(245, 158, 11, 0.1)', 
+                borderRadius: '6px', 
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+            }}>
+                <AlertCircle size={20} color="#d97706" />
+                <div>
+                    <span style={{display: 'block', fontSize: '0.85rem', color: '#d97706', fontWeight: 'bold', marginBottom: '4px'}}>
+                        Esta categoria está inativa.
+                    </span>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <input type="checkbox" id="ativo" {...register('ativo')} style={{width: '16px', height: '16px', cursor: 'pointer'}} />
+                        <label htmlFor="ativo" style={{color: 'var(--text-primary)', cursor: 'pointer', margin: 0}}>
+                            Deseja reativar esta categoria?
+                        </label>
+                    </div>
+                </div>
+            </div>
+        )}
         
         <div className="form-actions">
           <button 

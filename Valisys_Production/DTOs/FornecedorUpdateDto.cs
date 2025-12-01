@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Valisys_Production.Models;
+using Valisys_Production.Models; 
 
 namespace Valisys_Production.DTOs
 {
@@ -21,7 +21,7 @@ namespace Valisys_Production.DTOs
         public TipoDocumento TipoDocumento { get; set; }
 
         [MaxLength(255)]
-        public string Endereco { get; set; }
+        public string? Endereco { get; set; } 
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
         [EmailAddress(ErrorMessage = "E-mail inválido.")]
@@ -32,9 +32,9 @@ namespace Valisys_Production.DTOs
         [MaxLength(20)]
         public string Telefone { get; set; }
 
-        public bool Ativo { get; set; }
-
         [MaxLength(500)]
-        public string? Observacoes { get; set; }
+        public string? Observacoes { get; set; } 
+
+        public bool Ativo { get; set; }
     }
 }

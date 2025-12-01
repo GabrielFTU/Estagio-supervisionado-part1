@@ -29,6 +29,8 @@ namespace Valisys_Production.Helpers
             CreateMap<FornecedorCreateDto, Fornecedor>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
+            CreateMap<FornecedorUpdateDto, Fornecedor>()
+                .ForMember(dest => dest.DataCadastro, opt => opt.Ignore());
 
             // Lote
             CreateMap<Lote, LoteReadDto>()

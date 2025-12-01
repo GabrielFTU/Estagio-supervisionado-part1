@@ -39,7 +39,6 @@ function UsuarioList() {
     }
   };
 
-  // 🔎 FILTRAGEM
   const usuariosFiltrados = useMemo(() => {
     if (!usuarios) return [];
 
@@ -77,7 +76,6 @@ function UsuarioList() {
         </Link>
       </div>
 
-      {/* ███ TOOLBAR CONTAINER ███ */}
       <div className="toolbar-container">
         <div className="search-box">
           <Search size={20} className="search-icon" />
@@ -102,7 +100,6 @@ function UsuarioList() {
           </select>
         </div>
       </div>
-      {/* ███ FIM TOOLBAR ███ */}
 
       <table className="data-table">
         <thead>

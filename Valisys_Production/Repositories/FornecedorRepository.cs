@@ -2,7 +2,9 @@
 using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -22,26 +24,39 @@ namespace Valisys_Production.Repositories
             return fornecedor;
         }
 
-
         public async Task<Fornecedor?> GetByIdAsync(Guid id)
         {
-            return await _context.Fornecedores.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
+            return await _context.Fornecedores
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f => f.Id == id);
         }
 
         public async Task<IEnumerable<Fornecedor>> GetAllAsync()
         {
-            return await _context.Fornecedores.AsNoTracking().ToListAsync();
+            return await _context.Fornecedores
+                .AsNoTracking()
+                .ToListAsync();
         }
-
  
         public async Task<bool> UpdateAsync(Fornecedor fornecedor)
         {
-            _context.Entry(fornecedor).State = EntityState.Modified;
+            var existing = await _context.Fornecedores.FindAsync(fornecedor.Id);
+            if (existing == null) return false;
+
+            existing.Nome = fornecedor.Nome;
+            existing.Documento = fornecedor.Documento;
+            existing.TipoDocumento = fornecedor.TipoDocumento;
+            existing.Email = fornecedor.Email;
+            existing.Telefone = fornecedor.Telefone;
+            existing.Endereco = fornecedor.Endereco;
+            existing.Observacoes = fornecedor.Observacoes;
+            existing.Ativo = fornecedor.Ativo; 
+
+            _context.Entry(existing).State = EntityState.Modified;
 
             try
             {
-                var affectedRows = await _context.SaveChangesAsync();
-                return affectedRows > 0;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -55,9 +70,10 @@ namespace Valisys_Production.Repositories
 
             if (fornecedor != null)
             {
-                _context.Fornecedores.Remove(fornecedor);
-                var affectedRows = await _context.SaveChangesAsync();
-                return affectedRows > 0;
+                fornecedor.Ativo = false;
+                _context.Entry(fornecedor).State = EntityState.Modified;
+                
+                return await _context.SaveChangesAsync() > 0;
             }
 
             return false;

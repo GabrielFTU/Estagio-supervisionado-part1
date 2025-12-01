@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, Layers, Plus } from 'lucide-react';
+import { Search, Filter, Layers, Plus, Edit, Ban } from 'lucide-react'; 
 import faseProducaoService from '../../services/faseProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
 
@@ -18,23 +18,22 @@ function FaseProducaoList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos'); 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   const deleteMutation = useMutation({
     mutationFn: faseProducaoService.delete, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fasesProducao'] });
-      alert("Fase de Produção excluída com sucesso!");
+      alert("Status da Fase de Produção alterado com sucesso!");
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || "Erro ao excluir. A fase pode estar em uso.";
+      const errorMessage = err.response?.data?.message || "Erro ao alterar status. A fase pode estar em uso.";
       alert(errorMessage);
     }
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza que deseja excluir esta Fase de Produção?")) {
+  const handleInativar = (id, ativo) => {
+    const acao = ativo ? "inativar" : "ativar";
+    if (window.confirm(`Tem certeza que deseja ${acao} esta Fase de Produção?`)) {
       deleteMutation.mutate(id);
     }
   };
@@ -56,26 +55,6 @@ function FaseProducaoList() {
     });
   }, [fases, searchTerm, statusFilter]);
 
-  const totalPages = Math.ceil(filteredFases.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filteredFases.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-    setCurrentPage(1);
-  };
-
   const basePath = "/settings/cadastros/fases";
 
   if (isLoading) return <div className="loading-message">Carregando...</div>;
@@ -91,8 +70,10 @@ function FaseProducaoList() {
         </h1>
 
         <Link to={`${basePath}/novo`} className="btn-new">
-          <Plus size={18} />
-          Nova Fase
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Plus size={18} />
+            <span>Nova Fase</span>
+          </div>
         </Link>
       </div>
 
@@ -101,9 +82,9 @@ function FaseProducaoList() {
           <Search size={20} className="search-icon" />
           <input 
             type="text"
-            placeholder="Buscar por nome ou código..."
+            placeholder="Buscar por nome..."
             value={searchTerm}
-            onChange={handleSearchChange}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
 
@@ -112,7 +93,7 @@ function FaseProducaoList() {
           <select 
             className="select-standard"
             value={statusFilter}
-            onChange={handleFilterChange}
+            onChange={e => setStatusFilter(e.target.value)}
           >
             <option value="todos">Todos os Status</option>
             <option value="ativos">Apenas Ativos</option>
@@ -133,9 +114,9 @@ function FaseProducaoList() {
         </thead>
 
         <tbody>
-          {currentData.length > 0 ? (
-            currentData.map(fase => (
-              <tr key={fase.id}>
+          {filteredFases.length > 0 ? (
+            filteredFases.map(fase => (
+              <tr key={fase.id} className={!fase.ativo ? 'row-inactive' : ''}>
                 <td>{fase.ordem}</td>
                 <td>{fase.nome}</td>
                 <td>{fase.tempoPadraoDias} dias</td>
@@ -146,24 +127,27 @@ function FaseProducaoList() {
                 </td>
                 <td className="acoes-cell">
                   <button 
-                    className="btn-editar"
+                    className="btn-icon btn-edit"
                     onClick={() => navigate(`${basePath}/editar/${fase.id}`)}
+                    title="Editar"
                   >
-                    Editar
+                    <Edit size={18} />
                   </button>
+                  
                   <button 
-                    className="btn-deletar"
-                    onClick={() => handleDelete(fase.id)}
+                    className="btn-icon btn-delete"
+                    onClick={() => handleInativar(fase.id, fase.ativo)}
                     disabled={deleteMutation.isPending}
+                    title={fase.ativo ? "Inativar Fase" : "Ativar Fase"}
                   >
-                    Excluir
+                    <Ban size={18} />
                   </button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+              <td colSpan="5" className="empty-state">
                 Nenhuma Fase encontrada.
               </td>
             </tr>

@@ -2,7 +2,9 @@
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.Data;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace Valisys_Production.Repositories
 {
@@ -34,7 +36,18 @@ namespace Valisys_Production.Repositories
 
         public async Task<bool> UpdateAsync(Almoxarifado almoxarifado)
         {
-            _context.Entry(almoxarifado).State = EntityState.Modified;
+            var existing = await _context.Almoxarifados.FindAsync(almoxarifado.Id);
+            if (existing == null) return false;
+
+            existing.Nome = almoxarifado.Nome;
+            existing.Descricao = almoxarifado.Descricao;
+            existing.Localizacao = almoxarifado.Localizacao;
+            existing.Responsavel = almoxarifado.Responsavel;
+            existing.Contato = almoxarifado.Contato;
+            existing.Email = almoxarifado.Email;
+            existing.Ativo = almoxarifado.Ativo; 
+
+            _context.Entry(existing).State = EntityState.Modified;
 
             try
             {
@@ -53,7 +66,9 @@ namespace Valisys_Production.Repositories
 
             if (almoxarifado != null)
             {
-                _context.Almoxarifados.Remove(almoxarifado);
+                almoxarifado.Ativo = false;
+                _context.Entry(almoxarifado).State = EntityState.Modified;
+                
                 var affectedRows = await _context.SaveChangesAsync();
                 return affectedRows > 0;
             }

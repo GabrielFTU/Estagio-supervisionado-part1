@@ -108,13 +108,13 @@ function FaseProducaoForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
-          <label htmlFor="nome">Nome da Fase</label>
+          <label htmlFor="nome">NOME <span style={{color: 'var(--color-danger)'}}>*</span></label>
           <input id="nome" {...register('nome')} placeholder="Ex: Corte, Montagem..." />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
         
         <div className="form-group">
-            <label htmlFor="descricao">Descrição</label>
+            <label htmlFor="descricao">DESCRIÇÃO</label>
             <textarea 
                 id="descricao" 
                 {...register('descricao')} 
@@ -125,7 +125,7 @@ function FaseProducaoForm() {
 
         <div style={{ display: 'flex', gap: '20px' }}>
             <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="ordem">Ordem de Execução</label>
+                <label htmlFor="ordem">ORDEM DE EXECUÇÃO</label>
                 <input 
                     id="ordem" 
                     type="number" 
@@ -136,7 +136,7 @@ function FaseProducaoForm() {
             </div>
 
             <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="tempoPadraoDias">Duração Padrão (Dias)</label>
+                <label htmlFor="tempoPadraoDias">DURAÇÃO PADRÃO (DIAS)</label>
                 <input 
                     id="tempoPadraoDias" 
                     type="number" 
@@ -150,7 +150,7 @@ function FaseProducaoForm() {
 
         <div className="form-group-checkbox">
           <input type="checkbox" id="ativo" {...register('ativo')} />
-          <label htmlFor="ativo">Fase Ativa?</label>
+          <label htmlFor="ativo">FASE ATIVA?</label>
         </div>
         
         <div className="form-actions">
