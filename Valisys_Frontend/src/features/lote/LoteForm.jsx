@@ -4,6 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { 
+  Save, X, Hash, Package, MapPin, Calendar, 
+  FileText, Info, Layers 
+} from 'lucide-react';
 
 import loteService from '../../services/loteService.js';
 import produtoService from '../../services/produtoService.js';
@@ -95,76 +99,121 @@ function LoteForm() {
 
   return (
     <div className="form-container">
-      <h1>{isEditing ? 'Editar Lote' : 'Criar Novo Lote'}</h1>
+      <div style={{ borderBottom: '1px solid var(--border-color)', marginBottom: '20px', paddingBottom: '10px' }}>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)' }}>
+            <Layers size={24} className="text-primary" />
+            {isEditing ? 'Editar Lote' : 'Criar Novo Lote'}
+        </h1>
+        <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            Gerencie o rastreamento e validade dos lotes de produtos.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
-        <div className="form-group">
-          <label htmlFor="codigoLote">Código/Número do Lote</label>
-          <input id="codigoLote" {...register('codigoLote')} placeholder="Ex: LT-2024-AB" />
-          {errors.codigoLote && <span className="error">{errors.codigoLote.message}</span>}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+            <div className="form-group">
+              <label htmlFor="codigoLote" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Hash size={16} /> CÓDIGO / NÚMERO <span style={{color: 'var(--color-danger)'}}>*</span>
+              </label>
+              <input 
+                id="codigoLote" 
+                {...register('codigoLote')} 
+                placeholder="Ex: LT-2024-A01" 
+                autoFocus
+                style={{fontWeight: 'bold'}}
+              />
+              {errors.codigoLote && <span className="error">{errors.codigoLote.message}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="produtoId" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Package size={16} /> PRODUTO <span style={{color: 'var(--color-danger)'}}>*</span>
+              </label>
+              <select id="produtoId" {...register('produtoId')} disabled={isEditing && lote}>
+                <option value="" disabled>Selecione o produto...</option>
+                {produtos?.filter(p => p.controlarPorLote || p.ControlarPorLote).map(p => (
+                  <option key={p.id || p.Id} value={p.id || p.Id}>
+                    {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
+                  </option>
+                ))}
+              </select>
+              <small style={{color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '2px'}}>
+                Apenas produtos configurados para controle por lote são exibidos.
+              </small>
+              {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
+            </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="produtoId">Produto</label>
-          <select id="produtoId" {...register('produtoId')} disabled={isEditing && lote}>
-            <option value="" disabled>Selecione o produto...</option>
-            {produtos?.filter(p => p.controlarPorLote || p.ControlarPorLote).map(p => (
-              <option key={p.id || p.Id} value={p.id || p.Id}>
-                {p.nome || p.Nome} ({p.codigo || p.Codigo || p.CodigoInternoProduto})
-              </option>
-            ))}
-          </select>
-          <small style={{color: '#666'}}>Apenas produtos controlados por lote são exibidos.</small>
-          {errors.produtoId && <span className="error">{errors.produtoId.message}</span>}
-        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '20px' }}>
+            <div className="form-group">
+              <label htmlFor="almoxarifadoId" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <MapPin size={16} /> LOCALIZAÇÃO (ALMOXARIFADO) <span style={{color: 'var(--color-danger)'}}>*</span>
+              </label>
+              <select id="almoxarifadoId" {...register('almoxarifadoId')}>
+                <option value="" disabled>Selecione o local...</option>
+                {almoxarifados?.map(a => (
+                  <option key={a.id || a.Id} value={a.id || a.Id}>
+                    {a.nome || a.Nome}
+                  </option>
+                ))}
+              </select>
+              {errors.almoxarifadoId && <span className="error">{errors.almoxarifadoId.message}</span>}
+            </div>
 
-        <div className="form-group">
-          <label htmlFor="almoxarifadoId">Almoxarifado (Localização)</label>
-          <select id="almoxarifadoId" {...register('almoxarifadoId')}>
-            <option value="" disabled>Selecione o almoxarifado...</option>
-            {almoxarifados?.map(a => (
-              <option key={a.id || a.Id} value={a.id || a.Id}>
-                {a.nome || a.Nome}
-              </option>
-            ))}
-          </select>
-          {errors.almoxarifadoId && <span className="error">{errors.almoxarifadoId.message}</span>}
-        </div>
-
-        <div style={{display: 'flex', gap: '20px'}}>
-            <div className="form-group" style={{flex: 1}}>
-                <label htmlFor="dataFabricacao">Data de Fabricação/Abertura</label>
+            <div className="form-group">
+                <label htmlFor="dataFabricacao" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                   <Calendar size={16} /> FABRICAÇÃO
+                </label>
                 <input type="date" id="dataFabricacao" {...register('dataFabricacao')} />
             </div>
-            <div className="form-group" style={{flex: 1}}>
-                <label htmlFor="dataVencimento">Data de Validade (Opcional)</label>
+            
+            <div className="form-group">
+                <label htmlFor="dataVencimento" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                   <Calendar size={16} /> VALIDADE
+                </label>
                 <input type="date" id="dataVencimento" {...register('dataVencimento')} />
             </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="descricao">Descrição</label>
-          <textarea id="descricao" {...register('descricao')} rows={2} />
+          <label htmlFor="descricao" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <FileText size={16} /> DESCRIÇÃO
+          </label>
+          <textarea id="descricao" {...register('descricao')} rows={2} placeholder="Detalhes específicos deste lote..." />
         </div>
 
         <div className="form-group">
-          <label htmlFor="observacoes">Observações</label>
-          <textarea id="observacoes" {...register('observacoes')} rows={2} />
+          <label htmlFor="observacoes" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Info size={16} /> OBSERVAÇÕES
+          </label>
+          <textarea id="observacoes" {...register('observacoes')} rows={2} placeholder="Informações adicionais de controle..." />
         </div>
 
         {isEditing && (
-            <div className="form-group-checkbox">
+          <div className="form-group-checkbox" style={{backgroundColor: 'var(--bg-tertiary)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)'}}>
             <input type="checkbox" id="ativo" {...register('ativo')} />
-            <label htmlFor="ativo">Lote Ativo?</label>
-            </div>
+            <label htmlFor="ativo" style={{cursor: 'pointer', fontWeight: 'bold'}}>Lote Ativo?</label>
+          </div>
         )}
 
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/producao/lotes')} className="btn-cancelar">
-            Cancelar
+          <button 
+            type="button" 
+            onClick={() => navigate('/producao/lotes')} 
+            className="btn-cancelar"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <X size={18} /> Cancelar
           </button>
-          <button type="submit" className="btn-salvar" disabled={mutation.isPending || isSubmitting}>
-            {mutation.isPending ? 'Salvando...' : 'Salvar Lote'}
+          
+          <button 
+            type="submit" 
+            className="btn-salvar" 
+            disabled={mutation.isPending || isSubmitting}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            {mutation.isPending ? 'Salvando...' : <><Save size={18} /> Salvar Lote</>}
           </button>
         </div>
 

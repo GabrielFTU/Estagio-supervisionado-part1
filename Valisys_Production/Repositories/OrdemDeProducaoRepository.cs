@@ -3,6 +3,10 @@ using Valisys_Production.Data;
 using Valisys_Production.Models;
 using Valisys_Production.Repositories.Interfaces;
 using Valisys_Production.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Valisys_Production.Repositories
 {
@@ -106,25 +110,18 @@ namespace Valisys_Production.Repositories
             var ordem = await _context.OrdensDeProducao.FindAsync(id);
             if (ordem == null) return false;
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            ordem.Status = StatusOrdemDeProducao.Cancelada;
+            ordem.DataFim = DateTime.UtcNow; 
+            
+            _context.Entry(ordem).State = EntityState.Modified;
+
+            try 
             {
-                var movimentacoes = await _context.Movimentacoes
-                    .Where(m => m.OrdemDeProducaoId == id)
-                    .ToListAsync();
-
-                if (movimentacoes.Any())
-                    _context.Movimentacoes.RemoveRange(movimentacoes);
-
-                _context.OrdensDeProducao.Remove(ordem);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return true;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch
             {
-                await transaction.RollbackAsync();
-                throw;
+                return false;
             }
         }
 

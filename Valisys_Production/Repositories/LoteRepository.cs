@@ -65,7 +65,9 @@ namespace Valisys_Production.Repositories
 
             if (lote != null)
             {
-                _context.Lotes.Remove(lote);
+                lote.statusLote = StatusLote.Cancelado;
+                _context.Entry(lote).State = EntityState.Modified;
+                
                 var affectedRows = await _context.SaveChangesAsync();
                 return affectedRows > 0;
             }

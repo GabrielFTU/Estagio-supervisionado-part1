@@ -82,8 +82,8 @@ function App() {
           <Route path="/estoque/movimentacoes" element={<Placeholder title="Movimentações de Estoque" />} />
 
           <Route path="/producao/op" element={<OrdemDeProducaoList />} />
-          <Route path="/producao/op/novo" element={<OrdemDeProducaoForm />} />
-          <Route path="/producao/op/editar/:id" element={<OrdemDeProducaoForm />} />
+          <Route path="/producao/op/novo" element={<OrdemDeProducaoForm />} />     
+          <Route path="/producao/op/editar/:id" element={<OrdemDeProducaoForm />}/> 
 
           <Route path="/engenharia/fichas-tecnicas" element={<FichaTecnicaList />} />
           <Route path="/engenharia/fichas-tecnicas/novo" element={<FichaTecnicaForm />} />
