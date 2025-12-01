@@ -4,10 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, CheckCircle, X, Shield } from 'lucide-react'; 
+import { AlertCircle, CheckCircle, X, Shield, User, Save } from 'lucide-react'; 
+
 import perfilService from '../../services/perfilService.js';
 import { MODULOS_SISTEMA } from '../../utils/modulos.js'; 
 import '../../features/produto/ProdutoForm.css'; 
+import './PerfilForm.css'; 
 
 const perfilSchema = z.object({
   id: z.string().optional(),
@@ -102,26 +104,19 @@ function PerfilForm() {
 
   return (
     <div className="form-container">
-      <h1>{isEditing ? 'Editar Perfil' : 'Adicionar Novo Perfil'}</h1>
+      <div className="form-header">
+        <h1>
+            <Shield size={24} className="text-primary" />
+            {isEditing ? 'Editar Perfil' : 'Novo Perfil'}
+        </h1>
+        <p>Defina o nome do perfil e selecione as permissões de acesso ao sistema.</p>
+      </div>
       
       {feedbackMessage && (
-        <div 
-            className={`feedback-box ${feedbackMessage.type}`}
-            style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                backgroundColor: feedbackMessage.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                border: `1px solid ${feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444'}`,
-                color: feedbackMessage.type === 'success' ? '#22c55e' : '#ef4444',
-            }}
-        >
+        <div className={`feedback-box ${feedbackMessage.type}`}>
             {feedbackMessage.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-            <span style={{ flexGrow: 1, fontSize: '0.9rem' }}>{feedbackMessage.text}</span>
-            <button onClick={() => setFeedbackMessage(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+            <span>{feedbackMessage.text}</span>
+            <button onClick={() => setFeedbackMessage(null)}>
                 <X size={18} />
             </button>
         </div>
@@ -130,37 +125,29 @@ function PerfilForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
-          <label htmlFor="nome">Nome do Perfil</label>
-          <input id="nome" {...register('nome')} placeholder="Ex: Gerente de Produção" />
+          <label htmlFor="nome">
+            <User size={16} /> NOME DO PERFIL
+          </label>
+          <input id="nome" {...register('nome')} placeholder="Ex: Gerente de Produção" autoFocus />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
-        <div className="form-section" style={{marginTop: '10px', padding: '15px', backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px', color: 'var(--color-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px'}}>
+        <div className="permissions-section">
+            <div className="permissions-header">
                 <Shield size={18} />
-                <h3 style={{margin: 0, fontSize: '1rem', fontWeight: 600}}>Permissões de Acesso</h3>
+                <h3>Permissões de Acesso</h3>
             </div>
             
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px'}}>
+            <div className="permissions-grid">
                 {MODULOS_SISTEMA.map((modulo) => (
-                    <div 
-                        key={modulo.id} 
-                        className="form-group-checkbox" 
-                        style={{
-                            margin: 0, 
-                            padding: '10px', 
-                            border: '1px solid var(--border-color)', 
-                            borderRadius: '6px',
-                            backgroundColor: 'var(--bg-secondary)'
-                        }}
-                    >
+                    <div key={modulo.id} className="permission-item">
                         <input 
                             type="checkbox" 
                             value={modulo.id}
                             {...register('acessos')} 
                             id={`acesso-${modulo.id}`}
                         />
-                        <label htmlFor={`acesso-${modulo.id}`} style={{fontSize: '0.9rem', cursor: 'pointer', userSelect: 'none'}}>
+                        <label htmlFor={`acesso-${modulo.id}`}>
                             {modulo.label}
                         </label>
                     </div>
@@ -168,17 +155,17 @@ function PerfilForm() {
             </div>
         </div>
 
-        <div className="form-group-checkbox">
+        <div className="form-group-checkbox status-checkbox">
           <input type="checkbox" id="ativo" {...register('ativo')} />
           <label htmlFor="ativo">Perfil Ativo?</label>
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/settings/perfis')} className="btn-cancelar">
-            Cancelar
+            <X size={18} /> Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={isPending}>
-            {isPending ? 'Salvando...' : 'Salvar'}
+            {isPending ? 'Salvando...' : <><Save size={18} /> Salvar</>}
           </button>
         </div>
 
