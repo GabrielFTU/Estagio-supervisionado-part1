@@ -115,24 +115,24 @@ function ProdutoEdit() {
 
   return (
     <div className="form-container">
-      <h1>Editar Produto</h1>
+      <h1>Nova ordem de produção</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         <div className="form-group">
-          <label htmlFor="nome">Nome</label>
+          <label htmlFor="nome">Nome<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <input id="nome" {...register('nome')} />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="descricao">Descrição</label>
+          <label htmlFor="descricao">Descrição<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <input id="descricao" {...register('descricao')} />
           {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="categoriaProdutoId">Categoria</label>
+          <label htmlFor="categoriaProdutoId">Categoria<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <select id="categoriaProdutoId" {...register('categoriaProdutoId')}>
-            <option value="" disabled>Selecione</option>
+            <option value="" disabled>Selecione<span style={{color: 'var(--color-danger)'}}>*</span></option>
             {categorias?.map(c => (
                 <option key={c.id || c.Id} value={c.id || c.Id}>{c.nome || c.Nome}</option>
             ))}
@@ -141,7 +141,7 @@ function ProdutoEdit() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="unidadeMedidaId">Unidade</label>
+          <label htmlFor="unidadeMedidaId">Unidade<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <select id="unidadeMedidaId" {...register('unidadeMedidaId')}>
             <option value="" disabled>Selecione</option>
             {unidades?.map(u => (
@@ -187,7 +187,7 @@ function ProdutoEdit() {
             Cancelar
           </button>
           <button type="submit" className="btn-salvar" disabled={isSubmitting || updateMutation.isPending}>
-            {updateMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+            {updateMutation.isPending ? 'Salvando...' : 'Salvar Ordem de Produção'}
           </button>
         </div>
       </form>

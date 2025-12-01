@@ -92,7 +92,7 @@ function ProdutoForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
-          <label htmlFor="nome">Nome do Produto</label>
+          <label htmlFor="nome">Nome do Produto<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <input id="nome" {...register('nome')} placeholder="Ex: Parafuso Sextavado" autoFocus />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
         </div>
@@ -110,7 +110,7 @@ function ProdutoForm() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="categoriaProdutoId">Categoria</label>
+              <label htmlFor="categoriaProdutoId">Categoria<span style={{color: 'var(--color-danger)'}}>*</span></label>
               <select id="categoriaProdutoId" {...register('categoriaProdutoId')} defaultValue="">
                 <option value="" disabled>Selecione uma categoria</option>
                 {categorias?.map(cat => (
@@ -123,7 +123,7 @@ function ProdutoForm() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="unidadeMedidaId">Unidade de Medida</label>
+              <label htmlFor="unidadeMedidaId">Unidade de Medida<span style={{color: 'var(--color-danger)'}}>*</span></label>
               <select id="unidadeMedidaId" {...register('unidadeMedidaId')} defaultValue="">
                 <option value="" disabled>Selecione uma unidade</option>
                 {unidades?.map(un => (
@@ -137,7 +137,7 @@ function ProdutoForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="descricao">Descrição</label>
+          <label htmlFor="descricao">Descrição<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <textarea id="descricao" {...register('descricao')} rows={3} placeholder="Detalhes técnicos do produto..."></textarea>
           {errors.descricao && <span className="error">{errors.descricao.message}</span>}
         </div>

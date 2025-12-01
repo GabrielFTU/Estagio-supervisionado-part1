@@ -115,7 +115,7 @@ function RelatorioMovimentacoes() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
             <div className="form-group">
-                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Início</label>
+                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Início<span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <input 
                     type="date" 
                     name="dataInicio"
@@ -125,7 +125,7 @@ function RelatorioMovimentacoes() {
                 />
             </div>
             <div className="form-group">
-                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Fim</label>
+                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Calendar size={14}/> Data Fim<span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <input 
                     type="date" 
                     name="dataFim"
@@ -136,7 +136,7 @@ function RelatorioMovimentacoes() {
             </div>
 
             <div className="form-group">
-                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Box size={14}/> Produto</label>
+                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Box size={14}/> Produto<span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <select 
                     name="produtoId"
                     value={filtros.produtoId}
@@ -151,7 +151,7 @@ function RelatorioMovimentacoes() {
             </div>
 
             <div className="form-group">
-                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><MapPin size={14}/> Almoxarifado</label>
+                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><MapPin size={14}/> Almoxarifado<span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <select 
                     name="almoxarifadoId"
                     value={filtros.almoxarifadoId}

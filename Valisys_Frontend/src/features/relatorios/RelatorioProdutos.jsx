@@ -97,7 +97,7 @@ function RelatorioProdutos() {
 
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
             <div className="form-group" style={{flex: 1, minWidth: '250px'}}>
-                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Layers size={14}/> Categoria</label>
+                <label style={{display: 'flex', gap: '5px', fontSize: '0.9rem'}}><Layers size={14}/> Categoria<span style={{color: 'var(--color-danger)'}}>*</span></label>
                 <select 
                     name="categoriaId"
                     value={filtros.categoriaId}

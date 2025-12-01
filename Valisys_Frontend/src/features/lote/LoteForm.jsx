@@ -99,13 +99,13 @@ function LoteForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="produto-form">
         
         <div className="form-group">
-          <label htmlFor="codigoLote">Código/Número do Lote</label>
+          <label htmlFor="codigoLote">Código/Número do Lote<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <input id="codigoLote" {...register('codigoLote')} placeholder="Ex: LT-2024-AB" />
           {errors.codigoLote && <span className="error">{errors.codigoLote.message}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="produtoId">Produto</label>
+          <label htmlFor="produtoId">Produto<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <select id="produtoId" {...register('produtoId')} disabled={isEditing && lote}>
             <option value="" disabled>Selecione o produto...</option>
             {produtos?.filter(p => p.controlarPorLote || p.ControlarPorLote).map(p => (
@@ -119,7 +119,7 @@ function LoteForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="almoxarifadoId">Almoxarifado (Localização)</label>
+          <label htmlFor="almoxarifadoId">Almoxarifado (Localização)<span style={{color: 'var(--color-danger)'}}>*</span></label>
           <select id="almoxarifadoId" {...register('almoxarifadoId')}>
             <option value="" disabled>Selecione o almoxarifado...</option>
             {almoxarifados?.map(a => (
