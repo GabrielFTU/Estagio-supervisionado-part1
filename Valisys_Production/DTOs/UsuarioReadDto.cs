@@ -10,5 +10,6 @@ namespace Valisys_Production.DTOs
         public bool Ativo { get; set; }
         public Guid PerfilId { get; set; }
         public string PerfilNome { get; set; }
+        public List<string> Acessos { get; set; }
     }
 }

@@ -148,16 +148,18 @@ namespace Valisys_Production.Helpers
                 .ForMember(dest => dest.Observacoes, opt => opt.Ignore());
 
             CreateMap<TipoOrdemDeProducao, TipoOrdemDeProducaoReadDto>();
+
             CreateMap<TipoOrdemDeProducaoCreateDto, TipoOrdemDeProducao>()
-                .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
+
             CreateMap<TipoOrdemDeProducaoUpdateDto, TipoOrdemDeProducao>()
-                .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Codigo))
                 .ForMember(dest => dest.OrdensDeProducao, opt => opt.Ignore());
 
             CreateMap<Usuario, UsuarioReadDto>()
-                 .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil != null ? src.Perfil.Nome : "Sem Perfil"));
+                .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil != null ? src.Perfil.Nome : "Sem Perfil"))
+                .ForMember(dest => dest.PerfilNome, opt => opt.MapFrom(src => src.Perfil.Nome))
+                .ForMember(dest => dest.Acessos, opt => opt.MapFrom(src => src.Perfil.Acessos));
             CreateMap<UsuarioCreateDto, Usuario>()
                 .ForMember(dest => dest.SenhaHash, opt => opt.MapFrom(src => src.Senha))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

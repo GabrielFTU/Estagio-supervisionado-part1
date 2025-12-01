@@ -4,15 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, CheckCircle, X } from 'lucide-react';
-
+import { AlertCircle, CheckCircle, X, Shield } from 'lucide-react'; 
 import perfilService from '../../services/perfilService.js';
+import { MODULOS_SISTEMA } from '../../utils/modulos.js'; 
 import '../../features/produto/ProdutoForm.css'; 
 
 const perfilSchema = z.object({
   id: z.string().optional(),
   nome: z.string().min(3, "O nome precisa ter pelo menos 3 caracteres."),
   ativo: z.boolean().default(true),
+  acessos: z.array(z.string()).optional() 
 });
 
 function PerfilForm() {
@@ -30,7 +31,7 @@ function PerfilForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(perfilSchema),
-    defaultValues: { ativo: true, nome: '' }
+    defaultValues: { ativo: true, nome: '', acessos: [] } 
   });
 
   const { data: perfil, isLoading: isLoadingPerfil } = useQuery({
@@ -44,7 +45,8 @@ function PerfilForm() {
       reset({
         id: perfil.id,
         nome: perfil.nome,
-        ativo: perfil.ativo
+        ativo: perfil.ativo,
+        acessos: perfil.acessos || [] 
       });
     }
   }, [perfil, isEditing, reset]);
@@ -83,7 +85,8 @@ function PerfilForm() {
     const dataToSend = {
         Id: isEditing ? id : undefined,
         Nome: data.nome,
-        Ativo: data.ativo
+        Ativo: data.ativo,
+        Acessos: data.acessos 
     };
 
     if (isEditing) {
@@ -130,6 +133,39 @@ function PerfilForm() {
           <label htmlFor="nome">Nome do Perfil</label>
           <input id="nome" {...register('nome')} placeholder="Ex: Gerente de Produção" />
           {errors.nome && <span className="error">{errors.nome.message}</span>}
+        </div>
+
+        <div className="form-section" style={{marginTop: '10px', padding: '15px', backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px', color: 'var(--color-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px'}}>
+                <Shield size={18} />
+                <h3 style={{margin: 0, fontSize: '1rem', fontWeight: 600}}>Permissões de Acesso</h3>
+            </div>
+            
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px'}}>
+                {MODULOS_SISTEMA.map((modulo) => (
+                    <div 
+                        key={modulo.id} 
+                        className="form-group-checkbox" 
+                        style={{
+                            margin: 0, 
+                            padding: '10px', 
+                            border: '1px solid var(--border-color)', 
+                            borderRadius: '6px',
+                            backgroundColor: 'var(--bg-secondary)'
+                        }}
+                    >
+                        <input 
+                            type="checkbox" 
+                            value={modulo.id}
+                            {...register('acessos')} 
+                            id={`acesso-${modulo.id}`}
+                        />
+                        <label htmlFor={`acesso-${modulo.id}`} style={{fontSize: '0.9rem', cursor: 'pointer', userSelect: 'none'}}>
+                            {modulo.label}
+                        </label>
+                    </div>
+                ))}
+            </div>
         </div>
 
         <div className="form-group-checkbox">

@@ -113,7 +113,8 @@ function FichaTecnicaForm() {
   });
 
   const onSubmit = (data) => {
-    if (data.itens.some(i => i.produtoComponenteId === data.produtoId)) {
+    if (data.itens.some(i => i.
+      ComponenteId === data.produtoId)) {
         alert("Erro: Referência Circular identificada.");
         return;
     }

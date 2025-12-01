@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System;
 using System.Collections.Generic;
 
 namespace Valisys_Production.Models
@@ -14,6 +13,7 @@ namespace Valisys_Production.Models
         public string Nome { get; set; }
 
         public bool Ativo { get; set; } = true;
+        public List<string> Acessos { get; set; } = new List<string>(); 
 
         public ICollection<Usuario> Usuarios { get; set; }
     }

@@ -54,7 +54,8 @@ namespace Valisys_Production.Services
                     new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                     new Claim(ClaimTypes.Name, usuario.Nome),
                     new Claim(ClaimTypes.Email, usuario.Email),
-                    new Claim("PerfilId", usuario.PerfilId.ToString())
+                    new Claim("PerfilId", usuario.PerfilId.ToString()),
+                    new Claim(ClaimTypes.Role, usuario.Perfil.Nome)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Valisys_Production.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -89,7 +90,8 @@ namespace Valisys_Production.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Nome = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Ativo = table.Column<bool>(type: "boolean", nullable: false)
+                    Ativo = table.Column<bool>(type: "boolean", nullable: false),
+                    Acessos = table.Column<List<string>>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -102,7 +104,9 @@ namespace Valisys_Production.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Nome = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Descricao = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
+                    Codigo = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Descricao = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Ativo = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -522,13 +526,8 @@ namespace Valisys_Production.Migrations
 
             migrationBuilder.InsertData(
                 table: "Perfis",
-                columns: new[] { "Id", "Ativo", "Nome" },
-                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000001"), true, "Administrador" });
-
-            migrationBuilder.InsertData(
-                table: "TiposDeOrdemDeProducao",
-                columns: new[] { "Id", "Descricao", "Nome" },
-                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000008"), "NOR", "Normal" });
+                columns: new[] { "Id", "Acessos", "Ativo", "Nome" },
+                values: new object[] { new Guid("c0de0000-0000-0000-0000-000000000001"), new List<string>(), true, "Administrador" });
 
             migrationBuilder.InsertData(
                 table: "UnidadesMedida",

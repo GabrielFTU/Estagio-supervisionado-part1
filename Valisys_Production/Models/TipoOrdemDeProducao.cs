@@ -12,10 +12,15 @@ namespace Valisys_Production.Models
         [MaxLength(100)]
         public string Nome { get; set; }
 
+        [Required]
+        [MaxLength(10)]
+        public string Codigo { get; set; } 
+
         [MaxLength(500)]
-        public string Descricao { get; set; }
+        public string? Descricao { get; set; }
+
+        public bool Ativo { get; set; } = true;
 
         public ICollection<OrdemDeProducao> OrdensDeProducao { get; set; }
     }
-
 }

@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import usuarioService from '../../services/usuarioService.js';
 import perfilService from '../../services/perfilService.js';
+import useAuthStore from '../../stores/useAuthStore.js'; 
 import '../../features/produto/ProdutoForm.css';
 
 const baseSchema = z.object({
@@ -30,7 +31,8 @@ function UsuarioForm() {
   const isEditing = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+  const currentUser = useAuthStore((state) => state.user);
+  const isAdmin = currentUser?.perfilNome === 'Administrador';
   const schema = isEditing ? updateSchema : createSchema;
 
   const { 
@@ -94,7 +96,19 @@ function UsuarioForm() {
   });
 
   const onSubmit = (data) => {
-    const dataToSend = { ...data, perfilId: String(data.perfilId) };
+    let perfilIdFinal = data.perfilId;
+    let ativoFinal = data.ativo;
+
+    if (isEditing && !isAdmin && usuario) {
+        perfilIdFinal = String(usuario.perfilId);
+        ativoFinal = usuario.ativo;
+    }
+
+    const dataToSend = { 
+        ...data, 
+        perfilId: perfilIdFinal,
+        ativo: ativoFinal
+    };
     
     if (isEditing) {
       if (!dataToSend.senha) {
@@ -131,7 +145,13 @@ function UsuarioForm() {
         
         <div className="form-group">
           <label htmlFor="perfilId">Perfil</label>
-          <select id="perfilId" {...register('perfilId')} defaultValue="">
+          <select 
+            id="perfilId" 
+            {...register('perfilId')} 
+            defaultValue=""
+            disabled={!isAdmin}
+            style={!isAdmin ? { backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed', opacity: 0.8 } : {}}
+          >
             <option value="" disabled>
               Selecione um perfil
             </option>
@@ -140,6 +160,7 @@ function UsuarioForm() {
             ))}
           </select>
           {errors.perfilId && <span className="error">{errors.perfilId.message}</span>}
+          {!isAdmin && <small style={{color: 'var(--text-secondary)'}}>Apenas administradores podem alterar o perfil.</small>}
         </div>
 
         <div className="form-group">
@@ -149,8 +170,18 @@ function UsuarioForm() {
         </div>
 
         <div className="form-group-checkbox">
-          <input type="checkbox" id="ativo" {...register('ativo')} />
-          <label htmlFor="ativo">Usuário Ativo?</label>
+          <input 
+            type="checkbox" 
+            id="ativo" 
+            {...register('ativo')} 
+            disabled={!isAdmin}
+          />
+          <label 
+            htmlFor="ativo"
+            style={!isAdmin ? { color: 'var(--text-secondary)', cursor: 'not-allowed' } : {}}
+          >
+            Usuário Ativo?
+          </label>
         </div>
         
         <div className="form-actions">

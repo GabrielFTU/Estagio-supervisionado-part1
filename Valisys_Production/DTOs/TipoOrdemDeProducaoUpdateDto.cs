@@ -16,6 +16,9 @@ namespace Valisys_Production.DTOs
         [StringLength(10)]
         public string Codigo { get; set; }
 
+        [StringLength(500)]
+        public string? Descricao { get; set; } 
+
         public bool Ativo { get; set; }
     }
 }

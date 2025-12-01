@@ -5,6 +5,8 @@ using Valisys_Production.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Valisys_Production.Services
 {
@@ -12,11 +14,13 @@ namespace Valisys_Production.Services
     {
         private readonly IUsuarioRepository _repository;
         private readonly ILogSistemaService _logService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UsuarioService(IUsuarioRepository repository, ILogSistemaService logService)
+        public UsuarioService(IUsuarioRepository repository, ILogSistemaService logService, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _logService = logService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Usuario> CreateAsync(UsuarioCreateDto usuarioDto)
@@ -63,8 +67,16 @@ namespace Valisys_Production.Services
         {
             var existing = await _repository.GetByIdAsync(usuario.Id);
             if (existing == null) throw new KeyNotFoundException("Usuário não encontrado.");
+            var currentUser = _httpContextAccessor.HttpContext?.User;
+            bool isAdmin = currentUser?.IsInRole("Administrador") ?? false;
 
-            if (!string.IsNullOrEmpty(usuario.SenhaHash) && usuario.SenhaHash.Length > 10)
+            if (!isAdmin)
+            {
+                usuario.PerfilId = existing.PerfilId;
+                usuario.Ativo = existing.Ativo;
+            }
+
+            if (!string.IsNullOrEmpty(usuario.SenhaHash) && usuario.SenhaHash.Length > 6)
             {
                 usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(usuario.SenhaHash);
                 await _logService.RegistrarAsync("Segurança", "Usuários", $"Alterou a senha do usuário: {existing.Email}");
@@ -75,11 +87,12 @@ namespace Valisys_Production.Services
             }
 
             usuario.DataCadastro = existing.DataCadastro;
+            
             var result = await _repository.UpdateAsync(usuario);
 
             if (result)
             {
-                await _logService.RegistrarAsync("Edição", "Usuários", $"Atualizou perfil do usuário: {usuario.Email}");
+                await _logService.RegistrarAsync("Edição", "Usuários", $"Atualizou dados do usuário: {usuario.Email}");
             }
 
             return result;

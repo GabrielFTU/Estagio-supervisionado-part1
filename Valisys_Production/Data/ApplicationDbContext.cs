@@ -56,12 +56,11 @@ namespace Valisys_Production.Data
 
             // --- RELACIONAMENTOS ---
 
-            // Configuração do Log de Sistema (NOVO)
             modelBuilder.Entity<LogSistema>()
                 .HasOne(l => l.Usuario)
                 .WithMany()
                 .HasForeignKey(l => l.UsuarioId)
-                .OnDelete(DeleteBehavior.SetNull); // Se usuário for deletado, mantemos o log histórico
+                .OnDelete(DeleteBehavior.SetNull); 
 
             modelBuilder.Entity<OrdemDeProducao>()
                 .HasOne(o => o.SolicitacaoProducao)
@@ -200,9 +199,14 @@ namespace Valisys_Production.Data
             );
 
 
-            modelBuilder.Entity<TipoOrdemDeProducao>().HasData(
-                new TipoOrdemDeProducao { Id = SampleTipoOrdemDeProducaoId, Nome = "Normal", Descricao = "NOR" }
-            );
+           new TipoOrdemDeProducao 
+                { 
+                    Id = SampleTipoOrdemDeProducaoId, 
+                    Nome = "Normal", 
+                    Descricao = "Ordem de Produção Padrão", 
+                    Codigo = "NOR", 
+                    Ativo = true    
+                };
         }
     }
 }
