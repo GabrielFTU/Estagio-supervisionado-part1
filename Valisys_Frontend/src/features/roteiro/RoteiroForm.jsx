@@ -123,7 +123,7 @@ function RoteiroForm() {
             <h3 className="section-title">Informações Gerais</h3>
             <div className="grid-layout">
                 <div className="form-group span-2">
-                    <label>Produto Base</label>
+                    <label>Produto Base <span style={{color: 'var(--color-danger)'}}>*</span></label>
                     <select {...register('produtoId')} disabled={isEditing} className={errors.produtoId ? 'input-error' : ''}>
                         <option value="">Selecione o produto...</option>
                         {produtos?.filter(p => p.classificacaoId === 2 || p.classificacaoId === 3).map(p => (
@@ -155,7 +155,7 @@ function RoteiroForm() {
 
         <div className="card-section">
             <div className="section-header">
-                <h3>Sequência Operacional</h3>
+                <h3>Sequência Operacional <span style={{color: 'var(--color-danger)'}}>*</span></h3>
                 <button type="button" className="btn-new-small" onClick={() => append({ faseProducaoId: "", ordem: fields.length + 1, tempoDias: 0 })}>
                     <Plus size={16} /> Adicionar Etapa
                 </button>

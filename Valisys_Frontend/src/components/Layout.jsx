@@ -102,9 +102,6 @@ function Layout() {
                 <button className="icon-action" onClick={toggleTheme} title={`Mudar para Tema ${theme === 'dark' ? 'Claro' : 'Escuro'}`}>
                     {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />} 
                 </button>
-                <button className="icon-action">
-                    <Bell size={20} />
-                </button>
                 <div className="user-profile" onClick={handleProfileClick} role="button" tabIndex={0}>
                     <User size={20} className="profile-icon" />
                     <span className="user-name">{displayUserName}</span>
