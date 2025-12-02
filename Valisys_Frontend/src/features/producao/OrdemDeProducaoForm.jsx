@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ClipboardList, Package, Hash, Boxes, Activity, 
-  MapPin, FileText, Info, Save, X, AlertCircle, Briefcase, Printer, Layers 
+  MapPin, FileText, Info, Save, X, AlertCircle, Briefcase, Printer, Layers, ArrowLeft
 } from 'lucide-react';
 import Barcode from 'react-barcode'; 
 
@@ -53,6 +53,7 @@ function OrdemDeProducaoForm() {
     reset,
     watch,
     setValue, 
+    setError,
     formState: { errors, isSubmitting } 
   } = useForm({
     resolver: zodResolver(ordemDeProducaoSchema),
@@ -69,6 +70,7 @@ function OrdemDeProducaoForm() {
 
   const selectedProdutoId = watch('produtoId');
   
+  // --- Queries ---
   const { data: produtos } = useQuery({ queryKey: ['produtos'], queryFn: produtoService.getAll });
   const { data: almoxarifados } = useQuery({ queryKey: ['almoxarifados'], queryFn: almoxarifadoService.getAll });
   const { data: fases } = useQuery({ queryKey: ['fasesProducao'], queryFn: faseProducaoService.getAll });
@@ -109,8 +111,15 @@ function OrdemDeProducaoForm() {
     });
   }, [lotes, selectedProdutoId, isEditing, ordem]);
 
-  useEffect(() => { if (!isEditing) setValue('loteId', ""); }, [selectedProdutoId, setValue, isEditing]);
-  useEffect(() => { if (!isEditing && roteiroAtivo && primeiraFaseRoteiro) setValue('faseAtualId', primeiraFaseRoteiro); }, [roteiroAtivo, primeiraFaseRoteiro, setValue, isEditing]);
+  useEffect(() => { 
+      if (!isEditing) setValue('loteId', ""); 
+  }, [selectedProdutoId, setValue, isEditing]);
+
+  useEffect(() => { 
+      if (!isEditing && roteiroAtivo && primeiraFaseRoteiro) {
+          setValue('faseAtualId', primeiraFaseRoteiro);
+      }
+  }, [roteiroAtivo, primeiraFaseRoteiro, setValue, isEditing]);
 
   useEffect(() => {
     if (isEditing && ordem) {
@@ -149,12 +158,13 @@ function OrdemDeProducaoForm() {
 
   const onSubmit = (data) => {
     const produtoFinalId = isEditing ? (ordem.produtoId || ordem.ProdutoId) : data.produtoId;
-    const almoxarifadoFinalId = isEditing ? (ordem.almoxarifadoId || ordem.AlmoxarifadoId) : data.almoxarifadoId;
-    const tipoOpFinalId = isEditing ? (ordem.tipoOrdemDeProducaoId || ordem.TipoOrdemDeProducaoId) : data.tipoOrdemDeProducaoId;
-
+    
     const prodCheck = produtos?.find(p => (p.id || p.Id) === produtoFinalId);
     if (prodCheck && (prodCheck.controlarPorLote || prodCheck.ControlarPorLote) && !data.loteId) {
-        alert("Este produto exige um Lote. Por favor, selecione um Lote.");
+        setError('loteId', { 
+            type: 'manual', 
+            message: "Este produto exige um Lote para rastreabilidade." 
+        });
         return;
     }
     
@@ -163,8 +173,8 @@ function OrdemDeProducaoForm() {
         Quantidade: data.quantidade,
         Observacoes: data.observacoes || "",
         ProdutoId: produtoFinalId,
-        AlmoxarifadoId: almoxarifadoFinalId,
-        TipoOrdemDeProducaoId: tipoOpFinalId,
+        AlmoxarifadoId: data.almoxarifadoId,
+        TipoOrdemDeProducaoId: data.tipoOrdemDeProducaoId,
         FaseAtualId: isEditing ? ordem.faseAtualId : (roteiroAtivo ? null : data.faseAtualId),
         LoteId: data.loteId || null,
         Status: isEditing ? data.status : undefined
@@ -188,68 +198,74 @@ function OrdemDeProducaoForm() {
   return (
     <div className="op-container">
       <div className="op-header">
-        <div>
-            <h1>
-                <ClipboardList size={32} style={{color: '#6366f1'}} />
-                {isEditing ? `Editar Ordem de Produção` : 'Nova Ordem de Produção'}
-            </h1>
-            
-            {isEditing && ordem?.codigoOrdem && (
-                <div style={{marginTop: '15px', padding: '10px', background: 'var(--bg-secondary)', display: 'inline-flex', alignItems: 'center', gap: '15px', borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: '0 2px 5px rgba(0,0,0,0.05)'}}>
+        <div className="op-header-left">
+            <button type="button" onClick={() => navigate(basePath)} className="btn-back" title="Voltar">
+                <ArrowLeft size={24} />
+            </button>
+            <div>
+                <h1>
+                    {isEditing ? `Editar Ordem de Produção` : 'Nova Ordem de Produção'}
+                </h1>
+                <span className="subtitle">
+                    {isEditing ? 'Gerencie os detalhes e apontamentos desta ordem.' : 'Planeje uma nova ordem de produção.'}
+                </span>
+            </div>
+        </div>
+        
+        {isEditing && ordem?.codigoOrdem && (
+            <div className="barcode-container fade-in">
+                <div className="barcode-wrapper">
                     <Barcode 
                         value={ordem.codigoOrdem} 
-                        height={40} 
-                        width={1.5} 
-                        fontSize={14}
+                        height={30} 
+                        width={1.2} 
+                        fontSize={12}
                         margin={0}
                         displayValue={true}
                     />
-                    <div style={{borderLeft: '1px solid var(--border-color)', paddingLeft: '15px', height: '40px', display: 'flex', alignItems: 'center'}}>
-                        <button 
-                            type="button" 
-                            className="btn-cancel" 
-                            onClick={handlePrint}
-                            style={{border: 'none', background: 'var(--bg-tertiary)', color: 'var(--text-primary)'}}
-                            title="Imprimir Ficha Física"
-                        >
-                            <Printer size={18} /> Imprimir
-                        </button>
-                    </div>
                 </div>
-            )}
-        </div>
-        
-        {isEditing && <span className="op-badge">{ordem?.codigoOrdem}</span>}
+                <div className="barcode-actions">
+                    <button 
+                        type="button" 
+                        className="btn-print" 
+                        onClick={handlePrint}
+                        title="Imprimir Ficha de Acompanhamento"
+                    >
+                        <Printer size={18} /> Imprimir Ficha
+                    </button>
+                </div>
+            </div>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="op-form-content">
         
         <div className="op-grid">
             
             <div className="col-main">
                 <div className="op-card">
                     <div className="op-card-header">
-                        <Package size={20} /> Identificação do Produto
+                        <Package size={18} /> Identificação do Produto
                     </div>
                     
                     <div className="form-row">
                         <div className="input-group">
                             <label>Código da O.P.</label>
                             <div className="input-wrapper">
-                                <Hash size={18} className="field-icon" />
+                                <Hash size={16} className="field-icon" />
                                 <input 
-                                    value={isEditing ? ordem?.codigoOrdem : "Gerado Automaticamente (Automático)"}
+                                    value={isEditing ? ordem?.codigoOrdem : "Gerado Automaticamente"}
                                     disabled
                                     className="custom-input input-readonly"
+                                    style={{fontFamily: 'monospace', fontWeight: 600}}
                                 />
                             </div>
-                            {!isEditing && <small style={{fontSize:'0.75rem', color:'var(--text-secondary)', marginTop:'4px'}}>O sistema irá gerar o código sequencial (ex: OP-2025-0009) ao salvar.</small>}
                         </div>
 
                         <div className="input-group">
                             <label htmlFor="produtoId">Produto a Produzir <span className="required-mark">*</span></label>
                             <div className="input-wrapper">
-                                <Package size={18} className="field-icon" />
+                                <Package size={16} className="field-icon" />
                                 <select 
                                     id="produtoId" 
                                     {...register('produtoId')} 
@@ -272,13 +288,13 @@ function OrdemDeProducaoForm() {
                         <div className="input-group">
                             <label htmlFor="quantidade">Quantidade Planejada <span className="required-mark">*</span></label>
                             <div className="input-wrapper">
-                                <Boxes size={18} className="field-icon" />
+                                <Boxes size={16} className="field-icon" />
                                 <input 
                                     id="quantidade" 
                                     type="number" 
                                     step="1" 
                                     {...register('quantidade', { valueAsNumber: true })} 
-                                    className="custom-input"
+                                    className="custom-input font-bold"
                                 />
                             </div>
                             {errors.quantidade && <span className="error-msg"><AlertCircle size={14}/> {errors.quantidade.message}</span>}
@@ -288,26 +304,24 @@ function OrdemDeProducaoForm() {
 
                 <div className="op-card">
                     <div className="op-card-header">
-                        <Activity size={20} /> Processo Produtivo
+                        <Activity size={18} /> Roteiro e Processo
                     </div>
 
                     {!isEditing && (
                         <div style={{marginBottom: '1rem'}}>
                             {roteiroAtivo ? (
-                                <div className="info-box">
-                                    <Info size={24} style={{flexShrink: 0}} />
+                                <div className="info-box info-blue">
+                                    <Info size={20} className="info-icon" />
                                     <div>
-                                        <strong>Roteiro Padrão: {roteiroAtivo.codigo}</strong>
-                                        <p style={{margin: '4px 0 0 0', fontSize: '0.85rem', color: '#1e3a8a'}}>
-                                            Fase Inicial Automática: <b>{fases?.find(f => f.id === primeiraFaseRoteiro)?.nome || 'Carregando...'}</b>
-                                        </p>
+                                        <strong>Roteiro Vinculado: {roteiroAtivo.codigo}</strong>
+                                        <p>A fase inicial será definida automaticamente conforme o roteiro padrão deste produto.</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="input-group">
-                                    <label htmlFor="faseAtualId">Fase Inicial (Manual)</label>
-                                    <div className="input-wrapper">
-                                        <Activity size={18} className="field-icon" />
+                                    <label htmlFor="faseAtualId">Fase Inicial (Manual) <span className="required-mark">*</span></label>
+                                    <div className={`input-wrapper ${!roteiroAtivo && !watch('faseAtualId') ? 'input-attention' : ''}`}>
+                                        <Activity size={16} className="field-icon" />
                                         <select id="faseAtualId" {...register('faseAtualId')} className="custom-select">
                                             <option value="">Selecione a fase inicial...</option>
                                             {fases?.sort((a, b) => a.ordem - b.ordem).map(f => (
@@ -315,7 +329,9 @@ function OrdemDeProducaoForm() {
                                             ))}
                                         </select>
                                     </div>
-                                    <small style={{color: '#d97706', marginTop: '4px'}}>⚠ Produto sem roteiro. Defina a fase manualmente.</small>
+                                    <div className="helper-warning">
+                                        ⚠ Este produto não possui roteiro definido. Selecione a fase inicial manualmente.
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -328,7 +344,7 @@ function OrdemDeProducaoForm() {
                             {...register('observacoes')} 
                             rows="3" 
                             className="custom-textarea"
-                            placeholder="Instruções especiais..."
+                            placeholder="Instruções especiais, detalhes de personalização ou alertas para a fábrica..."
                         />
                     </div>
                 </div>
@@ -337,13 +353,13 @@ function OrdemDeProducaoForm() {
             <div className="col-side">
                 <div className="op-card">
                     <div className="op-card-header">
-                        <Briefcase size={20} /> Classificação
+                        <Briefcase size={18} /> Classificação
                     </div>
                     
                     <div className="input-group" style={{marginBottom: '1rem'}}>
                         <label htmlFor="tipoOrdemDeProducaoId">Tipo de Ordem <span className="required-mark">*</span></label>
                         <div className="input-wrapper">
-                            <FileText size={18} className="field-icon" />
+                            <FileText size={16} className="field-icon" />
                             <select 
                                 id="tipoOrdemDeProducaoId" 
                                 {...register('tipoOrdemDeProducaoId')} 
@@ -363,7 +379,7 @@ function OrdemDeProducaoForm() {
                         <div className="input-group">
                             <label htmlFor="status">Status Atual</label>
                             <div className="input-wrapper">
-                                <Activity size={18} className="field-icon" />
+                                <Activity size={16} className="field-icon" />
                                 <select id="status" {...register('status', { valueAsNumber: true })} className="custom-select">
                                     {statusOptions.map(option => (
                                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -376,13 +392,13 @@ function OrdemDeProducaoForm() {
 
                 <div className="op-card">
                     <div className="op-card-header">
-                        <MapPin size={20} /> Logística
+                        <MapPin size={18} /> Logística & Rastreio
                     </div>
 
                     <div className="input-group" style={{marginBottom: '1rem'}}>
                         <label htmlFor="almoxarifadoId">Destino (Estoque) <span className="required-mark">*</span></label>
                         <div className="input-wrapper">
-                            <MapPin size={18} className="field-icon" />
+                            <MapPin size={16} className="field-icon" />
                             <select 
                                 id="almoxarifadoId" 
                                 {...register('almoxarifadoId')} 
@@ -401,14 +417,13 @@ function OrdemDeProducaoForm() {
                     <div className="input-group">
                         <label htmlFor="loteId">
                             Lote Destino 
-                            {exigeLote && <span style={{color: '#d97706', marginLeft: '4px'}}>*</span>}
+                            {exigeLote && <span className="required-mark" title="Produto controla lote">*</span>}
                         </label>
-                        <div className="input-wrapper">
-                            <Layers size={18} className="field-icon" />
+                        <div className={`input-wrapper ${errors.loteId ? 'input-error-border' : ''}`}>
+                            <Layers size={16} className={`field-icon ${exigeLote ? 'text-warning' : ''}`} />
                             <select 
                                 id="loteId" 
                                 {...register('loteId')} 
-                                style={exigeLote ? {borderColor: '#fcd34d'} : {}}
                                 disabled={!selectedProdutoId || lotesDisponiveis.length === 0}
                                 className="custom-select"
                             >
@@ -425,6 +440,13 @@ function OrdemDeProducaoForm() {
                             </select>
                         </div>
                         {errors.loteId && <span className="error-msg"><AlertCircle size={14}/> {errors.loteId.message}</span>}
+                        
+                        {exigeLote && !errors.loteId && lotesDisponiveis.length === 0 && selectedProdutoId && (
+                             <small className="helper-warning">
+                                 <AlertCircle size={12} />
+                                 Necessário cadastrar um lote para este produto.
+                             </small>
+                        )}
                     </div>
                 </div>
             </div>
@@ -434,8 +456,10 @@ function OrdemDeProducaoForm() {
           <button type="button" onClick={() => navigate(basePath)} className="btn-cancel">
             <X size={18} /> Cancelar
           </button>
-          <button type="submit" className="btn-submit" disabled={createMutation.isPending || updateMutation.isPending}>
-            {(createMutation.isPending || updateMutation.isPending) ? 'Processando...' : <><Save size={18} /> Salvar Ordem</>}
+          <button type="submit" className="btn-submit" disabled={createMutation.isPending || updateMutation.isPending || isSubmitting}>
+            {(createMutation.isPending || updateMutation.isPending || isSubmitting) 
+                ? 'Processando...' 
+                : <><Save size={18} /> Salvar Ordem</>}
           </button>
         </div>
 

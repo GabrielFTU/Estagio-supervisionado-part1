@@ -233,14 +233,37 @@ namespace Valisys_Production.Services
             var ordem = await _repository.GetByIdAsync(id);
             if (ordem == null) return false;
 
+            if (ordem.Status == StatusOrdemDeProducao.Finalizada)
+            {
+                throw new InvalidOperationException("Não é possível cancelar uma Ordem de Produção já finalizada.");
+            }
+
+            if (ordem.LoteId.HasValue)
+            {
+                var lote = await _loteRepository.GetByIdAsync(ordem.LoteId.Value);
+                
+                if (lote != null && lote.statusLote == StatusLote.EmProducao)
+                {
+                    lote.statusLote = StatusLote.Pendente;
+                    lote.DataConclusao = null; 
+                    await _loteRepository.UpdateAsync(lote);
+                }
+            }
+
             var deleted = await _repository.DeleteAsync(id);
+
             if (deleted)
             {
-                await _logService.RegistrarAsync("Exclusão", "Produção", $"Excluiu a OP {ordem.CodigoOrdem}");
+                await _logService.RegistrarAsync(
+                    "Cancelamento", 
+                    "Produção", 
+                    $"Cancelou a OP {ordem.CodigoOrdem} e liberou o Lote vinculado.", 
+                    null
+                );
             }
+
             return deleted;
         }
-
         public async Task<OrdemDeProducao?> GetByIdAsync(Guid id) => await _repository.GetByIdAsync(id);
         public async Task<OrdemDeProducao?> GetByCodigoAsync(string codigo) => await _repository.GetByCodigoAsync(codigo);
         public async Task<IEnumerable<OrdemDeProducao>> GetAllAsync() => await _repository.GetAllAsync();

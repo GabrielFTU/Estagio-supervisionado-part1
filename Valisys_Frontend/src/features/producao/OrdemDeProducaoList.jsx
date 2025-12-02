@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  FileText, Edit, Trash2, PlayCircle, CheckCircle, XCircle, 
-  Search, X, Filter, Plus, ClipboardList, Calendar 
+  FileText, Edit, Ban, PlayCircle, CheckCircle, 
+  Search, X, Filter, Plus, ClipboardList, Calendar, ArrowRight 
 } from 'lucide-react'; 
 import ordemDeProducaoService from '../../services/ordemDeProducaoService.js';
 import '../../features/produto/ProdutoList.css'; 
@@ -23,7 +23,7 @@ function OrdemDeProducaoList() {
   const navigate = useNavigate();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('ativo');
 
   const basePath = '/producao/op';
 
@@ -33,13 +33,13 @@ function OrdemDeProducaoList() {
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
   };
 
-  const deleteMutation = useMutation({
+  const cancelMutation = useMutation({
     mutationFn: ordemDeProducaoService.delete, 
     onSuccess: () => {
       invalidateList();
-      alert("Ordem de Produção excluída/cancelada com sucesso!");
+      alert("Ordem de Produção cancelada com sucesso!");
     },
-    onError: (err) => alert(err.response?.data?.message || "Erro ao excluir.")
+    onError: (err) => alert(err.response?.data?.message || "Erro ao cancelar.")
   });
 
   const avancarFaseMutation = useMutation({
@@ -57,20 +57,20 @@ function OrdemDeProducaoList() {
     onError: (err) => alert(err.response?.data?.message || "Erro ao finalizar.")
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza que deseja cancelar/excluir esta Ordem de Produção?")) {
-      deleteMutation.mutate(id);
+  const handleCancel = (id, codigo) => {
+    if (window.confirm(`Tem certeza que deseja CANCELAR a Ordem ${codigo}? \n\nIsso irá liberar o Lote vinculado e encerrar o processo.`)) {
+      cancelMutation.mutate(id);
     }
   };
   
   const handleAvancarFase = (id) => {
-      if(window.confirm("Confirmar avanço de fase?")) {
+      if(window.confirm("Confirmar avanço para a próxima fase?")) {
           avancarFaseMutation.mutate(id);
       }
   };
 
   const handleFinalizarManual = (id) => {
-      if(window.confirm("Deseja forçar a finalização desta ordem e enviar ao estoque?")) {
+      if(window.confirm("Deseja concluir esta ordem e enviar o produto ao estoque?")) {
           finalizarMutation.mutate(id);
       }
   }
@@ -81,18 +81,29 @@ function OrdemDeProducaoList() {
   };
 
   const getStatusBadge = (statusName) => {
-      switch(statusName) {
-          case 'Ativa': 
-              return <span className="badge" style={{backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe'}}>Ativa</span>;
-          case 'Aguardando': 
-              return <span className="badge" style={{backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa'}}>Aguardando</span>;
-          case 'Finalizada': 
-              return <span className="badge" style={{backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0'}}>Finalizada</span>;
-          case 'Cancelada': 
-              return <span className="badge" style={{backgroundColor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca'}}>Cancelada</span>;
-          default: 
-              return <span className="badge">{statusName}</span>;
-      }
+      const styles = {
+          'Ativa': { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+          'Aguardando': { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
+          'Finalizada': { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+          'Cancelada': { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
+      };
+
+      const style = styles[statusName] || { bg: '#f3f4f6', color: '#374151', border: '#e5e7eb' };
+
+      return (
+          <span className="badge" style={{
+              backgroundColor: style.bg, 
+              color: style.color, 
+              border: `1px solid ${style.border}`,
+              padding: '4px 8px',
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              textTransform: 'uppercase'
+          }}>
+              {statusName}
+          </span>
+      );
   };
 
   const filteredOrdens = useMemo(() => {
@@ -103,7 +114,6 @@ function OrdemDeProducaoList() {
         String(op.codigoOrdem).toLowerCase().includes(q) || 
         String(op.produtoNome || '').toLowerCase().includes(q);
       
-      const statusStr = String(op.status); 
       const statusMap = { 1: 'Ativa', 2: 'Aguardando', 3: 'Finalizada', 4: 'Cancelada' };
       const normalizedStatus = statusMap[op.status] || op.status;
 
@@ -123,24 +133,26 @@ function OrdemDeProducaoList() {
     <div className="page-container">
       
       <div className="page-header">
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <ClipboardList size={28} className="text-primary" />
-            Ordens de Produção
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{padding: '8px', borderRadius: '8px', display: 'flex'}}>
+                <ClipboardList size={24} className="text-primary" />
+            </div>
+            Gestão de Produção
         </h1>
         <Link to={`${basePath}/novo`} className="btn-new">
-            <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
                 <Plus size={18} />
-                <span>Nova Ordem</span>
+                <span>Nova O.P.</span>
             </div>
         </Link>
       </div>
 
-      <div className="toolbar-container">
-        <div className="search-box">
-            <Search size={20} className="search-icon" />
+      <div className="toolbar-container" style={{backgroundColor: 'var(--bg-secondary)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '20px'}}>
+        <div className="search-box" style={{border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)'}}>
+            <Search size={18} className="search-icon" />
             <input 
                 type="text" 
-                placeholder="Buscar por código (OP), produto..." 
+                placeholder="Pesquisar O.P, produto..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -152,31 +164,32 @@ function OrdemDeProducaoList() {
         </div>
 
         <div className="filter-box">
-            <Filter size={20} className="filter-icon" />
+            <Filter size={18} className="filter-icon" />
             <select 
                 className="select-standard"
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
+                style={{backgroundColor: 'var(--bg-primary)', border: 'none'}}
             >
                 <option value="all">Todos os Status</option>
-                <option value="ativos">Em Andamento (Ativas)</option>
+                <option value="ativos">Em Andamento</option>
                 <option value="finalizados">Finalizadas</option>
                 <option value="cancelados">Canceladas</option>
             </select>
         </div>
       </div>
 
-      <div className="table-responsive">
+      <div className="table-responsive" style={{boxShadow: '0 2px 5px rgba(0,0,0,0.02)', borderRadius: '8px'}}>
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{width: '15%'}}>Código OP</th>
+              <th style={{width: '12%'}}>Código</th>
               <th style={{width: '25%'}}>Produto</th>
-              <th style={{width: '10%'}}>Qtd.</th>
-              <th style={{width: '15%'}}>Fase Atual</th>
-              <th style={{width: '10%'}}>Status</th>
+              <th style={{width: '8%', textAlign: 'center'}}>Qtd.</th>
+              <th style={{width: '20%'}}>Fase / Processo</th>
+              <th style={{width: '10%', textAlign: 'center'}}>Status</th>
               <th style={{width: '10%'}}>Início</th>
-              <th style={{width: '15%'}} className="actions-column">Ações</th>
+              <th style={{width: '15%', textAlign: 'right', paddingRight: '20px'}}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -191,24 +204,31 @@ function OrdemDeProducaoList() {
 
                 return (
                   <tr key={op.id} className={!isEditable ? 'row-inactive' : ''}>
-                    <td style={{fontWeight: 'bold', color: 'var(--color-primary)'}}>{op.codigoOrdem}</td>
-                    <td>{op.produtoNome}</td>
-                    <td style={{fontWeight: 'bold'}}>{op.quantidade}</td>
+                    <td style={{fontWeight: '700', color: 'var(--color-primary)', fontFamily: 'monospace', fontSize: '0.9rem'}}>
+                        {op.codigoOrdem}
+                    </td>
+                    <td>
+                        <div style={{fontWeight: '500'}}>{op.produtoNome}</div>
+                        {op.loteNumero && <div style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>Lote: {op.loteNumero}</div>}
+                    </td>
+                    <td style={{fontWeight: 'bold', textAlign: 'center'}}>{op.quantidade}</td>
                     
                     <td>
                         {isFinalizada ? (
-                            <span style={{color: '#15803d', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                <CheckCircle size={14}/> Concluída
-                            </span>
+                            <div style={{color: '#15803d', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                                <CheckCircle size={14}/> Produção Concluída
+                            </div>
+                        ) : isCancelada ? (
+                            <div style={{color: '#b91c1c', fontSize: '0.85rem'}}>Processo Interrompido</div>
                         ) : (
-                            <>
-                                <span style={{fontWeight: '500'}}>{op.faseAtualNome}</span>
-                                {op.roteiroCodigo && <div style={{fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px'}}>Rot: {op.roteiroCodigo}</div>}
-                            </>
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <span style={{fontWeight: '600', color: 'var(--text-primary)'}}>{op.faseAtualNome}</span>
+                                {op.roteiroCodigo && <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>Roteiro: {op.roteiroCodigo}</span>}
+                            </div>
                         )}
                     </td>
 
-                    <td>{getStatusBadge(statusStr)}</td>
+                    <td style={{textAlign: 'center'}}>{getStatusBadge(statusStr)}</td>
                     
                     <td style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
                         <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
@@ -217,74 +237,102 @@ function OrdemDeProducaoList() {
                         </div>
                     </td>
                     
-                    <td className="acoes-cell">
+                    <td className="acoes-cell" style={{justifyContent: 'flex-end', paddingRight: '15px'}}>
                       
                       {isEditable && (
-                          <button 
-                            className="icon-action"
-                            title="Avançar para Próxima Fase"
-                            onClick={() => handleAvancarFase(op.id)}
-                            style={{color: '#2563eb', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe'}}
-                            disabled={avancarFaseMutation.isPending}
-                          >
-                            <PlayCircle size={18} />
-                          </button>
-                      )}
+                          <>
+                            <button 
+                                className="icon-action-btn primary"
+                                title="Avançar Próxima Fase"
+                                onClick={() => handleAvancarFase(op.id)}
+                                disabled={avancarFaseMutation.isPending}
+                            >
+                                <ArrowRight size={16} />
+                            </button>
 
-                      {isEditable && (
-                          <button 
-                            className="icon-action"
-                            title="Concluir Produção (Gerar Estoque)"
-                            onClick={() => handleFinalizarManual(op.id)}
-                            style={{color: '#16a34a', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0'}}
-                            disabled={finalizarMutation.isPending}
-                          >
-                            <CheckCircle size={18} />
-                          </button>
+                            <button 
+                                className="icon-action-btn success"
+                                title="Concluir Produção (Gerar Estoque)"
+                                onClick={() => handleFinalizarManual(op.id)}
+                                disabled={finalizarMutation.isPending}
+                            >
+                                <CheckCircle size={16} />
+                            </button>
+                          </>
                       )}
 
                       <button 
-                        className="icon-action"
-                        title="Imprimir Relatório / Ficha"
+                        className="icon-action-btn neutral"
+                        title="Imprimir Ficha de Produção"
                         onClick={() => handleViewReport(op.id)}
-                        style={{color: '#4b5563'}}
                       >
-                        <FileText size={18} />
+                        <FileText size={16} />
                       </button>
                       
                       <button 
-                        className="btn-icon btn-edit" 
+                        className="icon-action-btn neutral"
                         onClick={() => navigate(`${basePath}/editar/${op.id}`)}
                         disabled={!isEditable}
-                        style={{opacity: !isEditable ? 0.5 : 1, cursor: !isEditable ? 'not-allowed' : 'pointer'}}
-                        title={isEditable ? "Editar O.P." : "Somente Leitura"}
+                        style={{opacity: !isEditable ? 0.5 : 1}}
+                        title={isEditable ? "Editar Detalhes" : "Visualizar"}
                       >
-                        <Edit size={18} />
+                        <Edit size={16} />
                       </button>
                       
-                      <button 
-                        className="btn-icon btn-delete" 
-                        onClick={() => handleDelete(op.id)}
-                        disabled={deleteMutation.isPending || !isEditable} 
-                        style={{opacity: (!isEditable) ? 0.5 : 1, cursor: !isEditable ? 'not-allowed' : 'pointer'}}
-                        title="Cancelar O.P."
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {isEditable && (
+                          <button 
+                            className="icon-action-btn danger"
+                            onClick={() => handleCancel(op.id, op.codigoOrdem)}
+                            disabled={cancelMutation.isPending} 
+                            title="Cancelar Ordem (Interromper)"
+                          >
+                            <Ban size={16} />
+                          </button>
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="7" className="empty-state">
-                  Nenhuma Ordem de Produção encontrada.
+                <td colSpan="7" className="empty-state" style={{padding: '40px 0'}}>
+                  <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)'}}>
+                      <ClipboardList size={40} style={{opacity: 0.3}} />
+                      <span>Nenhuma Ordem de Produção encontrada.</span>
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      
+      <style>{`
+        .icon-action-btn {
+            border: none;
+            background: transparent;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-action-btn:disabled { cursor: not-allowed; opacity: 0.6; }
+        
+        .icon-action-btn.primary { color: #2563eb; background-color: #eff6ff; border: 1px solid #bfdbfe; }
+        .icon-action-btn.primary:hover { background-color: #dbeafe; }
+
+        .icon-action-btn.success { color: #16a34a; background-color: #f0fdf4; border: 1px solid #bbf7d0; }
+        .icon-action-btn.success:hover { background-color: #dcfce7; }
+
+        .icon-action-btn.danger { color: #dc2626; background-color: #fef2f2; border: 1px solid #fecaca; }
+        .icon-action-btn.danger:hover { background-color: #fee2e2; }
+
+        .icon-action-btn.neutral { color: #4b5563; border: 1px solid transparent; }
+        .icon-action-btn.neutral:hover { background-color: rgba(0,0,0,0.05); color: #1f2937; }
+      `}</style>
     </div>
   );
 }
