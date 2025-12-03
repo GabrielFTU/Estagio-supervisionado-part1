@@ -13,8 +13,8 @@ using Valisys_Production.Data;
 namespace Valisys_Production.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251201010442_Initial")]
-    partial class Initial
+    [Migration("20251202205051_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
